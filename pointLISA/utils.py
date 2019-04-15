@@ -43,7 +43,7 @@ class la():
             #print('norm v2: '+str(norm_v2))
 
             return np.nan
-    def abberation(OBJ,thetas,v):
+    def aberration(OBJ,thetas,v):
         return (np.cos(thetas) - v/c)/(1-(v/c)*np.cos(thetas))
 
     def inplane(OBJ,v,n):
@@ -426,10 +426,10 @@ def send_func(OBJ,i,calc_method='Waluschka',print_on=False):
 
         v_rec_l0 = lambda t: pos_OBJ(t) - pos_left(t - L_rl(t))
         v_rec_r0 = lambda t: pos_OBJ(t) - pos_right(t - L_rr(t))
-        if OBJ.abb==False:
+        if OBJ.aberration==False:
             v_rec_l = v_rec_l0
             v_rec_r = v_rec_r0
-        elif OBJ.abb==True:
+        elif OBJ.aberration==True:
             v_rec_l = lambda t: relativistic_aberrations(OBJ,i,t,L_rl(t),'l',relativistic=OBJ.relativistic)
             v_rec_r = lambda t: relativistic_aberrations(OBJ,i,t,L_rr(t),'r',relativistic=OBJ.relativistic) 
     elif calc_method=='Waluschka':
@@ -438,10 +438,10 @@ def send_func(OBJ,i,calc_method='Waluschka',print_on=False):
         v_send_r = lambda t: pos_right(t+L_sr(t)) - pos_OBJ(t+L_sr(t))
         v_rec_l0 = lambda t: pos_OBJ(t-L_rl(t)) - pos_left(t - L_rl(t))
         v_rec_r0 = lambda t: pos_OBJ(t-L_rr(t)) - pos_right(t - L_rr(t))
-        if OBJ.abb==False:
+        if OBJ.aberration==False:
             v_rec_l = v_rec_l0
             v_rec_r = v_rec_r0
-        elif OBJ.abb==True:
+        elif OBJ.aberration==True:
             v_rec_l = lambda t: np.linalg.norm(v_rec_l0(t))*(LA.unit(LA.unit(v_rec_l0(t-L_rl(t)))*OBJ.c+(OBJ.v_abs(i_OBJ,t-L_rl(t)) - OBJ.v_abs(i_left,t-L_rl(t)))))
             v_rec_r = lambda t: np.linalg.norm(v_rec_r0(t))*(LA.unit(LA.unit(v_rec_r0(t-L_rr(t)))*OBJ.c+(OBJ.v_abs(i_OBJ,t-L_rr(t)) - OBJ.v_abs(i_right,t-L_rr(t)))))
     #if OBJ.abb==True:
@@ -540,7 +540,7 @@ def get_receiving(OBJ,i,t,side):
     elif OBJ.calc_method=='Waluschka':
         tdel0=tdel
     
-    if OBJ.abb==True:
+    if OBJ.aberration==True:
         v_rec = OBJ.v_abs(i_self,t)
         if OBJ.relativistic==True:
             ux = v_rec
@@ -563,7 +563,7 @@ def get_receiving(OBJ,i,t,side):
             return (tdel*np.float64(c)*ret)/np.linalg.norm(ret)
 
 
-    elif OBJ.abb==False:
+    elif OBJ.aberration==False:
         if side=='l':
             return np.array(OBJ.LISA.putp(i_self,t-tdel0)) - np.array(OBJ.LISA.putp(i_left,t-tdel))
         elif side=='r':

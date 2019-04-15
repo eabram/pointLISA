@@ -5,19 +5,17 @@ day2sec=year2sec/365.25
 c=300000000
 
 class STAT():
-    def __init__(self,para,**kwargs):
+    def __init__(self,input_param,para,**kwargs):
         for k in para:
             globals()[k] = para[k]
             setattr(self,k,para[k])
+        for k in input_param:
+            setattr(self,k,input_param[k])
 
-        self.home = kwargs.pop('home',os.getcwd())
-        self.filename = kwargs.pop('filename','')
-        self.directory_imp = kwargs.pop('directory_imp','')
-        self.read_max = kwargs.pop('read_max','all')
-        self.num_back = kwargs.pop('num_back',0)
-        self.plot_on = kwargs.pop('plot_on',True)
-        self.scale = kwargs.pop('scale','Default')
-        self.relativistic = kwargs.pop('relativistic',True)
+        for key,value in kwargs.items():
+            input_param[key] = value
+            setattr(self,key,value)
+
         if self.scale=='Default':
             print('Getting scale by filename:')
             a = self.filename
@@ -28,13 +26,9 @@ class STAT():
                     self.scale = float(a1[k+1]) 
         else:
             print(self.scale)
+        input_param['scale']=self.scale
         print('')
         
-        self.method = kwargs.pop('method','fsolve')        
-        self.dir_savefig = kwargs.pop('dir_savefig',os.getcwd())
-        self.dir_extr = kwargs.pop('dir_extr','')
-        self.new_folder = kwargs.pop('new_folder',True)
-        self.timeunit = kwargs.pop('timeunit','Default')
         if self.timeunit=='Default':
             print('Getting timestep by filename:')
             a = self.filename
@@ -49,22 +43,15 @@ class STAT():
         else:
             print(self.timeunit)
         print('')
+        input_param['timeunit'] = self.timeunit
+
+        self.input_param = input_param
             
-        self.delay = kwargs.pop('delay',True)
-        self.LISA_opt = kwargs.pop('LISA_opt',False)
-        self.arm_influence = kwargs.pop('arm_influence',True)
-        self.tstep = kwargs.pop('tstep',False)
-        self.valorfunc = kwargs.pop('valorfunc','Value')
-        self.calc_method = kwargs.pop('calc_method','Waluschka')
-        print(self.calc_method)
-        self.abb = kwargs.pop('abberation',False)
-    
-    
     def PAA_func(self):
         print('')
         print('Importing Orbit')
         tic=time.clock()
-        Orbit=ORBIT(home=self.home,filename=self.filename,directory_imp=self.directory_imp,num_back=self.num_back,scale=self.scale,read_max=self.read_max,plot_on=False,timeunit=self.timeunit,LISA_opt=self.LISA_opt)
+        Orbit=ORBIT(input_param=self.input_param)
         print(str(Orbit.linecount)+' datapoints')
         self.orbit = Orbit
         utils.LISA_obj(self,type_select=self.LISA_opt)
@@ -147,7 +134,7 @@ class STAT():
         #utils.velocity_abs(self,hstep=100)
 
         #--- Obtaining PAA --- 
-        print('Abberation: '+str(self.abb))
+        print('Abberation: '+str(self.aberration))
         selections=['l_in','l_out','r_in','r_out']
         PAA_func_val={}
         PAA_func_val[selections[0]] = lambda i,t: utils.calc_PAA_lin(self,i,t)

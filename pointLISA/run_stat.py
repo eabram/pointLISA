@@ -4,20 +4,30 @@ import os
 #import save_fig
 #import writefile
 
-def do_run(input_param,para):
-    for keys in input_param.keys():
-        if keys == 'dir_savefig':
-            input_param[keys] = input_param[keys]+'/'
-        globals()[keys] = input_param[keys]
-        #print(keys)
-        #print(input_param[keys])
-        #print(vars()[keys])
-        #print(dir_orbits) 
-    if 'test_calc' not in input_param.keys():
-        test_calc=False
-    else:
-        test_calc=input_param['test_calc']
+def do_run(input_param={},**kwargs):
     
+
+    para = parameters.__dict__
+    setting = settings.__dict__
+    for key,value in kwargs.items():
+        input_param[key] = value
+        print(key,value)
+        #else:
+        #    print(input_param)
+        #    raise ValueError("Double input variable for "+key)
+
+    for k in setting.keys():
+        if '__'  in k:
+            del setting[k]
+        else:
+            if k not in input_param.keys():
+                input_param[k] = setting[k]
+                #globals()[k] = settings[k]
+    
+    for keys in input_param.keys():
+        globals()[keys] = input_param[keys]
+
+
     filename_list=[]
     filename_done=[]
     PAA_res={}
@@ -56,7 +66,7 @@ def do_run(input_param,para):
 
         if execute == True:
             filename_save = i.split('/')[-1].split('_')[0]
-            data=STAT(para,home = home,filename = i,directory_imp=False,read_max = length_calc,plot_on=plot_on,dir_extr=dir_extr,new_folder=new_folder,timeunit=timeunit,LISA_opt=LISA_opt,arm_influence=arm_influence,tstep=tstep,delay=delay,method=method,valorfunc='Function',dir_savefig=dir_savefig,calc_method=calc_method,abberation=abberation,relativistic=relativistic).PAA_func() 
+            data=STAT(input_param,para,filename = i).PAA_func() 
             filename_done.append(filename_name)
             count=count+1
 
@@ -70,4 +80,5 @@ def do_run(input_param,para):
                 data_all[str(count)] = data
             
             print('test_calc: '+str(test_calc))
+    
     return data_all

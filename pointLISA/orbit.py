@@ -13,24 +13,18 @@ year2sec=32536000
 day2sec = year2sec/365.25
 
 class ORBIT():
-    def __init__(self,home=os.getcwd(),**kwargs):
-        self.home=home
-        self.num_back=kwargs.pop('num_back',0)
-        self.filename=kwargs.pop('filename','None')
-        self.directory_imp=kwargs.pop('directory_imp',False)
+    def __init__(self,input_param,**kwargs):
+        for k in input_param.keys():
+            setattr(self,k,input_param[k])
+
         if self.directory_imp != False:
             self.directory_imp=home+self.directory_imp
-        directory_plot=kwargs.pop('directory_plot','/home/ester/git/synthlisa/figures')
-        self.scale=kwargs.pop('scale',1.0)
-        self.read_max=kwargs.pop('read_max','all')
-        self.timeunit = kwargs.pop('timeunit','days')
-        self.LISA_opt = kwargs.pop('LISA_opt',False)
-        
+        input_param['directory_imp'] =  self.directory_imp
         if self.filename=='None':
             print('Please select filename')
         else:
-            self.import_file(read_max=self.read_max)
-
+            self.import_file(read_max=self.length_calc)
+        
         self.calculations()
 
     
