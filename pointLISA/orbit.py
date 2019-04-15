@@ -12,7 +12,7 @@ from scipy.interpolate import interp1d
 year2sec=32536000
 day2sec = year2sec/365.25
 
-class orbit():
+class ORBIT():
     def __init__(self,home=os.getcwd(),**kwargs):
         self.home=home
         self.num_back=kwargs.pop('num_back',0)
