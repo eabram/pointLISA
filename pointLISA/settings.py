@@ -7,7 +7,6 @@ scale = 'Default'
 method = 'fsolve'
 new_folder = True
 calc_method= 'Abram'
-plot_on=False #If plots will be made
 dir_savefig= os.getcwd() +'/' # The directory where the figures will be saved. If False, it will be in the current working directory
 noise_check=False
 home='/home/ester/git/synthlisa/' # Home directory
@@ -28,5 +27,5 @@ aberration=False
 delay= True
 relativistic= True
 test_calc = False
-
+hstep=100 #Time step for calculating the velocity (over hstep seconds average)
 del os, imports

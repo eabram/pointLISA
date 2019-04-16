@@ -1,11 +1,17 @@
 from imports import *
-
-year2sec=32536000
-day2sec=year2sec/365.25
-c=300000000
+from pointLISA import *
+import LA
+import numpy as np
+import time
+from orbit import ORBIT 
+import utils
+#year2sec=32536000
+#day2sec=year2sec/365.25
+#c=300000000
 
 class STAT():
     def __init__(self,input_param,para,**kwargs):
+        from imports import *
         for k in para:
             globals()[k] = para[k]
             setattr(self,k,para[k])
@@ -24,6 +30,7 @@ class STAT():
             for k in range(0,len(a1)):
                 if 'scale' == a1[k]:
                     self.scale = float(a1[k+1]) 
+            print(self.scale)
         else:
             print(self.scale)
         input_param['scale']=self.scale
@@ -59,11 +66,11 @@ class STAT():
         self.SC = range(1,4)
 
         # Calculations
-        LA=utils.la()
+        #LA=utils.la()
         v_l_func_tot=[]
         v_r_func_tot=[]
-        u_ltest_func_tot=[]
-        u_rtest_func_tot=[]
+        u_l_func_tot=[]
+        u_r_func_tot=[]
         u_l0test_func_tot=[]
         u_r0test_func_tot=[]
         L_sl_func_tot=[]
@@ -73,19 +80,18 @@ class STAT():
         v_l_stat_func_tot=[]
         v_r_stat_func_tot=[]
         pos_func=[]
+        
+        #--- Obtaining Velocity
+        utils.velocity_func(self,hstep=self.hstep)
+        utils.velocity_abs(self,hstep=self.hstep)
 
         for i in range(1,4):
-            #--- Obtaining Velocity
-            utils.velocity_func(self,hstep=100)
-            utils.velocity_abs(self,hstep=100)
-
             [[v_l_func,v_r_func,u_l_func,u_r_func],[L_sl_func,L_sr_func,L_rl_func,L_rr_func],[u_l0_func,u_r0_func]] = utils.send_func(self,i,calc_method = self.calc_method)
-            #[[v_l_func,v_r_func],[L_sl_func,L_sr_func,L_rl_func,L_rr_func]] = utils.send_func(self,i,calc_method = self.calc_method)
 
             v_l_func_tot.append(v_l_func)
             v_r_func_tot.append(v_r_func)
-            u_ltest_func_tot.append(u_l_func)
-            u_rtest_func_tot.append(u_r_func)
+            u_l_func_tot.append(u_l_func)
+            u_r_func_tot.append(u_r_func)
             u_l0test_func_tot.append(u_l0_func)
             u_r0test_func_tot.append(u_r0_func)
             
@@ -101,10 +107,8 @@ class STAT():
 
         self.v_l_func_tot = utils.func_over_sc(v_l_func_tot)
         self.v_r_func_tot = utils.func_over_sc(v_r_func_tot)
-        self.u_l_func_tot = lambda i,t: utils.get_receiving(self,i,t,'l')
-        self.u_r_func_tot = lambda i,t: utils.get_receiving(self,i,t,'r')
-        self.u_ltest_func_tot = utils.func_over_sc(u_ltest_func_tot)
-        self.u_rtest_func_tot = utils.func_over_sc(u_rtest_func_tot)
+        self.u_l_func_tot = utils.func_over_sc(u_l_func_tot)
+        self.u_r_func_tot = utils.func_over_sc(u_r_func_tot)
         self.u_l0test_func_tot = utils.func_over_sc(u_l0test_func_tot)
         self.u_r0test_func_tot = utils.func_over_sc(u_r0test_func_tot)
 
@@ -127,14 +131,9 @@ class STAT():
         self.v_r_out_func_tot = lambda i,t: LA.outplane(self.v_r_func_tot(i,t),self.n_func(i,t))
         self.u_l_out_func_tot = lambda i,t: LA.outplane(self.u_l_func_tot(i,t),self.n_func(i,t))
         self.u_r_out_func_tot = lambda i,t: LA.outplane(self.u_r_func_tot(i,t),self.n_func(i,t))
-        
-
-        ##--- Obtaining Velocity
-        #utils.velocity_func(self,hstep=100)
-        #utils.velocity_abs(self,hstep=100)
 
         #--- Obtaining PAA --- 
-        print('Abberation: '+str(self.aberration))
+        print('Aberration: '+str(self.aberration))
         selections=['l_in','l_out','r_in','r_out']
         PAA_func_val={}
         PAA_func_val[selections[0]] = lambda i,t: utils.calc_PAA_lin(self,i,t)
@@ -154,6 +153,6 @@ class STAT():
         self.ang_out_l = lambda i,t: LA.ang_out(self.v_l_func_tot(i,t),self.n_func(i,t))
         self.ang_out_r = lambda i,t: LA.ang_out(self.v_r_func_tot(i,t),self.n_func(i,t))
 
-        return self #...adjust
+        return self
 
 
