@@ -619,7 +619,7 @@ def rotate_PAA_wavefront(data,aim,SC,t,side,ret,output_full=False):
 
     import scipy.optimize
     
-    f = lambda PAAM_ang,m: get_wavefront_parallel(wfe,aim,SC,t,side,PAAM_ang,m,mode='opposite',precision=0,ksi=[0,0],angles=False)
+    f = lambda PAAM_ang,m: get_wavefront_parallel(data,aim,SC,t,side,PAAM_ang,m,mode='opposite',precision=0,ksi=[0,0],angles=False)
     ang_solve = scipy.optimize.brentq(lambda PAAM_ang: f(PAAM_ang,ret),np.float64(-0.1),np.float64(0.1))
 
 

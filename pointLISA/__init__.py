@@ -11,6 +11,7 @@ from .LA import *
 from .methods import *
 from .AIM import AIM
 from .run_din import *
+from .output import OUTPUT
 #import .LA
 import settings
 import parameters
