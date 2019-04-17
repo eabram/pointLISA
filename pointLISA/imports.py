@@ -8,6 +8,8 @@ import parameters
 import settings
 import LA
 import methods
+import AIM
+import run_din
 
 from synthlisa import *
 import numpy as np
@@ -31,6 +33,7 @@ import parameters
 import settings
 import LA
 import methods
+import AIM
 
 #import calc_values
 #import plotfile

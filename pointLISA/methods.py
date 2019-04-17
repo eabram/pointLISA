@@ -369,10 +369,12 @@ def read(filename='',direct='',meas='all'):
     return ret
 
 
+
+
 ### Pointing functions
 
 ### Telescope pointing
-def get_extra_angle(wfe,SC,side,component,tmin=False,tmax=False,ret='value'):
+def get_extra_angle(data,SC,side,component,tmin=False,tmax=False,ret='value'):
     if ret=='value':
         A = NOISE_LISA.calc_values.piston(wfe,SC=[SC],side=[side],dt=False,meas='R_vec_tele_rec')
         WF = A[3]['mean'][str(SC)][side]
@@ -407,44 +409,44 @@ def get_extra_angle(wfe,SC,side,component,tmin=False,tmax=False,ret='value'):
             return angy
 
 
-def get_extra_ang_mean(wfe,component):
+def get_extra_ang_mean(data,component):
     offset_l=[]
     offset_r=[]
     for SC in range(1,4):
-        offset_l.append(np.mean(get_extra_angle(wfe,SC,'l',component,ret='value')))
-        offset_r.append(np.mean(get_extra_angle(wfe,SC,'r',component,ret='value')))
+        offset_l.append(np.mean(get_extra_angle(data,SC,'l',component,ret='value')))
+        offset_r.append(np.mean(get_extra_angle(data,SC,'r',component,ret='value')))
 
     return [offset_l,offset_r]
 
-def get_wavefront_parallel(wfe,aim,i,t,side,PAAM_ang,ret,mode='opposite',precision=0,ksi=[0,0],angles=False):
+def get_wavefront_parallel(data,aim,i,t,side,PAAM_ang,ret,mode='opposite',precision=0,ksi=[0,0],angles=False):
     [i_self,i_left,i_right] = utils.i_slr(i)
     if mode=='opposite':
         if side=='l':
-            tdel = wfe.data.L_sl_func_tot(i_self,t)
-            if wfe.data.calc_method=='Waluschka':
+            tdel = data.L_sl_func_tot(i_self,t)
+            if data.calc_method=='Waluschka':
                 tdel0=tdel
-            elif wfe.data.calc_method=='Abram':
+            elif data.calc_method=='Abram':
                 tdel0=0
             if angles==False:
                 tele_ang = aim.tele_l_ang(i_self,t+tdel0)
             else:
                 tele_ang=angles
-            coor_start = beam_coor_out(wfe,i_self,t,tele_ang,PAAM_ang,aim.offset_tele['l'])
+            coor_start = beam_coor_out(data,i_self,t,tele_ang,PAAM_ang,aim.offset_tele['l'])
             coor_end = aim.tele_r_coor(i_left,t+tdel)
             start=aim.tele_l_start(i_self,t+tdel0)
             end=aim.tele_r_start(i_left,t+tdel)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
 
         elif side=='r':
-            tdel=wfe.data.L_sr_func_tot(i_self,t)
-            if wfe.data.calc_method=='Waluschka':
+            tdel=data.L_sr_func_tot(i_self,t)
+            if data.calc_method=='Waluschka':
                 tdel0=tdel
-            elif wfe.data.calc_method=='Abram':
+            elif data.calc_method=='Abram':
                 tdel0=0
             if angles==False:
                 tele_ang = aim.tele_r_ang(i_self,t+tdel0)
             else:
                 tele_ang=angles
-            coor_start =  beam_coor_out(wfe,i_self,t,tele_ang,PAAM_ang,aim.offset_tele['r'])
+            coor_start =  beam_coor_out(data,i_self,t,tele_ang,PAAM_ang,aim.offset_tele['r'])
             coor_end = aim.tele_l_coor(i_right,t+tdel)
             start = aim.tele_r_start(i_self,t+tdel0)
             end=aim.tele_l_start(i_right,t+tdel)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
@@ -470,10 +472,10 @@ def get_wavefront_parallel(wfe,aim,i,t,side,PAAM_ang,ret,mode='opposite',precisi
  
     elif mode=='self':
         if side=='l':
-            tdel = wfe.data.L_rl_func_tot(i_self,t)
-            if wfe.data.calc_method=='Waluschka':
+            tdel = data.L_rl_func_tot(i_self,t)
+            if data.calc_method=='Waluschka':
                 tdel0=tdel
-            elif wfe.data.calc_method=='Abram':
+            elif data.calc_method=='Abram':
                 tdel0=0
           
             if angles==False:
@@ -484,9 +486,9 @@ def get_wavefront_parallel(wfe,aim,i,t,side,PAAM_ang,ret,mode='opposite',precisi
                 tele_ang_end = angles[0]
                 tele_ang = angles[2]
                 PAAM_ang = aim.beam_r_ang(i_left,t-tdel)
-            coor_start = beam_coor_out(wfe,i_left,t-tdel,tele_ang,PAAM_ang,aim.offset_tele['r'])
-            coor_end = coor_tele(wfe,i_self,t,tele_ang_end)
-            start = LA.unit(coor_start[0])*wfe.L_tele+wfe.data.LISA.putp(i_left,t-tdel)
+            coor_start = beam_coor_out(aim,i_left,t-tdel,tele_ang,PAAM_ang,aim.offset_tele['r'])
+            coor_end = coor_tele(aim,i_self,t,tele_ang_end)
+            start = LA.unit(coor_start[0])*data.L_tele+wfe.data.LISA.putp(i_left,t-tdel)
             end = LA.unit(coor_end[0])*wfe.L_tele+wfe.data.LISA.putp(i_self,t-tdel0)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
 
         
@@ -576,10 +578,10 @@ def get_wavefront_parallel(wfe,aim,i,t,side,PAAM_ang,ret,mode='opposite',precisi
         return ret_val
 
 
-def rotate_tele_wavefront(wfe,aim,link,t,count_max=np.inf,lim=2e-16,scale=1):
+def rotate_tele_wavefront(data,aim,link,t,count_max=np.inf,lim=2e-16,scale=1):
     i = (link-2)%3
     [i_left,i_right,link] = utils.i_slr(i)
-    tdel = wfe.data.L_rl_func_tot(i_left,t)
+    tdel = data.L_rl_func_tot(i_left,t)
     angles=[aim.tele_l_ang(i_left,t),aim.beam_l_ang(i_left,t),aim.tele_r_ang(i_right,t-tdel),aim.beam_r_ang(i_right,t-tdel)]
     #print(angles)
 
@@ -589,11 +591,11 @@ def rotate_tele_wavefront(wfe,aim,link,t,count_max=np.inf,lim=2e-16,scale=1):
     da0=[]
     da2=[]
     while do:
-        angles_new0 = scale*get_wavefront_parallel(wfe,aim,i_left,t,'l',False,'angx',mode='self',precision=0,angles=angles)+angles[0]
+        angles_new0 = scale*get_wavefront_parallel(data,aim,i_left,t,'l',False,'angx',mode='self',precision=0,angles=angles)+angles[0]
         da0.append(angles_new0 - angles[0])
         angles[0]=angles_new0
 
-        angles_new2 = scale*get_wavefront_parallel(wfe,aim,i_right,t-tdel,'r',False,'angx',mode='self',precision=0,angles=[angles[2],angles[3],angles[0],angles[1]])+angles[2]
+        angles_new2 = scale*get_wavefront_parallel(data,aim,i_right,t-tdel,'r',False,'angx',mode='self',precision=0,angles=[angles[2],angles[3],angles[0],angles[1]])+angles[2]
         da2.append(angles_new2 - angles[2])
         angles[2]=angles_new2
         count=count+1
@@ -612,7 +614,7 @@ def rotate_tele_wavefront(wfe,aim,link,t,count_max=np.inf,lim=2e-16,scale=1):
     else:
         return angles
 
-def rotate_PAA_wavefront(wfe,aim,SC,t,side,ret,output_full=False):
+def rotate_PAA_wavefront(data,aim,SC,t,side,ret,output_full=False):
     [i_left,i_right,link] = utils.i_slr(SC)
 
     import scipy.optimize
@@ -681,13 +683,7 @@ def spotsize_limit(wfe,aim,i,t,side,limit=0,PAAM_ang=False,rtol=False):
 #LA = PAA_LISA.utils.la()
 
 # Changes of coordinate system
-def coor_SC(wfe,i,t):
-    str(wfe)
-    if 'WFE' in str(wfe): #ADJUST
-        data = wfe.data
-    elif 'STAT' in str(wfe):
-        data = wfe
-
+def coor_SC(data,i,t):
     # r,n,x (inplane) format
     t_calc=t
 
@@ -698,10 +694,10 @@ def coor_SC(wfe,i,t):
 
     return np.array([r,n,x])
 
-def coor_tele(wfe,i,t,ang_tele):
+def coor_tele(data,i,t,ang_tele):
     # Retunrs the coordinate system of telescope (same as SC but rotated over ang_tele inplane)
-    L_tele = wfe.L_tele
-    [r,n,x] = coor_SC(wfe,i,t)
+    L_tele = data.L_tele
+    [r,n,x] = coor_SC(data,i,t)
     tele = r*L_tele
     tele = LA.rotate(tele,n,ang_tele)
     r = LA.unit(tele)
@@ -715,9 +711,9 @@ def pos_tele(wfe,i,t,side,ang_tele):
 
     return offset+pointing
 
-def beam_coor_out(wfe,i,t,ang_tele,ang_paam,ang_tele_offset):
+def beam_coor_out(data,i,t,ang_tele,ang_paam,ang_tele_offset):
     # Retunrs the coordinate system of the transmitted beam (same as SC but rotated over ang_tele inplane and ang_tele outplane)
-    [r,n,x] = coor_tele(wfe,i,t,ang_tele+ang_tele_offset[i]) #Telescope coordinate system
+    [r,n,x] = coor_tele(data,i,t,ang_tele+ang_tele_offset[i]) #Telescope coordinate system
 
     r = LA.unit(LA.rotate(r,x,ang_paam)) # Rotate r in out of plane over ang_paam
     n = np.cross(r,x)

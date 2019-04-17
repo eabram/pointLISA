@@ -1,5 +1,6 @@
 import os
 import imports
+import utils
 
 filename = ''
 #read_max = 'all'
@@ -28,4 +29,19 @@ delay= True
 relativistic= True
 test_calc = False
 hstep=100 #Time step for calculating the velocity (over hstep seconds average)
-del os, imports
+
+### AIM settings
+aimset = utils.Object()
+aimset.tele_control='no_control'
+aimset.PAAM_control='no_control'
+aimset.tele_ang_extra=False #inplement later
+aimset.PAAM_ang_extra=False
+aimset.init=False
+aimset.sampled=False
+aimset.aim_old=False
+aimset.aim0=False
+aimset.option_tele='center'
+aimset.option_PAAM='center'
+aimset.offset_tele='read'
+
+del os, imports, utils

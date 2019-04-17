@@ -263,7 +263,7 @@ def relativistic_aberrations(OBJ,i,t,tdel,side,relativistic=True): #used
         return u_ab
     
     elif relativistic==True:
-        coor = function.coor_SC(OBJ,i_self,t-tdel0)
+        coor = methods.coor_SC(OBJ,i_self,t-tdel0)
         if side=='l':
             velo = (OBJ.vel.abs(i_self,t-tdel0) - OBJ.vel.abs(i_left,t-tdel))
         elif side=='r':

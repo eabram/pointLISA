@@ -33,3 +33,6 @@ w0_laser = D/(2*gamma_0) # blz. 12
 k = (2*np.pi)/labda
 
 home_run = os.getcwd()
+
+
+

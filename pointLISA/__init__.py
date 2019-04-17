@@ -10,12 +10,15 @@ from .settings import *
 from .LA import *
 from .methods import *
 from .AIM import AIM
+from .run_din import *
 #import .LA
 import settings
 import parameters
 import LA
+import run_din
 import os
 import time
+import yaml
 
 from synthlisa import *
 import numpy as np
