@@ -1,6 +1,8 @@
 from imports import *
 import numpy as np
 from scipy.interpolate import interp1d
+from output import OUTPUT
+import numpy as np
 
 def get_nearest_smaller_value(lst,val):
     lst.sort()
@@ -487,17 +489,17 @@ def get_wavefront_parallel(data,aim,i,t,side,PAAM_ang,ret,mode='opposite',precis
                 tele_ang_end = angles[0]
                 tele_ang = angles[2]
                 PAAM_ang = aim.beam_r_ang(i_left,t-tdel)
-            coor_start = beam_coor_out(aim,i_left,t-tdel,tele_ang,PAAM_ang,aim.offset_tele['r'])
-            coor_end = coor_tele(aim,i_self,t,tele_ang_end)
-            start = LA.unit(coor_start[0])*data.L_tele+wfe.data.LISA.putp(i_left,t-tdel)
-            end = LA.unit(coor_end[0])*wfe.L_tele+wfe.data.LISA.putp(i_self,t-tdel0)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
+            coor_start = beam_coor_out(data,i_left,t-tdel,tele_ang,PAAM_ang,aim.offset_tele['r'])
+            coor_end = coor_tele(data,i_self,t,tele_ang_end)
+            start = LA.unit(coor_start[0])*data.L_tele+data.LISA.putp(i_left,t-tdel)
+            end = LA.unit(coor_end[0])*data.L_tele+data.LISA.putp(i_self,t-tdel0)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
 
         
         elif side=='r':
-            tdel = wfe.data.L_rr_func_tot(i_self,t)
-            if wfe.data.calc_method=='Waluschka':
+            tdel = data.L_rr_func_tot(i_self,t)
+            if data.calc_method=='Waluschka':
                 tdel0=tdel
-            elif wfe.data.calc_method=='Abram':
+            elif data.calc_method=='Abram':
                 tdel0=0
 
             if angles==False:
@@ -508,21 +510,23 @@ def get_wavefront_parallel(data,aim,i,t,side,PAAM_ang,ret,mode='opposite',precis
                 tele_ang_end = angles[0]
                 tele_ang = angles[2]
                 PAAM_ang = aim.beam_l_ang(i_right,t-tdel)
-            coor_start = beam_coor_out(wfe,i_right,t-tdel,tele_ang,PAAM_ang,aim.offset_tele['l'])
-            coor_end = coor_tele(wfe,i_self,t,tele_ang_end)
-            start = LA.unit(coor_start[0])*wfe.L_tele+wfe.data.LISA.putp(i_right,t-tdel)
-            end = LA.unit(coor_end[0])*wfe.L_tele+wfe.data.LISA.putp(i_self,t-tdel0)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
+            coor_start = beam_coor_out(data,i_right,t-tdel,tele_ang,PAAM_ang,aim.offset_tele['l'])
+            coor_end = coor_tele(data,i_self,t,tele_ang_end)
+            start = LA.unit(coor_start[0])*data.L_tele+data.LISA.putp(i_right,t-tdel)
+            end = LA.unit(coor_end[0])*data.L_tele+data.LISA.putp(i_self,t-tdel0)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
 
                 
         [zoff,yoff,xoff]=LA.matmul(coor_start,end-start)
+        out=OUTPUT(aim)
+
         if precision==0:
             R = zoff # Not precise
         elif precision==1:
             try:
-               [piston,z_extra] = wfe.z_solve(xoff,yoff,zoff,ret='all')
+               [piston,z_extra] = out.z_solve(xoff,yoff,zoff,ret='all')
             except:
                 [piston,z_extra] = [np.nan,np.nan]
-            R = wfe.R(piston)
+            R = out.R(piston)
 
         R_vec = np.array([(R**2-xoff**2-yoff**2)**0.5,yoff,xoff])
         R_vec_origin = LA.matmul(np.linalg.inv(coor_start),R_vec)

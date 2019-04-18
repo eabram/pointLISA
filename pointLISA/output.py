@@ -1,5 +1,6 @@
 from imports import *
 import inspect
+import numpy as np
 
 class OUTPUT():
     def __init__(self,aim,**kwargs):
@@ -638,7 +639,7 @@ class OUTPUT():
         return 0
 
 
-    def make_functions(self,include=[],exclude=[],option='both',i='all',side=['l','r'],auto_clear=True,t=False,mode='mean_var',**kwargs):
+    def make_functions(self,include=[],exclude=[],option='both',i='all',side=['l','r'],auto_clear=False,t=False,mode='mean_var',**kwargs):
         Nbins=kwargs.pop('Nbins',False)
 
         if auto_clear==True:
@@ -657,10 +658,16 @@ class OUTPUT():
                 ret.append(inc)
 
         func=utils.Object()
+        
+        #try:
+        #    sampled = self.sampled
+        #except AttributeError:
         sampled=utils.Object()
-        sampled.l=utils.Object()
+
         if t==False:
            self.t_plot = self.t_calc(calc=True) #add parameters
+        else:
+            self.t_plot=np.array([t])
 
         for k in ret:
             if option=='both' or option=='function':
@@ -680,16 +687,13 @@ class OUTPUT():
                     else:
                         A = [np.array(t)]
                     for i_sel in i:
-                        if t==False:
-                            A.append(np.array([self.mean_var(i_sel,t,s,ret=[k],Nbins=Nbins,mode=mode) for t in self.t_plot]))
-                        else:
-                            A.append(np.array([self.mean_var(i_sel,t,s,ret=[k],Nbins=Nbins,mode=mode)]))
+                        A.append(np.array([self.mean_var(i_sel,t,s,ret=[k],Nbins=Nbins,mode=mode) for t in self.t_plot]))
 
                     B = [A,'ret='+k+', i='+str(i)+', mode='+str(mode)+', s='+str(side)]
                     setattr(getattr(sampled,s),k,B)
-        
-        self.func = func
-        self.sampled = sampled
+                    print(k) 
+        #self.func = func
+        #self.sampled = sampled
         return [func,sampled]
 
 
