@@ -7,53 +7,43 @@ import yaml
 
 class AIM():
     def __init__(self,data=False,settings=utils.Object(),**kwargs):
-        self.data = data
-        self.aimset=settings
-        for key in settings.__dict__.keys():
-            setattr(self,key,settings.__dict__[key])
+        if data!=None:
+            self.data = data
+            self.aimset=settings
+            for key in settings.__dict__.keys():
+                setattr(self,key,settings.__dict__[key])
 
-        for key,value in kwargs.items():
-            print(key)
-            setattr(self,key,value)
-            setattr(self.aimset,key,value)
-        #self.offset_tele = kwargs.pop('offset_tele','read')
-        #self.aimset=settings.aimset
-        
-        if data!=False:
-            print('Start calculating telescope and PAAM aim')
-            self.get_offset_inplane(self.offset_tele)
-#            self.PAAM_method = settings.aimset.PAAM_control
-#            self.tele_method = settings.aimset.tele_control
-#            self.compensation_tele = kwargs.pop('compensation_tele',True)
-#            self.sampled_on = kwargs.pop('sampled',False)
-#            self.init_set = kwargs.pop('init',False)
-#            
-            if self.init!=True:
-                self.angles0=kwargs.pop('angles0',False)
-                self.aim0=AIM(False)
-                self.aim0.data=data
-                self.aim0.tele_l_ang = self.angles0[0]
-                self.aim0.tele_r_ang = self.angles0[2]
-                self.aim0.beam_l_ang = self.angles0[1]
-                self.aim0.beam_r_ang = self.angles0[3]
-                self.aim0.get_coordinate_systems(option='self')
-                self.aim0.offset_tele = self.offset_tele
+            for key,value in kwargs.items():
+                print(key)
+                setattr(self,key,value)
+                setattr(self.aimset,key,value)
+            #self.offset_tele = kwargs.pop('offset_tele','read')
+            #self.aimset=settings.aimset
+            
+            if data!=False:
+                print('Start calculating telescope and PAAM aim')
+                self.get_offset_inplane(self.offset_tele)
+                
+                if self.init!=True:
+                    self.angles0=kwargs.pop('angles0',False)
+                    self.aim0=AIM(False)
+                    self.aim0.data=data
+                    self.aim0.tele_l_ang = self.angles0[0]
+                    self.aim0.tele_r_ang = self.angles0[2]
+                    self.aim0.beam_l_ang = self.angles0[1]
+                    self.aim0.beam_r_ang = self.angles0[3]
+                    self.aim0.get_coordinate_systems(option='self')
+                    self.aim0.offset_tele = self.offset_tele
 
-                self.angles_old=kwargs.pop('angles_old',False)
-                self.aim_old=AIM(False)
-                self.aim_old.data=data
-                self.aim_old.tele_l_ang = self.angles_old[0]
-                self.aim_old.tele_r_ang = self.angles_old[2]
-                self.aim_old.beam_l_ang = self.angles_old[1]
-                self.aim_old.beam_r_ang = self.angles_old[3]
-                self.aim_old.offset_tele = self.offset_tele
-                self.aim_old.get_coordinate_systems(option='self')
-#            self.count=kwargs.pop('count',0)
-#            print('')
-#            print('Iteration count: '+str(self.count))
-#            print('')
-#            #self.noise = pack.Noise(wfe=wfe)
-
+                    self.angles_old=kwargs.pop('angles_old',False)
+                    self.aim_old=AIM(False)
+                    self.aim_old.data=data
+                    self.aim_old.tele_l_ang = self.angles_old[0]
+                    self.aim_old.tele_r_ang = self.angles_old[2]
+                    self.aim_old.beam_l_ang = self.angles_old[1]
+                    self.aim_old.beam_r_ang = self.angles_old[3]
+                    self.aim_old.offset_tele = self.offset_tele
+                    self.aim_old.get_coordinate_systems(option='self')
 
     def get_offset_inplane(self,option):
         offset = {'l': {1: 0.0, 2: 0.0, 3: 0.0},
@@ -311,17 +301,44 @@ class AIM():
             self.PAAM_step = dt
 
 
-        # Adding jitter
-        if jitter!=False:
-            self.beam_l_ang = lambda i,t: self.add_jitter(ang_l,i,t,1e-8,1e20,dt=3600)
-            self.beam_r_ang = lambda i,t: self.add_jitter(ang_r,i,t,1e-8,1e20,dt=3600)
+        self.beam_l_ang = ang_l
+        self.beam_r_ang = ang_r
+        
+        if self.sampled==True:
+            sampled = self.sample()
+            self.aim_sampled = sampled
+            self.aim_sampled.get_coordinate_systems(iteration_val=False,option='self')
         else:
-            self.beam_l_ang = ang_l
-            self.beam_r_ang = ang_r
+            self.aim_sampled=False
 
         self.get_coordinate_systems(iteration_val=False,option='self')
 
         return self
+
+    def sample(self): 
+        self_new = AIM(data=None)
+        not_copy = ['tele_l_ang','tele_r_ang','beam_l_ang','beam_r_ang']
+        for k,value in self.__dict__.items():
+            if k not in not_copy:
+                setattr(self_new,k,value)
+        self_new.sampledd=True
+        
+        t_sample=self.data.t_all
+        tele_l_ang=[]
+        tele_r_ang=[]
+        beam_l_ang=[]
+        beam_r_ang=[]
+        for i in range(1,4):
+            tele_l_ang.append(methods.interpolate(t_sample,np.array([self.tele_l_ang(i,t) for t in t_sample])))
+            tele_r_ang.append(methods.interpolate(t_sample,np.array([self.tele_r_ang(i,t) for t in t_sample])))
+            beam_l_ang.append(methods.interpolate(t_sample,np.array([self.beam_l_ang(i,t) for t in t_sample])))
+            beam_r_ang.append(methods.interpolate(t_sample,np.array([self.beam_r_ang(i,t) for t in t_sample])))
+        self_new.tele_l_ang = lambda i,t: tele_l_ang[i-1](t)
+        self_new.tele_r_ang = lambda i,t: tele_r_ang[i-1](t)
+        self_new.beam_l_ang = lambda i,t: beam_l_ang[i-1](t)
+        self_new.beam_r_ang = lambda i,t: beam_r_ang[i-1](t)
+
+        return self_new
 
     def get_tele_coor(self,i,t,tele_l_ang,tele_r_ang):
         # Calculating new pointing vectors and coordinate system

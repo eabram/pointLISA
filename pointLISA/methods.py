@@ -1,5 +1,6 @@
 from imports import *
 import numpy as np
+from scipy.interpolate import interp1d
 
 def get_nearest_smaller_value(lst,val):
     lst.sort()

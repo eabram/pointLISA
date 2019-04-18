@@ -12,6 +12,11 @@ class OUTPUT():
                 setattr(self,k,value)
     
     def pupil(self,Nbins=2): #Aperture
+        try:
+            del self.xlist,self.ylist,self,Deltax,self.Deltay,self.Nbinsx,self.Nbinsy
+        except:
+            pass
+
         D_calc=self.D
 
         xlist = np.linspace(-D_calc*0.5,D_calc*0.5,Nbins+1)
@@ -39,6 +44,29 @@ class OUTPUT():
         else:
             return np.nan
     
+    def w0(self,angx,angy,ksi):
+        # Opposite wfe
+        #if side=='l':
+        #    angy = self.aim.beam_l_ang(i,t)
+        #elif side == 'r':
+        #    angy = self.aim.beam_r_ang(i,t)
+        #angx=0#...add jitter
+
+        [x,y] = ksi
+
+        labda = self.labda
+        w_error = 2*np.pi*((x*np.sin(angx)+y*np.sin(angy))/labda)
+
+        return w_error
+    
+    def u0(self,ksi):#...for gaussian beam, adjust when implementing other beams
+        w = self.w(0.0)
+        [x,y] = ksi
+
+        return np.exp(-((x**2+y**2)/(w**2)))
+
+
+
     def aperture(self,xlist,ylist,function,dType=np.float64): # Creates matrix of function over an aperture (circle)
         if type(xlist)==bool:
             if xlist==False:
@@ -109,7 +137,9 @@ class OUTPUT():
         pos = getattr(self,func)(pos)
 
         return pos
-    
+
+    ### Returns important parameters
+
     def get_xoff(self,pos):
         setattr(pos,inspect.stack()[0][3].split('get_')[1],LA.matmul(pos.coor_start,pos.end-pos.start)[2])
         return pos
@@ -179,7 +209,7 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
     
-    def get_R_vec_tele_rec(self,pos):
+    def get_R_vec_tele_rec(self,pos): #This vector is reversed (pointed away from receiving telescope)
         check=False
         while check==False:
             try:
@@ -193,7 +223,7 @@ class OUTPUT():
 
 
   
-    def get_tele_vec(self,pos):
+    def get_tele_vec(self,pos): #This vector is reversed (pointed away from receiving telescope)
         check=False
         while check==False:
             try:
@@ -279,6 +309,34 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
     
+    def get_angx_func_send(self,pos):
+        check=False
+        while check==False:
+            try:
+                #ret = (pos.angx_tele-pos.angx_R)
+                ret = np.arctan(abs(pos.R_vec[2]/pos.R_vec[0]))*np.sign(pos.R_vec[2])
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
+
+    def get_angy_func_send(self,pos):
+        check=False
+        while check==False:
+            try:
+                #ret = (pos.angy_tele-pos.angy_R)
+                ret = np.arctan(abs(pos.R_vec[1]/pos.R_vec_tele_rec[0]))*np.sign(pos.R_vec[1])
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
+    
+
+
     def get_bd_original_frame(self,pos):
         check=False
         while check==False:
@@ -376,15 +434,62 @@ class OUTPUT():
         return pos
 
 
+    def get_u(self,pos,Nbins_inp=2):
+        check=False
+        while check==False:
+            try:
+                r = pos.r
+                z=pos.zoff
+                angx=pos.angx_func_send
+                angy=pos.angy_func_send
 
+                try:
+                    Nbins=self.Nbins
+                except:
+                    self.Nbins = Nbins_inp
+                try:
+                    xlist=self.xlist
+                    ylist=self.ylist
+                except AttributeError:
+                    self.pupil(Nbins=self.Nbins)
+                    xlist=self.xlist
+                    ylist=self.ylist
+                labda = self.aim.data.labda
+                k = (2*np.pi)/labda
 
+                if len(xlist)==1 and len(ylist)==1:
+                    dksi = (self.D**2)*(np.pi/4.0)
+                else:
+                    dksi = (xlist[1]-xlist[0])*(ylist[1]-ylist[0])
 
+                ret=0
+                for i in range(0,len(xlist)):
+                    for j in range(0,len(ylist)):
+                        ksi = np.array([xlist[i],ylist[j]])
+                        T1 = np.exp((1j*k*np.dot(r,ksi))/z)
+                        T2 = self.u0(ksi)
+                        T3 = np.exp(1j*self.w0(angx,angy,ksi))
+                        ret = ret+T1*T2*T3
+                ret = ret*dksi*(1j*k*np.exp(-(1j*k*(np.linalg.norm(r)**2))/(2*z))/(2*np.pi*z))
 
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
 
-
-
-
-
+    def get_power(self,pos):
+        check=False
+        while check==False:
+            try:
+                ret = (abs(pos.u)**2)[0]*np.cos(pos.angx_func_rec)*np.cos(pos.angy_func_rec)
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
 
     def values(self,i,t,side,ksi=[0,0],mode='send',angles=False,ret=[]):
         [i_self,i_left,i_right] = utils.i_slr(i)
@@ -454,11 +559,140 @@ class OUTPUT():
                 positions_new = getattr(self,'get_'+r)(positions)
                 del positions
                 positions = positions_new
-
+        
+#        if len(ret)==1:
+#            return getattr(positions,ret[0])
+#        else:
         return positions
         
+    def mean_var(self,i,t,side,ret,mode='mean',Nbins=False):
+        if Nbins!=False:
+            self.pupil(Nbins=Nbins)
+        else:
+            try:
+                self.xlist
+            except AttributeError:
+                self.pupil()
+        if type(ret)!=list:
+            ret=[ret]
 
-                
+        func = lambda x,y: self.values(i,t,side,ret=ret,ksi=[x,y])
+        if mode=='center':
+            return getattr(func(0,0),ret[0])
+        elif 'var' in mode or 'mean' in mode:
+            A=[]
+            for x in self.xlist:
+                for y in self.ylist:
+                    A.append(getattr(func(x,y),ret[0]))
+            if mode=='mean':
+                return np.nanmean(A)
+            elif mode=='var':
+                return np.nanvar(A)/(np.float64(len(A) - A.count(np.nan)))
+            elif mode=='mean_var':
+                return np.array([np.nanmean(A),np.nanvar(A)/(np.float64(len(A) - A.count(np.nan)))])
+
+        
+
+
+
+
+### Write and save functions/values
+    
+    def t_calc(self,calc=False,**kwargs):
+        if calc==True:
+            t0= kwargs.pop('t0',False)
+            tend= kwargs.pop('tend',False)
+            dt= kwargs.pop('dt',False)
+            n= kwargs.pop('n',False)
+
+            if dt==False:
+                try:
+                    dt = self.dt
+                except:
+                    dt = self.aim.data.t_all[1]-self.aim.data.t_all[0]
+            if n!=False:
+                tend = dt*n
+
+            if t0==False:
+                t0 = self.aim.data.t_all[3]
+            if tend==False:
+                tend = self.aim.data.t_all[-3]
+            n = int(np.round((tend-t0)/dt))+1
+            t_plot = np.linspace(t0,tend,n)
+        
+        elif calc==False:
+            t_plot = self.aim.data.t_all
+
+        return t_plot
+    
+    def clear_functions(self):
+        try:
+            del self.func
+        except AttributeError:
+            pass
+        try:
+            del self.sampled
+        except AttributeError:
+            pass
+        
+        return 0
+
+
+    def make_functions(self,include=[],exclude=[],option='both',i='all',side=['l','r'],auto_clear=True,t=False,mode='mean_var',**kwargs):
+        Nbins=kwargs.pop('Nbins',False)
+
+        if auto_clear==True:
+            self.clear_functions()
+
+        ret=[]
+        if include=='all' and exclude!='all':
+            for k in OUTPUT.__dict__.keys():
+                if 'get_' in k:
+                    add = k.split('get_')[-1]
+                    if add not in exclude:
+                        ret.append(add)
+        
+        else:
+            for inc in include:
+                ret.append(inc)
+
+        func=utils.Object()
+        sampled=utils.Object()
+        sampled.l=utils.Object()
+        if t==False:
+           self.t_plot = self.t_calc(calc=True) #add parameters
+
+        for k in ret:
+            if option=='both' or option=='function':
+                setattr(func,k,lambda i,t,side: getattr(self.mean_var(i,t,side,ret=[k],Nbins=Nbins,mode=mode),k))
+            if option=='both' or option=='sampled':
+                if i =='all':
+                    i=range(1,4)
+                elif type(i)!=list:
+                    i=[i]
+                if type(side)!=list:
+                    side=[side]
+
+                for s in side:
+                    setattr(sampled,s,utils.Object())
+                    if t==False:
+                        A=[self.t_plot]
+                    else:
+                        A = [np.array(t)]
+                    for i_sel in i:
+                        if t==False:
+                            A.append(np.array([self.mean_var(i_sel,t,s,ret=[k],Nbins=Nbins,mode=mode) for t in self.t_plot]))
+                        else:
+                            A.append(np.array([self.mean_var(i_sel,t,s,ret=[k],Nbins=Nbins,mode=mode)]))
+
+                    B = [A,'ret='+k+', i='+str(i)+', mode='+str(mode)+', s='+str(side)]
+                    setattr(getattr(sampled,s),k,B)
+        
+        self.func = func
+        self.sampled = sampled
+        return [func,sampled]
+
+
 
 
 
