@@ -175,7 +175,7 @@ class OUTPUT():
                     ret=pos.zoff
                 elif precision==1:
                     try:
-                       [piston,z_extra] = wfe.z_solve(xoff,yoff,zoff,ret='all')
+                       [piston,z_extra] = self.z_solve(xoff,yoff,zoff,ret='all')
                     except:
                         [piston,z_extra] = [np.nan,np.nan]
                     ret = self.R(piston)
@@ -492,58 +492,61 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
-    def values(self,i,t,side,ksi=[0,0],mode='send',angles=False,ret=[]):
+    def values(self,i,t,side,ksi=[0,0],mode='send',angles=False,ret=[],aim=False):
         [i_self,i_left,i_right] = utils.i_slr(i)
+        
+        if aim==False:
+            aim=self.aim
 
         if mode=='send':
             if side=='l':
-                tdel = self.aim.data.L_sl_func_tot(i_self,t)
-                if self.aim.data.calc_method=='Waluschka':
+                tdel = aim.data.L_sl_func_tot(i_self,t)
+                if aim.data.calc_method=='Waluschka':
                     tdel0=tdel
-                elif self.aim.data.calc_method=='Abram':
+                elif aim.data.calc_method=='Abram':
                     tdel0=0
-                tele_ang=self.aim.tele_l_ang(i_self,t+tdel0)
-                coor_start=self.aim.tele_l_coor(i_self,t)
-                coor_end=self.aim.tele_r_coor(i_left,t+tdel)
-                start=self.aim.tele_l_start(i_self,t+tdel0)
-                end=self.aim.tele_r_start(i_left,t+tdel)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
+                tele_ang=aim.tele_l_ang(i_self,t+tdel0)
+                coor_start=aim.tele_l_coor(i_self,t)
+                coor_end=aim.tele_r_coor(i_left,t+tdel)
+                start=aim.tele_l_start(i_self,t+tdel0)
+                end=aim.tele_r_start(i_left,t+tdel)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
 
             elif side=='r':
-                tdel = self.aim.data.L_sr_func_tot(i_self,t)
-                if self.aim.data.calc_method=='Waluschka':
+                tdel = aim.data.L_sr_func_tot(i_self,t)
+                if aim.data.calc_method=='Waluschka':
                     tdel0=tdel
-                elif self.aim.data.calc_method=='Abram':
+                elif aim.data.calc_method=='Abram':
                     tdel0=0
-                tele_ang=self.aim.tele_r_ang(i_self,t+tdel0)
-                coor_start=self.aim.tele_r_coor(i_self,t)
-                coor_end=self.aim.tele_l_coor(i_right,t+tdel)
-                start=self.aim.tele_r_start(i_self,t+tdel0)
-                end=self.aim.tele_l_start(i_right,t+tdel)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
+                tele_ang=aim.tele_r_ang(i_self,t+tdel0)
+                coor_start=aim.tele_r_coor(i_self,t)
+                coor_end=aim.tele_l_coor(i_right,t+tdel)
+                start=aim.tele_r_start(i_self,t+tdel0)
+                end=aim.tele_l_start(i_right,t+tdel)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
 
         elif mode=='rec':
             if side=='l':
-                tdel = self.aim.data.L_rl_func_tot(i_self,t)
-                if self.aim.data.calc_method=='Waluschka':
+                tdel = aim.data.L_rl_func_tot(i_self,t)
+                if aim.data.calc_method=='Waluschka':
                     tdel0=tdel
-                elif self.aim.data.calc_method=='Abram':
+                elif aim.data.calc_method=='Abram':
                     tdel0=0
-                tele_ang=self.aim.tele_r_ang(i_left,t-tdel)
-                coor_start=self.aim.tele_r_coor(i_left,t-tdel)
-                coor_end=self.aim.tele_l_coor(i_self,t)
-                start=self.aim.tele_r_start(i_left,t-tdel)
-                end=self.aim.tele_l_start(i_self,t-tdel0)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
+                tele_ang=aim.tele_r_ang(i_left,t-tdel)
+                coor_start=aim.tele_r_coor(i_left,t-tdel)
+                coor_end=aim.tele_l_coor(i_self,t)
+                start=aim.tele_r_start(i_left,t-tdel)
+                end=aim.tele_l_start(i_self,t-tdel0)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
 
             elif side=='r':
-                tdel = self.aim.data.L_rr_func_tot(i_self,t)
-                if self.aim.data.calc_method=='Waluschka':
+                tdel = aim.data.L_rr_func_tot(i_self,t)
+                if aim.data.calc_method=='Waluschka':
                     tdel0=tdel
-                elif self.aim.data.calc_method=='Abram':
+                elif aim.data.calc_method=='Abram':
                     tdel0=0
-                tele_ang=self.aim.tele_l_ang(i_right,t-tdel)
-                coor_start=self.aim.tele_l_coor(i_right,t-tdel)
-                coor_end=self.aim.tele_r_coor(i_self,t)
-                start=self.aim.tele_l_start(i_right,t-tdel)
-                end=self.aim.tele_r_start(i_self,t-tdel0)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
+                tele_ang=aim.tele_l_ang(i_right,t-tdel)
+                coor_start=aim.tele_l_coor(i_right,t-tdel)
+                coor_end=aim.tele_r_coor(i_self,t)
+                start=aim.tele_l_start(i_right,t-tdel)
+                end=aim.tele_r_start(i_self,t-tdel0)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
         
         positions=utils.Object()
         positions.start=start
