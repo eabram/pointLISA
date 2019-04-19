@@ -660,41 +660,39 @@ class OUTPUT():
             for inc in include:
                 ret.append(inc)
 
-        func=utils.Object()
-        
-        #try:
-        #    sampled = self.sampled
-        #except AttributeError:
+        func=utils.Object() 
         sampled=utils.Object()
 
         if t==False:
-           self.t_plot = self.t_calc(calc=True) #add parameters
+           t_plot = self.t_calc(calc=True) #add parameters
         else:
-            self.t_plot=np.array([t])
+            t_plot=np.array([t])
+        
+
+        if i =='all':
+            i=range(1,4)
+        elif type(i)!=list:
+            i=[i]
+        if type(side)!=list:
+            side=[side]
+
+        for s in side:
+            setattr(sampled,s,utils.Object())
+
+
 
         for k in ret:
             if option=='both' or option=='function':
                 setattr(func,k,lambda i,t,side: getattr(self.mean_var(i,t,side,ret=[k],Nbins=Nbins,mode=mode),k))
             if option=='both' or option=='sampled':
-                if i =='all':
-                    i=range(1,4)
-                elif type(i)!=list:
-                    i=[i]
-                if type(side)!=list:
-                    side=[side]
-
                 for s in side:
-                    setattr(sampled,s,utils.Object())
-                    if t==False:
-                        A=[self.t_plot]
-                    else:
-                        A = [np.array(t)]
+                    A=[t_plot]
                     for i_sel in i:
-                        A.append(np.array([self.mean_var(i_sel,t,s,ret=[k],Nbins=Nbins,mode=mode) for t in self.t_plot]))
+                        A.append(np.array([self.mean_var(i_sel,t,s,ret=[k],Nbins=Nbins,mode=mode) for t in t_plot]))
 
                     B = [A,'ret='+k+', i='+str(i)+', mode='+str(mode)+', s='+str(side)]
+                    #print(getattr(sampled,s),k,B)
                     setattr(getattr(sampled,s),k,B)
-                    print(k) 
         #self.func = func
         #self.sampled = sampled
         return [func,sampled]

@@ -14,7 +14,7 @@ class AIM():
                 setattr(self,key,settings.__dict__[key])
 
             for key,value in kwargs.items():
-                print(key)
+                #print(key)
                 setattr(self,key,value)
                 setattr(self.aimset,key,value)
             #self.offset_tele = kwargs.pop('offset_tele','read')
