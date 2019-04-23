@@ -588,8 +588,6 @@ def rotate_tele_wavefront(data,aim,link,t,count_max=np.inf,lim=2e-16,scale=1):
     [i_left,i_right,link] = utils.i_slr(i)
     tdel = data.L_rl_func_tot(i_left,t)
     angles=[aim.tele_l_ang(i_left,t),aim.beam_l_ang(i_left,t),aim.tele_r_ang(i_right,t-tdel),aim.beam_r_ang(i_right,t-tdel)]
-    #print(angles)
-
 
     do=True
     count=0
