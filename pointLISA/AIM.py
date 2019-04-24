@@ -1,4 +1,5 @@
 from imports import *
+import output
 import numpy as np
 import os
 import yaml
@@ -104,28 +105,22 @@ class AIM():
         # 'center' means pointing it to te center of the receiving telescope aperture
         print('Telescope pointing strategy: '+option)
         if option=='center':
-            i_left = lambda i: utils.i_slr(i)[1]
-            i_right = lambda i: utils.i_slr(i)[2]
-
-            scale=1
-
-            delay_l = lambda i,t: self.get_aim_accuracy(i,t,'l',component='tele',option=option)[2]
-            delay_r = lambda i,t: self.get_aim_accuracy(i,t,'r',component='tele',option=option)[2]
-            ang_tele_extra_l = lambda i,t: self.get_aim_accuracy(i_left(i),t+delay_l(i,t),'r',component='tele',option=option)[0]*scale
-            ang_tele_extra_r = lambda i,t: self.get_aim_accuracy(i_right(i),t+delay_r(i,t),'l',component='tele',option=option)[0]*scale
-
-            tele_l = self.aim_old.tele_l_ang
-            tele_r = self.aim_old.tele_r_ang
-            ang_l = lambda i,t: tele_l(i,t)+ang_tele_extra_l(i,t)
-            ang_r = lambda i,t: tele_r(i,t)+ang_tele_extra_r(i,t)
-
+            ang_l = lambda i,t: output.tele_center_calc(self.aim0,i,t)[0][0]
+            ang_r = lambda i,t: output.tele_center_calc(self.aim0,utils.i_slr(i)[2],t)[0][1]
 
         elif option=='wavefront':
-            lim=1e-10
-            i_right = lambda i: utils.i_slr(i)[2]
+            ang_l = lambda i,t: output.tele_wavefront_calc(self.aim0,i,t,'angx_rec','iter',scale=1,lim=1e-12)[0][0]
+            ang_r = lambda i,t: output.tele_wavefront_calc(self.aim0,utils.i_slr(i)[2],t,'angx_rec','iter',scale=1,lim=1e-12)[0][1]
 
-            ang_l = lambda i,t: methods.rotate_tele_wavefront(self.data,self.aim0,utils.get_link(i,'l'),t,count_max=np.inf,lim=lim,scale=1)[0]
-            ang_r = lambda i,t: methods.rotate_tele_wavefront(self.data,self.aim0,utils.get_link(i,'r'),t+self.data.L_rl_func_tot(i_right(i),t),count_max=np.inf,lim=lim,scale=1)[2]
+            #tele_wavefront_calc(aim,i_send,t,para,method,scale=1,lim=1e-12,max_count=5,print_on=False)
+
+
+
+            #lim=1e-10
+            #i_right = lambda i: utils.i_slr(i)[2]
+
+            #ang_l = lambda i,t: methods.rotate_tele_wavefront(self.data,self.aim0,utils.get_link(i,'l'),t,count_max=np.inf,lim=lim,scale=1)[0]
+            #ang_r = lambda i,t: methods.rotate_tele_wavefront(self.data,self.aim0,utils.get_link(i,'r'),t+self.data.L_rl_func_tot(i_right(i),t),count_max=np.inf,lim=lim,scale=1)[2]
 
         self.tele_option = option
         return [ang_l,ang_r]
@@ -245,8 +240,10 @@ class AIM():
             ang_r = lambda i,t: methods.rotate_PAA_wavefront(self.data,self.aim_old,i,t,'r','yoff')
 
         elif option=='wavefront':
-            ang_l = lambda i,t: methods.rotate_PAA_wavefront(self.data,self.aim_old,i,t,'l','angy')
-            ang_r = lambda i,t: methods.rotate_PAA_wavefront(self.data,self.aim_old,i,t,'r','angy')
+            ang_l = lambda i,t: output.PAAM_wavefront_calc(self.aim0,i,t,'l')
+            ang_r = lambda i,t: output.PAAM_wavefront_calc(self.aim0,i,t,'r')
+            #ang_l = lambda i,t: methods.rotate_PAA_wavefront(self.data,self.aim_old,i,t,'l','angy')
+            #ang_r = lambda i,t: methods.rotate_PAA_wavefront(self.data,self.aim_old,i,t,'r','angy')
 
         self.PAAM_option = option
         return [ang_l,ang_r]
