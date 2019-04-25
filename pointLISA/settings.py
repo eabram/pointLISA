@@ -44,6 +44,7 @@ aimset.aim0=False
 aimset.option_tele='center'
 aimset.option_PAAM='center'
 aimset.offset_tele='read'
+aimset.tele_method_solve='iter'
 
 ### Limits/accuracies
 aimset.limits = utils.Object()

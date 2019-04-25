@@ -381,7 +381,26 @@ class OUTPUT():
                 #print(e)
                 self.add_attribute(e,pos)
         return pos
-    
+   
+    def get_angx_wf_send(self,pos):
+        check=False
+        while check==False:
+            try:
+
+                tele_end = LA.matmul(pos.coor_starttele,pos.coor_end[0])
+                R_vec_tele_send_x = pos.R_vec_tele_send
+                R_vec_tele_send_x[1] = 0
+                R_x_origin = LA.matmul(np.linalg.inv(pos.coor_startbeam),R_vec_tele_send_x)
+                R_x_rec = LA.matmul(pos.coor_end,-R_x_origin)
+                ret = np.sign(R_x_rec[2])*np.arctan(abs(R_x_rec[2]/R_x_rec[0]))
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
+
+
     def get_angy_wf_send(self,pos):
         check=False
         while check==False:
@@ -1011,6 +1030,9 @@ def tele_wavefront_calc(aim,i_send,t,para,method,scale=1,lim=1e-12,max_count=5,p
         while count<max_count:
             calc_send_old = calc_send
             calc_rec_old = calc_rec
+            tele_angle_l_old = tele_angle_l
+            tele_angle_r_old = tele_angle_r
+
             pos_send = values(aim,i_send,t_send,'l',mode='send',tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r)
             calc_rec = getattr(getattr(OUTPUT(aim),'get_'+para)(pos_send),para)
             tele_angle_r = tele_angle_r+scale*calc_rec
@@ -1032,7 +1054,7 @@ def tele_wavefront_calc(aim,i_send,t,para,method,scale=1,lim=1e-12,max_count=5,p
                 print(max(abs(calc_send),abs(calc_rec)),max(abs(calc_send),abs(calc_rec))>lim)
                 print('')
             
-            if calc_rec_old-lim<=calc_rec and calc_rec<=calc_rec_old+lim and calc_send_old-lim<=calc_send and calc_send<=calc_send_old+lim:
+            if tele_angle_l_old-lim<=tele_angle_l and tele_angle_l<=tele_angle_l_old+lim and tele_angle_r_old-lim<=tele_angle_r and tele_angle_l<=tele_angle_l_old+lim:
                 mode = 'Result is converged'
                 if print_on:
                     print(Mode)

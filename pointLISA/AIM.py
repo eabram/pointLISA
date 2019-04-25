@@ -109,8 +109,8 @@ class AIM():
             ang_r = lambda i,t: output.tele_center_calc(self.aim0,utils.i_slr(i)[2],t,lim=self.aimset.limits.xoff)[0][1]
 
         elif option=='wavefront':
-            ang_l = lambda i,t: output.tele_wavefront_calc(self.aim0,i,t,'angx_rec','iter',scale=1,lim=self.aimset.limits.angx)[0][0]
-            ang_r = lambda i,t: output.tele_wavefront_calc(self.aim0,utils.i_slr(i)[2],t,'angx_rec','iter',scale=1,lim=self.aimset.limits.angx)[0][1]
+            ang_l = lambda i,t: output.tele_wavefront_calc(self.aim0,i,t,'angx_wf_send',self.aimset.tele_method_solve,scale=1,lim=self.aimset.limits.angx)[0][0]
+            ang_r = lambda i,t: output.tele_wavefront_calc(self.aim0,utils.i_slr(i)[2],t,'angx_wf_send',self.aimset.tele_method_solve,scale=1,lim=self.aimset.limits.angx)[0][1]
 
             #tele_wavefront_calc(aim,i_send,t,para,method,scale=1,lim=1e-12,max_count=5,print_on=False)
 
@@ -155,22 +155,22 @@ class AIM():
                 [offset_l,offset_r] = tele_ang_extra
 
             self.offset =[offset_l,offset_r]
-            self.tele_l_ang = lambda i,t: np.radians(-30)+offset_l[str(i)]
-            self.tele_r_ang = lambda i,t: np.radians(30)+offset_r[str(i)]
+            self.tele_l_ang_func = lambda i,t: np.radians(-30)+offset_l[str(i)]
+            self.tele_r_ang_func = lambda i,t: np.radians(30)+offset_r[str(i)]
 
         elif method=='full_control':
             [self.tele_ang_l_fc,self.tele_ang_r_fc] = self.tele_control_ang_fc(option=option)
-            self.tele_l_ang = self.tele_ang_l_fc
-            self.tele_r_ang = self.tele_ang_r_fc
+            self.tele_l_ang_func = self.tele_ang_l_fc
+            self.tele_r_ang_func = self.tele_ang_r_fc
 
         elif 'min' in method:
             if 'spot'==method.split('_')[-1]:
-                self.tele_l_ang = lambda i,t: methods.spotsize_limit(self.data,self.aim0,i,t,'l',limit=-self.wfe.spotsize)
-                self.tele_r_ang = lambda i,t: methods.functions.spotsize_limit(self.data,self.aim0,i,t,'r',limit=-self.wfe.spotsize)
+                self.tele_l_ang_func = lambda i,t: methods.spotsize_limit(self.data,self.aim0,i,t,'l',limit=-self.wfe.spotsize)
+                self.tele_r_ang_func = lambda i,t: methods.functions.spotsize_limit(self.data,self.aim0,i,t,'r',limit=-self.wfe.spotsize)
         elif 'max' in method:
             if 'spot'==method.split('_')[-1]:
-                self.tele_l_ang = lambda i,t: methods.spotsize_limit(self.data,self.aim0,i,t,'l',limit=self.wfe.spotsize)
-                self.tele_r_ang = lambda i,t: methods.functions.spotsize_limit(self.data,self.aim0,i,t,'r',limit=self.wfe.spotsize)
+                self.tele_l_ang_func = lambda i,t: methods.spotsize_limit(self.data,self.aim0,i,t,'l',limit=self.wfe.spotsize)
+                self.tele_r_ang_func = lambda i,t: methods.functions.spotsize_limit(self.data,self.aim0,i,t,'r',limit=self.wfe.spotsize)
 
         elif 'SS' in method:
             ### Obtai full control
@@ -204,8 +204,8 @@ class AIM():
             #self.PAAM_r_ang_SS = lambda i,t: ret['PAAM'][str(i)]['r'](t)
 
 
-            self.tele_l_ang = self.tele_l_ang_SS
-            self.tele_r_ang = self.tele_r_ang_SS
+            self.tele_l_ang_func = self.tele_l_ang_SS
+            self.tele_r_ang_func = self.tele_r_ang_SS
 
         elif type(method)==list and method[0]=='Imported pointing':
             print(method[0])
@@ -229,7 +229,24 @@ class AIM():
         else:
             raise ValueError('Please select valid telescope pointing method')
 
-    
+        if self.sampled==True:
+            t_sample=self.data.t_all
+            tele_l_ang=[]
+            tele_r_ang=[]
+            for i in range(1,4):
+                tele_l_ang.append(methods.interpolate(t_sample,np.array([self.tele_l_ang_func(i,t) for t in t_sample])))
+                tele_r_ang.append(methods.interpolate(t_sample,np.array([self.tele_r_ang_func(i,t) for t in t_sample])))
+                print("Sampling and fitting telescope angles")
+            self.tele_l_ang_samp = lambda i,t: tele_l_ang[i-1](t)
+            self.tele_r_ang_samp = lambda i,t: tele_r_ang[i-1](t)
+            
+            self.tele_l_ang = self.tele_l_ang_samp
+            self.tele_r_ang = self.tele_r_ang_samp
+
+        else:
+            self.tele_l_ang = self.tele_l_ang_func
+            self.tele_r_ang = self.tele_r_ang_func
+
         return 0
 
     def PAAM_control_ang_fc(self,option='center'):
@@ -322,20 +339,32 @@ class AIM():
         for k,value in self.__dict__.items():
             if k not in not_copy:
                 setattr(self_new,k,value)
-        self_new.sampledd=True
+        self_new.sampled=True
         
         t_sample=self.data.t_all
         tele_l_ang=[]
         tele_r_ang=[]
         beam_l_ang=[]
         beam_r_ang=[]
+        try:
+            self.tele_l_ang_samp
+            tele_samp=True
+        except AttributeError:
+            tele_samp=False
+
         for i in range(1,4):
-            tele_l_ang.append(methods.interpolate(t_sample,np.array([self.tele_l_ang(i,t) for t in t_sample])))
-            tele_r_ang.append(methods.interpolate(t_sample,np.array([self.tele_r_ang(i,t) for t in t_sample])))
+            if tele_samp==False:
+                tele_l_ang.append(methods.interpolate(t_sample,np.array([self.tele_l_ang(i,t) for t in t_sample])))
+                tele_r_ang.append(methods.interpolate(t_sample,np.array([self.tele_r_ang(i,t) for t in t_sample])))
             beam_l_ang.append(methods.interpolate(t_sample,np.array([self.beam_l_ang(i,t) for t in t_sample])))
             beam_r_ang.append(methods.interpolate(t_sample,np.array([self.beam_r_ang(i,t) for t in t_sample])))
-        self_new.tele_l_ang = lambda i,t: tele_l_ang[i-1](t)
-        self_new.tele_r_ang = lambda i,t: tele_r_ang[i-1](t)
+        if tele_samp==False:
+           self_new.tele_l_ang = lambda i,t: tele_l_ang[i-1](t)
+           self_new.tele_r_ang = lambda i,t: tele_r_ang[i-1](t)
+        else:
+           self_new.tele_l_ang = self.tele_l_ang_samp
+           self_new.tele_r_ang = self.tele_r_ang_samp
+
         self_new.beam_l_ang = lambda i,t: beam_l_ang[i-1](t)
         self_new.beam_r_ang = lambda i,t: beam_r_ang[i-1](t)
 
