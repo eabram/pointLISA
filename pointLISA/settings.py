@@ -1,6 +1,7 @@
 import os
 import imports
 import utils
+import numpy as np
 
 filename = ''
 #read_max = 'all'
@@ -44,4 +45,11 @@ aimset.option_tele='center'
 aimset.option_PAAM='center'
 aimset.offset_tele='read'
 
-del os, imports, utils
+### Limits/accuracies
+aimset.limits = utils.Object()
+aimset.limits.xoff = np.float64(1.0e-9) #tele center
+aimset.limits.yoff = np.float64(1.0e-9) #PAAM center
+aimset.limits.angx = np.float64(1.0e-9) #tele wavefront
+aimset.limits.angy = np.float64(1.0e-9) #PAAM wavefront
+
+del os, imports, utils, np

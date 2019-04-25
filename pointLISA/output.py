@@ -918,7 +918,8 @@ def tele_center_calc(aim,i,t,scale=1,lim=1e-12,max_count=5,print_on=False):
         if count>=max_count:
             check=True
             mode='Maximum counts'
-        if tele_l_old==tele_l and tele_r_old==tele_r:
+        
+        if tele_l_old-lim<=tele_l and tele_l<=tele_l_old+lim and tele_r_old-lim<=tele_r and tele_r<=tele_r_old+lim:
             chek=True
             mode='Converged'
         if abs(angx_send)<=lim and abs(angx_rec)<=lim:
@@ -929,14 +930,55 @@ def tele_center_calc(aim,i,t,scale=1,lim=1e-12,max_count=5,print_on=False):
 
     return [[tele_l,tele_r], mode]
 
-def PAAM_wavefront_calc(aim,i,t,side):
+def PAAM_center_calc(aim,i,t,scale=1,lim=1e-12,max_count=5,print_on=False,tele_l=False,tele_r=False):
+    [i_self,i_left,i_right] = utils.i_slr(i)
+
+    beam_l=aim.beam_l_ang(i_self,t)
+    beam_r=aim.beam_r_ang(i_left,t)
+    if tele_l==False:
+        tele_l = 0
+    if tele_r==False:
+        tele_r = 0
+
+    count=0
+    check=False
+    while check==False:
+        beam_l_old = beam_l
+        beam_r_old = beam_r
+        pos_send = values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_l,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=['off'])
+        angy_send = np.sign(pos_send.yoff)*abs(np.arctan(pos_send.yoff/pos_send.zoff))
+        beam_l = beam_l-angy_send
+
+        pos_rec = values(aim,i_left,t,'r',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=['off'])
+        angy_rec = np.sign(pos_rec.yoff)*abs(np.arctan(pos_rec.yoff/pos_rec.zoff))
+        beam_r = beam_r-angy_rec
+
+        count=count+1
+
+        if count>=max_count:
+            check=True
+            mode='Maximum counts'
+        if beam_l_old-lim<=beam_l and beam_l<=beam_l_old+lim and beam_r_old-lim<=beam_r and beam_r<=beam_r_old+lim:
+            chek=True
+            mode='Converged'
+        if abs(angy_send)<=lim and abs(angy_rec)<=lim:
+            chek=True
+            mode='Converged'
+        if print_on:
+            print(beam_l,beam_r)
+
+    return [[beam_l,beam_r], mode]
+
+
+
+def PAAM_wavefront_calc(aim,i,t,side,lim=1e-12):
     if side=='l':
         angy = lambda beam: values(aim,i,t,'l',mode='send',beam_angle_l=beam,ret=['angy_wf_send']).angy_wf_send
     elif side=='r':
         angy = lambda beam: values(aim,i,t,'r',mode='send',beam_angle_r=beam,ret=['angy_wf_send']).angy_wf_send
     
     try:
-        ret = scipy.optimize.brentq(angy,-1e-5,1e-5)
+        ret = scipy.optimize.brentq(angy,-1e-5,1e-5,xtol=lim)
     except ValueError,e:
         if str(e)=='f(a) and f(b) must have different signs':
             ret=np.nan
@@ -990,7 +1032,7 @@ def tele_wavefront_calc(aim,i_send,t,para,method,scale=1,lim=1e-12,max_count=5,p
                 print(max(abs(calc_send),abs(calc_rec)),max(abs(calc_send),abs(calc_rec))>lim)
                 print('')
             
-            if calc_rec==calc_rec_old and calc_send==calc_send_old:
+            if calc_rec_old-lim<=calc_rec and calc_rec<=calc_rec_old+lim and calc_send_old-lim<=calc_send and calc_send<=calc_send_old+lim:
                 mode = 'Result is converged'
                 if print_on:
                     print(Mode)
@@ -1014,10 +1056,10 @@ def tele_wavefront_calc(aim,i_send,t,para,method,scale=1,lim=1e-12,max_count=5,p
             val_rec_old = tele_angle_r
             pos_send = lambda tele_l: values(aim,i_send,t_send,'l',mode='send',tele_angle_l=tele_l,tele_angle_r=tele_angle_r)
             calc_send = lambda tele_l: getattr(getattr(OUTPUT(aim),'get_'+para)(pos_send(tele_l)),para)
-            tele_angle_l = scipy.optimize.brentq(calc_send,np.radians(-30)-5,np.radians(-30)+5)
+            tele_angle_l = scipy.optimize.brentq(calc_send,np.radians(-30)-5,np.radians(-30)+5,xtol=lim)
             pos_rec = lambda tele_r: values(aim,i_rec,t_rec,'r',mode='send',tele_angle_l=tele_angle_l,tele_angle_r=tele_r)
             calc_rec =lambda tele_r:  getattr(getattr(OUTPUT(aim),'get_'+para)(pos_rec(tele_r)),para)
-            tele_angle_r = scipy.optimize.brentq(calc_rec,np.radians(30)-5,np.radians(30)+5)
+            tele_angle_r = scipy.optimize.brentq(calc_rec,np.radians(30)-5,np.radians(30)+i,xtol=lim)
              
             lim_val=max(abs(calc_send(tele_angle_l)),abs(calc_rec(tele_angle_r)))
             

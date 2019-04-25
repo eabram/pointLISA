@@ -105,12 +105,12 @@ class AIM():
         # 'center' means pointing it to te center of the receiving telescope aperture
         print('Telescope pointing strategy: '+option)
         if option=='center':
-            ang_l = lambda i,t: output.tele_center_calc(self.aim0,i,t)[0][0]
-            ang_r = lambda i,t: output.tele_center_calc(self.aim0,utils.i_slr(i)[2],t)[0][1]
+            ang_l = lambda i,t: output.tele_center_calc(self.aim0,i,t,lim=self.aimset.limits.xoff)[0][0]
+            ang_r = lambda i,t: output.tele_center_calc(self.aim0,utils.i_slr(i)[2],t,lim=self.aimset.limits.xoff)[0][1]
 
         elif option=='wavefront':
-            ang_l = lambda i,t: output.tele_wavefront_calc(self.aim0,i,t,'angx_rec','iter',scale=1,lim=1e-12)[0][0]
-            ang_r = lambda i,t: output.tele_wavefront_calc(self.aim0,utils.i_slr(i)[2],t,'angx_rec','iter',scale=1,lim=1e-12)[0][1]
+            ang_l = lambda i,t: output.tele_wavefront_calc(self.aim0,i,t,'angx_rec','iter',scale=1,lim=self.aimset.limits.angx)[0][0]
+            ang_r = lambda i,t: output.tele_wavefront_calc(self.aim0,utils.i_slr(i)[2],t,'angx_rec','iter',scale=1,lim=self.aimset.limits.angx)[0][1]
 
             #tele_wavefront_calc(aim,i_send,t,para,method,scale=1,lim=1e-12,max_count=5,print_on=False)
 
@@ -236,12 +236,16 @@ class AIM():
         print('PAAM pointing strategy: '+option)
 
         if option=='center':
-            ang_l = lambda i,t: methods.rotate_PAA_wavefront(self.data,self.aim_old,i,t,'l','yoff')
-            ang_r = lambda i,t: methods.rotate_PAA_wavefront(self.data,self.aim_old,i,t,'r','yoff')
+            ang_l = lambda i,t: output.PAAM_center_calc(self.aim0,i,t,tele_l=self.tele_l_ang(i,t),tele_r=self.tele_r_ang(utils.i_slr(i)[1],t),lim=self.aimset.limits.yoff)[0][0]
+            ang_r = lambda i,t: output.PAAM_center_calc(self.aim0,utils.i_slr(i)[2],t,tele_l=self.tele_l_ang(utils.i_slr(i)[2],t),tele_r=self.tele_r_ang(i,t),lim=self.aimset.limits.yoff)[0][1]
+            
+            #ang_l = lambda i,t: output.PAAM_center_calc(self.aim0,i,t,lim=self.aimset.limits.yoff)[0][0]
+            #ang_r = lambda i,t: output.PAAM_center_calc(self.aim0,utils.i_slr(i)[2],t,lim=self.aimset.limits.yoff)[0][1]
+
 
         elif option=='wavefront':
-            ang_l = lambda i,t: output.PAAM_wavefront_calc(self.aim0,i,t,'l')
-            ang_r = lambda i,t: output.PAAM_wavefront_calc(self.aim0,i,t,'r')
+            ang_l = lambda i,t: output.PAAM_wavefront_calc(self.aim0,i,t,'l',lim=self.aimset.limits.angy)
+            ang_r = lambda i,t: output.PAAM_wavefront_calc(self.aim0,i,t,'r',lim=self.aimset.limits.angy)
             #ang_l = lambda i,t: methods.rotate_PAA_wavefront(self.data,self.aim_old,i,t,'l','angy')
             #ang_r = lambda i,t: methods.rotate_PAA_wavefront(self.data,self.aim_old,i,t,'r','angy')
 
