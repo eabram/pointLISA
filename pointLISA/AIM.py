@@ -124,6 +124,7 @@ class AIM():
             max_count=5
             ang_l = lambda i,t: output.tele_wavefront_calc(self.aim0,i,t,self.aimset.tele_method_solve,lim=self.aimset.limits.angx,scale=scale,max_count=max_count)[0][0]
             tdel=lambda i,t: self.data.L_rr_func_tot(i,t)
+        
             ang_r = lambda i,t: output.tele_wavefront_calc(self.aim0,utils.i_slr(i)[2],t-tdel(i,t),self.aimset.tele_method_solve,lim=self.aimset.limits.angx,scale=scale,max_count=max_count)[0][1]
 
             #tdel=lambda i,t: self.data.L_sl_func_tot(i,t)
