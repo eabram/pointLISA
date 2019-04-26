@@ -51,6 +51,6 @@ aimset.limits = utils.Object()
 aimset.limits.xoff = np.float64(1.0e-9) #tele center
 aimset.limits.yoff = np.float64(1.0e-9) #PAAM center
 aimset.limits.angx = np.float64(1.0e-9) #tele wavefront
-aimset.limits.angy = np.float64(1.0e-9) #PAAM wavefront
+aimset.limits.angy = np.float64(1.0e-12) #PAAM wavefront
 
 del os, imports, utils, np

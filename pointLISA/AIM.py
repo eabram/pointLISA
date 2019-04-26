@@ -109,8 +109,25 @@ class AIM():
             ang_r = lambda i,t: output.tele_center_calc(self.aim0,utils.i_slr(i)[2],t,lim=self.aimset.limits.xoff)[0][1]
 
         elif option=='wavefront':
-            ang_l = lambda i,t: output.tele_wavefront_calc(self.aim0,i,t,'angx_wf_send',self.aimset.tele_method_solve,scale=1,lim=self.aimset.limits.angx)[0][0]
-            ang_r = lambda i,t: output.tele_wavefront_calc(self.aim0,utils.i_slr(i)[2],t,'angx_wf_send',self.aimset.tele_method_solve,scale=1,lim=self.aimset.limits.angx)[0][1]
+            #ang_l_calc=[0,0,0]
+            #ang_r_calc=[0,0,0]
+            #for i in range(1,4):
+            #    ang_l_calc[i-1] = lambda t: output.tele_wavefront_calc(self.aim0,i,t,'angx_wf_send',self.aimset.tele_method_solve,scale=1,lim=self.aimset.limits.angx)[0][0]
+            #    j=i+1
+            #    if j==4:
+            #        j=1
+            #    ang_r_calc[j-1] = lambda t: output.tele_wavefront_calc(self.aim0,i,t,'angx_wf_send',self.aimset.tele_method_solve,scale=1,lim=self.aimset.limits.angx)[0][1]
+            #
+            #ang_l = utils.func_over_sc(ang_l_calc)
+            #ang_r = utils.func_over_sc(ang_r_calc)
+            scale=1
+            max_count=5
+            ang_l = lambda i,t: output.tele_wavefront_calc(self.aim0,i,t,self.aimset.tele_method_solve,lim=self.aimset.limits.angx,scale=scale,max_count=max_count)[0][0]
+            tdel=lambda i,t: self.data.L_rr_func_tot(i,t)
+            ang_r = lambda i,t: output.tele_wavefront_calc(self.aim0,utils.i_slr(i)[2],t-tdel(i,t),self.aimset.tele_method_solve,lim=self.aimset.limits.angx,scale=scale,max_count=max_count)[0][1]
+
+            #tdel=lambda i,t: self.data.L_sl_func_tot(i,t)
+            #ang_r = lambda i,t: output.tele_wavefront_calc(self.aim0,utils.i_slr(i)[2],t+tdel(i,t),'angx_wf_send',self.aimset.tele_method_solve,scale=1,lim=self.aimset.limits.angx)[0][1]
 
             #tele_wavefront_calc(aim,i_send,t,para,method,scale=1,lim=1e-12,max_count=5,print_on=False)
 
@@ -233,10 +250,10 @@ class AIM():
             t_sample=self.data.t_all
             tele_l_ang=[]
             tele_r_ang=[]
+            print("Sampling and fitting telescope angles")
             for i in range(1,4):
                 tele_l_ang.append(methods.interpolate(t_sample,np.array([self.tele_l_ang_func(i,t) for t in t_sample])))
                 tele_r_ang.append(methods.interpolate(t_sample,np.array([self.tele_r_ang_func(i,t) for t in t_sample])))
-                print("Sampling and fitting telescope angles")
             self.tele_l_ang_samp = lambda i,t: tele_l_ang[i-1](t)
             self.tele_r_ang_samp = lambda i,t: tele_r_ang[i-1](t)
             
@@ -261,8 +278,8 @@ class AIM():
 
 
         elif option=='wavefront':
-            ang_l = lambda i,t: output.PAAM_wavefront_calc(self.aim0,i,t,'l',lim=self.aimset.limits.angy)
-            ang_r = lambda i,t: output.PAAM_wavefront_calc(self.aim0,i,t,'r',lim=self.aimset.limits.angy)
+            ang_l = lambda i,t: output.PAAM_wavefront_calc(self,i,t,'l',lim=self.aimset.limits.angy)
+            ang_r = lambda i,t: output.PAAM_wavefront_calc(self,i,t,'r',lim=self.aimset.limits.angy)
             #ang_l = lambda i,t: methods.rotate_PAA_wavefront(self.data,self.aim_old,i,t,'l','angy')
             #ang_r = lambda i,t: methods.rotate_PAA_wavefront(self.data,self.aim_old,i,t,'r','angy')
 
