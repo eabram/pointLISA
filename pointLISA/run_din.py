@@ -1,6 +1,6 @@
 from imports import *
 
-def get_pointing(data,**kwargs):
+def get_pointing(data,filename=False,**kwargs):
     aimset = settings.aimset
     for key,value in kwargs.items():
         setattr(aimset,key,value)
@@ -40,7 +40,7 @@ def get_pointing(data,**kwargs):
         PAAM_r_ang0=aim0.beam_r_ang
     angles0 = [tele_l_ang0,PAAM_l_ang0,tele_r_ang0,PAAM_r_ang0]
 
-    aim = AIM.AIM(data=data,init=aimset.init,sampled=aimset.sampled,angles0=angles0,angles_old=angles_old,offset_tele=aimset.offset_tele,settings=aimset)
+    aim = AIM.AIM(data=data,init=aimset.init,sampled=aimset.sampled,angles0=angles0,angles_old=angles_old,offset_tele=aimset.offset_tele,settings=aimset,filename=filename)
     aim.tele_aim(method=aim.aimset.tele_control,tele_ang_extra=aim.aimset.tele_ang_extra,option=aim.aimset.option_tele)
     out = aim.PAAM_aim(method=aim.aimset.PAAM_control,PAAM_ang_extra=aim.aimset.PAAM_ang_extra,option=aim.aimset.option_PAAM)
     

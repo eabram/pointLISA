@@ -7,20 +7,29 @@ import yaml
 
 
 class AIM():
-    def __init__(self,data=False,settings=utils.Object(),**kwargs):
+    def __init__(self,data=False,settings=utils.Object(),filename=False,**kwargs):
         if data!=None:
             self.data = data
             self.aimset=settings
             for key in settings.__dict__.keys():
                 setattr(self,key,settings.__dict__[key])
-
+            
+            if filename!=False:
+                self.aimset = read_write.read_options(filename)
+            
             for key,value in kwargs.items():
                 #print(key)
-                setattr(self,key,value)
-                setattr(self.aimset,key,value)
-            #self.offset_tele = kwargs.pop('offset_tele','read')
-            #self.aimset=settings.aimset
-            
+                if filename!=False:
+                    try:
+                        getattr(self.aimset,key)
+                    except:
+                        setattr(self,key,value)
+                        setattr(self.aimset,key,value)
+                else:
+                        setattr(self,key,value)
+                        setattr(self.aimset,key,value)
+
+
             if data!=False:
                 print('Start calculating telescope and PAAM aim')
                 self.get_offset_inplane(self.offset_tele)
@@ -122,10 +131,12 @@ class AIM():
             #ang_r = utils.func_over_sc(ang_r_calc)
             scale=1
             max_count=5
-            ang_l = lambda i,t: output.tele_wavefront_calc(self.aim0,i,t,self.aimset.tele_method_solve,lim=self.aimset.limits.angx,scale=scale,max_count=max_count)[0][0]
-            tdel=lambda i,t: self.data.L_rr_func_tot(i,t)
+            ang_l = lambda i,t: output.get_tele_wavefront(self,i,t,'l',self.aimset.tele_method_solve,scale=scale,lim=self.aimset.limits.angx,max_count=max_count)
+            ang_r = lambda i,t: output.get_tele_wavefront(self,i,t,'r',self.aimset.tele_method_solve,scale=scale,lim=self.aimset.limits.angx,max_count=max_count)
+            #ang_l = lambda i,t: output.tele_wavefront_calc(self.aim0,i,t,self.aimset.tele_method_solve,lim=self.aimset.limits.angx,scale=scale,max_count=max_count)[0][0]
+            #tdel=lambda i,t: self.data.L_sl_func_tot(utils.i_slr(i)[2],t)
         
-            ang_r = lambda i,t: output.tele_wavefront_calc(self.aim0,utils.i_slr(i)[2],t-tdel(i,t),self.aimset.tele_method_solve,lim=self.aimset.limits.angx,scale=scale,max_count=max_count)[0][1]
+            #ang_r = lambda i,t: output.tele_wavefront_calc(self.aim0,utils.i_slr(i)[2],t+tdel(i,t),self.aimset.tele_method_solve,lim=self.aimset.limits.angx,scale=scale,max_count=max_count)[0][1]
 
             #tdel=lambda i,t: self.data.L_sl_func_tot(i,t)
             #ang_r = lambda i,t: output.tele_wavefront_calc(self.aim0,utils.i_slr(i)[2],t+tdel(i,t),'angx_wf_send',self.aimset.tele_method_solve,scale=1,lim=self.aimset.limits.angx)[0][1]
@@ -248,13 +259,17 @@ class AIM():
             raise ValueError('Please select valid telescope pointing method')
 
         if self.sampled==True:
-            t_sample=self.data.t_all
+            try:
+                self.t_sample
+            except AttributeError:
+                self.t_sample = methods.get_t_sample(self,speed=self.aimset.sample_speed)
+            
             tele_l_ang=[]
             tele_r_ang=[]
             print("Sampling and fitting telescope angles")
             for i in range(1,4):
-                tele_l_ang.append(methods.interpolate(t_sample,np.array([self.tele_l_ang_func(i,t) for t in t_sample])))
-                tele_r_ang.append(methods.interpolate(t_sample,np.array([self.tele_r_ang_func(i,t) for t in t_sample])))
+                tele_l_ang.append(methods.interpolate(self.t_sample['l'][i-1],np.array([self.tele_l_ang_func(i,t) for t in self.t_sample['l'][i-1]])))
+                tele_r_ang.append(methods.interpolate(self.t_sample['r'][i-1],np.array([self.tele_r_ang_func(i,t) for t in self.t_sample['r'][i-1]])))
             self.tele_l_ang_samp = lambda i,t: tele_l_ang[i-1](t)
             self.tele_r_ang_samp = lambda i,t: tele_r_ang[i-1](t)
             
@@ -359,7 +374,11 @@ class AIM():
                 setattr(self_new,k,value)
         self_new.sampled=True
         
-        t_sample=self.data.t_all
+        try:
+            self.t_sample
+        except AttributeError:
+            self.t_sample = methods.get_t_sample(self,speed=self.aimset.sample_speed)
+
         tele_l_ang=[]
         tele_r_ang=[]
         beam_l_ang=[]
@@ -372,10 +391,10 @@ class AIM():
 
         for i in range(1,4):
             if tele_samp==False:
-                tele_l_ang.append(methods.interpolate(t_sample,np.array([self.tele_l_ang(i,t) for t in t_sample])))
-                tele_r_ang.append(methods.interpolate(t_sample,np.array([self.tele_r_ang(i,t) for t in t_sample])))
-            beam_l_ang.append(methods.interpolate(t_sample,np.array([self.beam_l_ang(i,t) for t in t_sample])))
-            beam_r_ang.append(methods.interpolate(t_sample,np.array([self.beam_r_ang(i,t) for t in t_sample])))
+                tele_l_ang.append(methods.interpolate(self.t_sample['l'][i-1],np.array([self.tele_l_ang(i,t) for t in self.t_sample['l'][i-1]])))
+                tele_r_ang.append(methods.interpolate(self.t_sample['r'][i-1],np.array([self.tele_r_ang(i,t) for t in self.t_sample['l'][i-1]])))
+            beam_l_ang.append(methods.interpolate(self.t_sample['l'][i-1],np.array([self.beam_l_ang(i,t) for t in self.t_sample['l'][i-1]])))
+            beam_r_ang.append(methods.interpolate(self.t_sample['r'][i-1],np.array([self.beam_r_ang(i,t) for t in self.t_sample['r'][i-1]])))
         if tele_samp==False:
            self_new.tele_l_ang = lambda i,t: tele_l_ang[i-1](t)
            self_new.tele_r_ang = lambda i,t: tele_r_ang[i-1](t)

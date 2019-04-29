@@ -12,9 +12,11 @@ from .methods import *
 from .AIM import AIM
 from .run_din import *
 from .output import OUTPUT
+from .read_write import *
 #import .LA
 import settings
 import parameters
+import read_write
 import LA
 import run_din
 import os

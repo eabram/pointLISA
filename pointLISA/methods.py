@@ -997,3 +997,47 @@ def get_SS_func(x,y,x_check):
     val = y[len(A)-1]
     return np.float64(val)
 
+def t_sample(data,i,s,speed=1):
+    if 'AIM' in str(data):
+        data=data.data
+    elif 'STAT' in str(data):
+        pass
+    else:
+        raise(ValueError)
+    
+
+    t0 = data.t_all
+    if speed==0:
+        if s=='l':
+            t_pref = np.array([t-data.L_rl_func_tot(i,t) for t in t0])
+            t_next = np.array([t+data.L_sl_func_tot(i,t) for t in t0])
+        elif s=='r':
+            t_pref = np.array([t-data.L_rr_func_tot(i,t) for t in t0])
+            t_next = np.array([t+data.L_sr_func_tot(i,t) for t in t0])
+        
+        t_sampled = np.concatenate((t0,t_pref))
+        t_sampled = np.concatenate((t_sampled,t_next))
+    elif speed==1:
+        t_sampled = t0
+    
+    return np.sort(t_sampled)
+
+def get_t_sample(data,speed=0):
+    t_l=[]
+    t_r=[]
+    t_all={}
+    for i in range(1,4):
+        t_l.append(t_sample(data,i,'l',speed=speed))
+        t_r.append(t_sample(data,i,'r',speed=speed))
+    
+    t_all['l']= t_l
+    t_all['r']= t_r
+
+    return t_all
+
+
+
+
+
+
+

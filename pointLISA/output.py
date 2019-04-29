@@ -687,6 +687,9 @@ class OUTPUT():
 
         for s in side:
             setattr(sampled,s,utils.Object())
+            for i_sel in i:
+                setattr(getattr(sampled,s),'i'+str(i_sel),utils.Object())
+
 
 
 
@@ -695,13 +698,13 @@ class OUTPUT():
                 setattr(func,k,lambda i,t,side: getattr(self.mean_var(i,t,side,ret=[k],Nbins=Nbins,mode=mode),k))
             if option=='both' or option=='sampled':
                 for s in side:
-                    A=[t_plot]
                     for i_sel in i:
+                        A=[t_plot]
                         A.append(np.array([self.mean_var(i_sel,t,s,ret=[k],Nbins=Nbins,mode=mode) for t in t_plot]))
 
-                    B = [A,'ret='+k+', i='+str(i)+', mode='+str(mode)+', s='+str(side)]
-                    #print(getattr(sampled,s),k,B)
-                    setattr(getattr(sampled,s),k,B)
+                        B = [A,'value='+k+', mode='+str(mode)]
+                        #print(getattr(sampled,s),k,B)
+                        setattr(getattr(getattr(sampled,s),'i'+str(i_sel)),k,B)
         #self.func = func
         #self.sampled = sampled
         return [func,sampled]
@@ -953,6 +956,8 @@ def tele_wavefront_calc(aim,i_l,t,method,scale=1,lim=1e-12,max_count=20,print_on
     lim_val=100
 
     para = 'angx_wf_send'
+    
+    tdel = aim.data.L_sl_func_tot(i_l,t)
 
     if method=='iter':
         while count<max_count:
@@ -964,7 +969,7 @@ def tele_wavefront_calc(aim,i_l,t,method,scale=1,lim=1e-12,max_count=20,print_on
             calc_l = getattr(getattr(OUTPUT(aim),'get_'+para)(pos_l),para)
             tele_angle_r = tele_angle_r-scale*calc_l
 
-            pos_r = values(aim,i_r,t_r,'r',mode='send',tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r)
+            pos_r = values(aim,i_r,t_r+tdel,'r',mode='send',tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r)
             calc_r = getattr(getattr(OUTPUT(aim),'get_'+para)(pos_r),para)
             tele_angle_l = tele_angle_l-scale*calc_r
 
@@ -991,6 +996,29 @@ def tele_wavefront_calc(aim,i_l,t,method,scale=1,lim=1e-12,max_count=20,print_on
                 break
     return [[tele_angle_l,tele_angle_r],mode]
 
+def get_tele_wavefront(aim,i,t,side,method,scale=1,lim=1e-12,max_count=20,print_on=False):
+    
+    if side=='l':
+        i_l = i
+        tdel=0
+    elif side=='r':
+        i_l = utils.i_slr(i)[2]
+        i_r = i
+        tdel = aim.data.L_rr_func_tot(i_r,t)
+
+    ang = tele_wavefront_calc(aim.aim0,i_l,t-tdel,aim.aimset.tele_method_solve,lim=aim.aimset.limits.angx,scale=scale,max_count=max_count,print_on=print_on)
+
+    if side=='l':
+        pos = values(aim.aim0,i_l,t,'l',ksi=[0,0],mode='send',tele_angle_l=ang[0][0],tele_angle_r=ang[0][1],ret=['angx_wf_send']).angx_wf_send
+        ret=ang[0][0]
+    elif side=='r':
+        pos = values(aim.aim0,i_r,t,'r',ksi=[0,0],mode='send',tele_angle_l=ang[0][0],tele_angle_r=ang[0][1],ret=['angx_wf_send']).angx_wf_send
+        ret=ang[0][1]
+    
+    if print_on:
+        print(ret,pos)
+
+    return ret
 
 
 
