@@ -50,8 +50,6 @@ def write(inp,aimset,title='',direct='',extr='',opt_date=True,opt_time=True,time
         title=extra_title+'_'+title+'.txt'
     writefile = open(direct+'/'+title,'w')
 
-    #if len(inp)==1:
-    #    inp=[inp]
     writefile.write("BEGIN OPTIONS"+'\n')
     for setting in aimset.__dict__.keys():
         val = aimset.__dict__[setting]
@@ -69,6 +67,7 @@ def write(inp,aimset,title='',direct='',extr='',opt_date=True,opt_time=True,time
     for side in inp.__dict__.keys():
         for i in getattr(inp,side).__dict__.keys():
             for m in getattr(getattr(inp,side),i).__dict__.keys():
+                writefile.write('BEGIN\n')
                 outp = getattr(getattr(getattr(inp,side),i),m)
                 #writefile.write("Value:: "+str(m)+'\n')
                 writefile.write("SC:: "+str(i[-1])+'\n')
@@ -79,7 +78,13 @@ def write(inp,aimset,title='',direct='',extr='',opt_date=True,opt_time=True,time
                     opt_split = opt.split('=')
                     writefile.write(opt_split[0]+':: '+opt_split[-1]+'\n')
                 for j in range(0,len(outp[0])):
-                    writefile.write(str(outp[0][j])+'\n')
+                    values = outp[0][j]
+                    values_str = '['
+                    for v in values:
+                        values_str = values_str+str(v)+','
+                    values_str = values_str[0:-1] +']'
+                    writefile.write(values_str+'\n')
+                writefile.write('END\n')
                 writefile.write('\n')
                             
     writefile.close()
@@ -112,3 +117,69 @@ def read_options(filename):
 
     return aimset
 
+def read_output(filename,ret=utils.Object()):
+    if ret==False:
+        ret = utils.Object()
+
+    readfile = open(filename,'r')
+    read_on=False
+
+    Y = utils.Object()
+    for line in readfile:
+        #print(line)
+        if 'END\n'==line:
+            R[R['value']][1] = 'value='+R['value']+', mode='+R['mode']
+            try:
+                getattr(Y,R['Side'])
+            except:
+                setattr(Y,R['Side'],utils.Object())
+                #getattr(Y,R['Side'])
+            
+            try:
+                getattr(getattr(Y,R['Side']),'i'+R['SC'])
+            except:
+                setattr(getattr(Y,R['Side']),'i'+R['SC'],utils.Object())
+            
+        
+            setattr(getattr(getattr(Y,R['Side']),'i'+R['SC']),R['value'],R[R['value']])
+            
+            #setattr(getattr(getattr(Y,R['Side']),'i'+R['SC']),[R['value']],R[R['value']])
+            read_on=False
+        elif read_on:
+            if ':: ' in line:
+                [key, value] = line.split('\n')[0].split(':: ')
+                R[key] = value
+            else:
+                value = line.split('\n')[0]
+                value = value[1:-1]
+                values=[]
+                for v in value.split(','):
+                    try:
+                        values.append(np.float64(v))
+                    except:
+                        print(line)
+                values = np.array(values)
+                try:
+                    R[R['value']]
+                except:
+                    R[R['value']] = [[],0]
+                R[R['value']][0].append(values)
+                
+        elif 'BEGIN\n'==line:
+            read_on=True
+            R={}
+    options = read_options(filename)
+    setattr(Y,'options',options)
+
+    point_options = options.tele_control+'_'+options.PAAM_control+'__'+options.option_tele+'_'+options.option_PAAM
+
+    point_settings = options.tele_method_solve+'_'+options.PAAM_method_solve+'__'+options.optimize_PAAM+'_'+str(options.optimize_PAAM_margin)
+
+    try:
+        getattr(ret,point_options)
+    except:
+        setattr(ret,point_options,utils.Object())
+
+    setattr(getattr(ret,point_options),point_settings,Y)
+
+    return ret,point_options,point_settings

@@ -668,7 +668,7 @@ class OUTPUT():
         else:
             for inc in include:
                 ret.append(inc)
-
+        
         func=utils.Object() 
         sampled=utils.Object()
 
@@ -838,9 +838,14 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
 
     for r in ret:
         if r not in positions.__dict__.keys():
-            positions_new = getattr(outp,'get_'+r)(positions)
-            del positions
-            positions = positions_new
+            try:
+                positions_new = getattr(outp,'get_'+r)(positions)
+                del positions
+                positions = positions_new
+            except AttributeError:
+                setattr(positions,r,getattr(aim,r)(i,t))
+                #print(getattr(aim,r)(i,t))
+                #print(positions)
     
     return positions
 
@@ -880,42 +885,50 @@ def tele_center_calc(aim,i,t,scale=1,lim=1e-12,max_count=5,print_on=False):
 
     return [[tele_l,tele_r], mode]
 
-def PAAM_center_calc(aim,i,t,scale=1,lim=1e-12,max_count=5,print_on=False,tele_l=False,tele_r=False):
+def PAAM_center_calc(aim,i,t,para='yoff',scale=1,lim=1e-12,max_count=5,print_on=False,tele_l=False,tele_r=False,value=0,method='iter',margin=0.01):
     [i_self,i_left,i_right] = utils.i_slr(i)
 
     beam_l=aim.beam_l_ang(i_self,t)
     beam_r=aim.beam_r_ang(i_left,t)
     if tele_l==False:
-        tele_l = 0
+        tele_l = np.radians(np.float64(-30.0))
     if tele_r==False:
-        tele_r = 0
+        tele_r = np.radians(np.float64(30.0))
+    
+    if method=='iter': 
+        count=0
+        check=False
+        while check==False:
+            beam_l_old = beam_l
+            beam_r_old = beam_r
+            pos_send = values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_l,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=['off'])
+            angy_send = np.sign(pos_send.yoff)*abs(np.arctan(pos_send.yoff/pos_send.zoff))
+            beam_l = beam_l-angy_send
 
-    count=0
-    check=False
-    while check==False:
-        beam_l_old = beam_l
-        beam_r_old = beam_r
-        pos_send = values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_l,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=['off'])
-        angy_send = np.sign(pos_send.yoff)*abs(np.arctan(pos_send.yoff/pos_send.zoff))
-        beam_l = beam_l-angy_send
+            pos_rec = values(aim,i_left,t,'r',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=['off'])
+            angy_rec = np.sign(pos_rec.yoff)*abs(np.arctan(pos_rec.yoff/pos_rec.zoff))
+            beam_r = beam_r-angy_rec
 
-        pos_rec = values(aim,i_left,t,'r',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=['off'])
-        angy_rec = np.sign(pos_rec.yoff)*abs(np.arctan(pos_rec.yoff/pos_rec.zoff))
-        beam_r = beam_r-angy_rec
+            count=count+1
 
-        count=count+1
+            if count>=max_count:
+                check=True
+                mode='Maximum counts'
+            if beam_l_old-lim<=beam_l and beam_l<=beam_l_old+lim and beam_r_old-lim<=beam_r and beam_r<=beam_r_old+lim:
+                chek=True
+                mode='Converged'
+            if abs(angy_send)<=lim and abs(angy_rec)<=lim:
+                chek=True
+                mode='Converged'
+            if print_on:
+                print(beam_l,beam_r)
 
-        if count>=max_count:
-            check=True
-            mode='Maximum counts'
-        if beam_l_old-lim<=beam_l and beam_l<=beam_l_old+lim and beam_r_old-lim<=beam_r and beam_r<=beam_r_old+lim:
-            chek=True
-            mode='Converged'
-        if abs(angy_send)<=lim and abs(angy_rec)<=lim:
-            chek=True
-            mode='Converged'
-        if print_on:
-            print(beam_l,beam_r)
+    elif method=='solve':
+        solve_l = lambda beam_l_solve: getattr(values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_l,beam_angle_l=beam_l_solve,beam_angle_r=beam_r,ret=[para]),para) - value
+        beam_l = scipy.optimize.brentq(solve_l,-margin,margin,xtol=lim)
+        solve_r = lambda beam_r_solve: getattr(values(aim,i_left,t,'r',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r_solve,ret=[para]),para) - value
+        beam_r = scipy.optimize.brentq(solve_r,-margin,margin,xtol=lim)
+        mode='Converged'
 
     return [[beam_l,beam_r], mode]
 
@@ -926,7 +939,7 @@ def PAAM_wavefront_calc(aim,i,t,side,lim=1e-12):
         angy = lambda beam: values(aim,i,t,'l',mode='send',beam_angle_l=beam,ret=['angy_wf_send']).angy_wf_send
     elif side=='r':
         angy = lambda beam: values(aim,i,t,'r',mode='send',beam_angle_r=beam,ret=['angy_wf_send']).angy_wf_send
-    
+
     try:
         ret = scipy.optimize.brentq(angy,-1e-5,1e-5,xtol=lim)
     except ValueError,e:

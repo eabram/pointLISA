@@ -286,8 +286,10 @@ class AIM():
         print('PAAM pointing strategy: '+option)
 
         if option=='center':
-            ang_l = lambda i,t: output.PAAM_center_calc(self.aim0,i,t,tele_l=self.tele_l_ang(i,t),tele_r=self.tele_r_ang(utils.i_slr(i)[1],t),lim=self.aimset.limits.yoff)[0][0]
-            ang_r = lambda i,t: output.PAAM_center_calc(self.aim0,utils.i_slr(i)[2],t,tele_l=self.tele_l_ang(utils.i_slr(i)[2],t),tele_r=self.tele_r_ang(i,t),lim=self.aimset.limits.yoff)[0][1]
+            #ang_l = lambda i,t: output.PAAM_center_calc(self.aim0,i,t,tele_l=self.tele_l_ang(i,t),tele_r=self.tele_r_ang(utils.i_slr(i)[1],t),lim=self.aimset.limits.yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value)[0][0]
+            ang_l = lambda i,t: output.PAAM_center_calc(self.aim0,i,t,tele_l=self.tele_l_ang(i,t),tele_r=self.tele_r_ang(utils.i_slr(i)[1],t),lim=self.aimset.limits.yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.optimize_PAAM_margin)[0][0]
+            #ang_r = lambda i,t: output.PAAM_center_calc(self.aim0,utils.i_slr(i)[2],t,tele_l=self.tele_l_ang(utils.i_slr(i)[2],t),tele_r=self.tele_r_ang(i,t),lim=self.aimset.limits.yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value)[0][1]
+            ang_r = lambda i,t: output.PAAM_center_calc(self.aim0,utils.i_slr(i)[2],t,tele_l=self.tele_l_ang(utils.i_slr(i)[2],t),tele_r=self.tele_r_ang(i,t),lim=self.aimset.limits.yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.optimize_PAAM_margin)[0][1]
             
             #ang_l = lambda i,t: output.PAAM_center_calc(self.aim0,i,t,lim=self.aimset.limits.yoff)[0][0]
             #ang_r = lambda i,t: output.PAAM_center_calc(self.aim0,utils.i_slr(i)[2],t,lim=self.aimset.limits.yoff)[0][1]

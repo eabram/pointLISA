@@ -43,9 +43,14 @@ aimset.aim_old=False
 aimset.aim0=False
 aimset.option_tele='center'
 aimset.option_PAAM='center'
+aimset.optimize_PAAM = 'yoff'
+#aimset.optimize_PAAM_value=np.float64(0.0)
+aimset.optimize_PAAM_value=np.float64(-30.0)
+aimset.optimize_PAAM_margin=1000.0
 aimset.offset_tele='read'
 aimset.tele_method_solve='iter'
-aimset.sample_speed =1 
+aimset.PAAM_method_solve='solve'
+aimset.sample_speed =1
 
 ### Limits/accuracies
 aimset.limits = utils.Object()
