@@ -95,7 +95,7 @@ def write(inp,aimset,title='',direct='',extr='',opt_date=True,opt_time=True,time
     return direct
 
 
-def read_options(filename):
+def read_options(filename,print_on=False):
     aimset=utils.Object()
     read_on=False
     readfile = open(filename,'r')
@@ -108,6 +108,10 @@ def read_options(filename):
                 ret = getattr(np,type_sel)(rr[1])
                 setattr(aimset,rr[0],ret)
             except:
+                if type_sel=='numpy.float64':
+                    setattr(aimset,rr[0],np.float64(rr[1]))
+                if print_on:
+                    print(rr[0],ret,type_sel)
                 pass
 
         if 'BEGIN OPTIONS' in str(line):
@@ -173,7 +177,7 @@ def read_output(filename,ret=utils.Object()):
 
     point_options = options.tele_control+'_'+options.PAAM_control+'__'+options.option_tele+'_'+options.option_PAAM
 
-    point_settings = options.tele_method_solve+'_'+options.PAAM_method_solve+'__'+options.optimize_PAAM+'_'+str(options.optimize_PAAM_margin)
+    point_settings = options.tele_method_solve+'_'+options.PAAM_method_solve+'__'+options.optimize_PAAM+'_'+str(options.optimize_PAAM_value).replace('.','d')
 
     try:
         getattr(ret,point_options)

@@ -4,8 +4,12 @@ import numpy as np
 import methods
 
 class OUTPUT():
-    def __init__(self,aim,**kwargs):
-        self.aim = aim
+    def __init__(self,aim,dummy=False,**kwargs):
+        if dummy==False:
+            self.aim = aim
+        else:
+            self.aim = utils.Object()
+            self.aim.data = aim.data
 
         ### Obtain parameters
         for k, value in parameters.__dict__.items():
@@ -578,7 +582,7 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
-    def mean_var(self,i,t,side,ret,mode='mean',Nbins=False):
+    def mean_var(self,i,t,side,ret,mode='mean',Nbins=False,tele_angle_l=False,tele_angle_r=False,beam_angle_l=False,beam_angle_r=False):
         if Nbins!=False:
             self.pupil(Nbins=Nbins)
         else:
@@ -589,7 +593,7 @@ class OUTPUT():
         if type(ret)!=list:
             ret=[ret]
 
-        func = lambda x,y: values(self,i,t,side,ret=ret,ksi=[x,y])
+        func = lambda x,y: values(self,i,t,side,ret=ret,ksi=[x,y],tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r,beam_angle_l=beam_angle_l,beam_angle_r=beam_angle_r)
         if mode=='center':
             return getattr(func(0,0),ret[0])
         elif 'var' in mode or 'mean' in mode:
@@ -1110,10 +1114,10 @@ def tele_wavefront_calc_old(aim,i_send,t,para,method,scale=1,lim=1e-12,max_count
         val_rec_old = tele_angle_r
         pos_send = lambda tele_l: values(aim,i_send,t_send,'l',mode='send',tele_angle_l=tele_l,tele_angle_r=tele_angle_r)
         calc_send = lambda tele_l: getattr(getattr(OUTPUT(aim),'get_'+para)(pos_send(tele_l)),para)
-        tele_angle_l = scipy.optimize.brentq(calc_send,np.radians(-30)-5,np.radians(-30)+5,xtol=lim)
+        tele_angle_l = scipy.optimize.brentq(calc_send,np.radians(-30-5),np.radians(-30+5),xtol=lim)
         pos_rec = lambda tele_r: values(aim,i_rec,t_rec,'r',mode='send',tele_angle_l=tele_angle_l,tele_angle_r=tele_r)
         calc_rec =lambda tele_r:  getattr(getattr(OUTPUT(aim),'get_'+para)(pos_rec(tele_r)),para)
-        tele_angle_r = scipy.optimize.brentq(calc_rec,np.radians(30)-5,np.radians(30)+5,xtol=lim)
+        tele_angle_r = scipy.optimize.brentq(calc_rec,np.radians(30-5),np.radians(30+5),xtol=lim)
          
         lim_val=max(abs(calc_send(tele_angle_l)),abs(calc_rec(tele_angle_r)))
         

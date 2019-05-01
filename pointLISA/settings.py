@@ -33,6 +33,7 @@ hstep=100 #Time step for calculating the velocity (over hstep seconds average)
 
 ### AIM settings
 aimset = utils.Object()
+aimset.inp = False
 aimset.tele_control='no_control'
 aimset.PAAM_control='no_control'
 aimset.tele_ang_extra=False #inplement later
@@ -45,11 +46,11 @@ aimset.option_tele='center'
 aimset.option_PAAM='center'
 aimset.optimize_PAAM = 'yoff'
 #aimset.optimize_PAAM_value=np.float64(0.0)
-aimset.optimize_PAAM_value=np.float64(-30.0)
+aimset.optimize_PAAM_value=np.float64(0.0)
 aimset.optimize_PAAM_margin=1000.0
 aimset.offset_tele='read'
 aimset.tele_method_solve='iter'
-aimset.PAAM_method_solve='solve'
+aimset.PAAM_method_solve='iter'
 aimset.sample_speed =1
 
 ### Limits/accuracies

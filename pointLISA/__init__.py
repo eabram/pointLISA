@@ -13,6 +13,7 @@ from .AIM import AIM
 from .run_din import *
 from .output import OUTPUT
 from .read_write import *
+from .add_noise import *
 #import .LA
 import settings
 import parameters
