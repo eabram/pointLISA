@@ -30,6 +30,7 @@ delay= True
 relativistic= True
 test_calc = False
 hstep=100 #Time step for calculating the velocity (over hstep seconds average)
+putp=False # If putp is used or iterpolation of putp
 
 ### AIM settings
 aimset = utils.Object()
@@ -52,6 +53,9 @@ aimset.offset_tele='read'
 aimset.tele_method_solve='iter'
 aimset.PAAM_method_solve='iter'
 aimset.sample_speed =1
+aimset.width = 30000.0
+aimset.value_center = 30000.0
+aimset.value_wavefront = 8.0e-6
 
 ### Limits/accuracies
 aimset.limits = utils.Object()

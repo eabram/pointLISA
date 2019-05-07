@@ -3,6 +3,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 from output import OUTPUT
 import numpy as np
+import output
 
 def get_nearest_smaller_value(lst,val):
     lst.sort()
@@ -827,23 +828,12 @@ def get_FOV(angles,wfe,aim,link,t,m='tilt',mode='normal'):
     i = (link-2)%3
     [i_left,i_right,link] = utils.i_slr(i)
     
-    #if componenet=='both':
-    #    tilt_left_func = lambda ang_PAAM_l: NOISE_LISA.functions.get_wavefront_parallel(wfe,aim,i_left,t,'l',False,'all',mode='self',precision=0,angles=[angles[0],False,angles[1],ang_PAAM_l],component=component)[m]
-
-    #    tilt_right_func = lambda ang_PAAM_r: NOISE_LISA.functions.get_wavefront_parallel(wfe,aim,i_right,t,'r',False,'all',mode='self',precision=0,angles=[angles[2],False,angles[0],angles[1]],component=component)[m]
-    #    PAAM_l = scipy.optimize.minimize(tilt_left_func,x0=0)['fun']
-    #    PAAM_r = scipy.optimize.minimize(tilt_right_func,x0=0)['fun']
-
-    #    angles = [angles[0],PAAM_l,angles[2],PAAM_r]
-    #    componenet='tele'
-    
     tilt_left = NOISE_LISA.functions.get_wavefront_parallel(wfe,aim,i_left,t,'l',False,'all',mode='self',precision=0,angles=angles)[m]
     tilt_right = NOISE_LISA.functions.get_wavefront_parallel(wfe,aim,i_right,t,'r',False,'all',mode='self',precision=0,angles=[angles[2],angles[3],angles[0],angles[1]])[m]
     
 
     if mode=='normal':
         ret =  max(abs(tilt_left),abs(tilt_right))
-        #print(ret)
         return(ret)
 
     elif mode=='direction':
@@ -854,7 +844,7 @@ def get_FOV(angles,wfe,aim,link,t,m='tilt',mode='normal'):
         return tilt_right
 
 
-def get_new_angles(aim,link,t,ang_old=False,lim=8e-6,margin=0.9,wfe=False,component='tele'):#...only works with 'tele'
+def get_new_angles(aim,link,t,ang_old=False,lim=8e-6,margin=0.9,component='tele'):#...only works with 'tele' #Used
     i = (link-2)%3
     [i_left,i_right,link] = utils.i_slr(i)
     
@@ -869,42 +859,35 @@ def get_new_angles(aim,link,t,ang_old=False,lim=8e-6,margin=0.9,wfe=False,compon
         ang_old[1] = False
         ang_old[3] = False
         [ang_l_tele,ang_l_PAAM,ang_r_tele,ang_r_PAAM] = ang_old
-        [[tilt_right,i_right],[tilt_left,i_left]] = get_FOV(ang_old,wfe,aim,link,t,m='tilt',mode='direction')
-        [[angx_r,i_right],[angx_l,i_left]] = get_FOV(ang_old,wfe,aim,link,t,m='angx_func_rec',mode='direction')
+        [[tilt_right,i_right],[tilt_left,i_left]] = get_FOV(ang_old,aim,link,t,m='tilt',mode='direction')
+        [[angx_r,i_right],[angx_l,i_left]] = get_FOV(ang_old,aim,link,t,m='angx_func_rec',mode='direction')
         
-        #print(tilt_left,tilt_right)
-        #print(angx_r,angx_l)
-
         if tilt_right>=lim*0.99:
-            f_solve = lambda ang: get_FOV([ang_l_tele,ang_l_PAAM,ang,ang_r_PAAM],wfe,aim,link,t,m='angx_func_rec',mode='r') +angx_r*margin
+            f_solve = lambda ang: get_FOV([ang_l_tele,ang_l_PAAM,ang,ang_r_PAAM],aim,link,t,m='angx_func_rec',mode='r') +angx_r*margin
             side ='r'
         elif tilt_right<=-lim*0.99:
-            f_solve = lambda ang: get_FOV([ang_l_tele,ang_l_PAAM,ang,ang_r_PAAM],wfe,aim,link,t,m='angx_func_rec',mode='r') +angx_r*margin
+            f_solve = lambda ang: get_FOV([ang_l_tele,ang_l_PAAM,ang,ang_r_PAAM],aim,link,t,m='angx_func_rec',mode='r') +angx_r*margin
             side='r'
         elif tilt_left>=lim*0.99:
-            f_solve = lambda ang: get_FOV([ang,ang_l_PAAM,ang_r_tele,ang_r_PAAM],wfe,aim,link,t,m='angx_func_rec',mode='l') +angx_l*margin
+            f_solve = lambda ang: get_FOV([ang,ang_l_PAAM,ang_r_tele,ang_r_PAAM],aim,link,t,m='angx_func_rec',mode='l') +angx_l*margin
             side='l'
         elif tilt_left<=-lim*0.99:
-            f_solve = lambda ang: get_FOV([ang,ang_l_PAAM,ang_r_tele,ang_r_PAAM],wfe,aim,link,t,m='angx_func_rec',mode='l') +angx_l*margin
+            f_solve = lambda ang: get_FOV([ang,ang_l_PAAM,ang_r_tele,ang_r_PAAM],aim,link,t,m='angx_func_rec',mode='l') +angx_l*margin
             side='l'
         
         step=0.1
         if side=='r':
             ang_new = scipy.optimize.brentq(f_solve,ang_r_tele-step,ang_r_tele+step,xtol=1e-7)
-            #print(f_solve(ang_new))
             angles = [ang_l_tele,False,ang_new,False]
         elif side=='l':
             ang_new = scipy.optimize.brentq(f_solve,ang_l_tele-step,ang_l_tele+step,xtol=1e-7)
-            #print(f_solve(ang_new))
             angles = [ang_new,False,ang_r_tele,False]
     
     return angles
 
-def get_SS(wfe,aim,link,ret={},t_all={},ang_output={},m='tilt',component='tele'):
-    #if FOV_lim==False:
-    #    FOV_lim=wfe.FOV
-    
-    FOV_lim = wfe.SS[m]
+def get_SS(wfe,aim,link,lim,ret={},t_all={},ang_output={},m='tilt',component='tele'): #Used 
+    FOV_lim = lim
+
     print('SS limit = '+str(FOV_lim))
     if component not in ret.keys():
         ret[component]={}
@@ -916,8 +899,8 @@ def get_SS(wfe,aim,link,ret={},t_all={},ang_output={},m='tilt',component='tele')
             t_all[str(SC)]={}
             ang_output[str(SC)]={}
     
-    t0 = wfe.t_all[3]
-    t_end = wfe.t_all[-3]
+    t0 = aim.t_all[3]
+    t_end = aim.t_all[-3]
 
     t_adjust=[t0]
     t_solve=t_adjust[0]
@@ -926,11 +909,10 @@ def get_SS(wfe,aim,link,ret={},t_all={},ang_output={},m='tilt',component='tele')
     angles_all.append(get_new_angles(aim,link,t0,component=component))
 
     while t_solve<t_end:
-        FOV_func = lambda t: get_FOV(angles_all[-1],wfe,aim,link,t,m=m,mode='normal') - FOV_lim
+        FOV_func = lambda t: get_FOV(angles_all[-1],aim,link,t,m=m,mode='normal') - FOV_lim
         check=True
         try:
             t_solve = scipy.optimize.brentq(FOV_func,t_adjust[-1],t_end,xtol=1)
-            #print(t_solve/(3600*24.0))
             t_adjust.append(t_solve)
         except ValueError,e:
             print e
@@ -939,7 +921,7 @@ def get_SS(wfe,aim,link,ret={},t_all={},ang_output={},m='tilt',component='tele')
             if e=='f(a) and f(b) must have different signs':
                 break
         if check==True:
-            angles_new = get_new_angles(aim,link,t_solve,ang_old = angles_all[-1],lim=FOV_lim,wfe=wfe)
+            angles_new = get_new_angles(aim,link,t_solve,ang_old = angles_all[-1],lim=FOV_lim)
             #angles_new = get_new_angles(aim,link,t_solve,ang_old = False,lim=FOV_lim,wfe=wfe)
             angles_all.append(angles_new)
     angles_all = np.matrix(angles_all)
@@ -961,36 +943,130 @@ def get_SS(wfe,aim,link,ret={},t_all={},ang_output={},m='tilt',component='tele')
     for j in range(1,len(angles_all)):
         if angles_all[j,loc[0]]!=ang_l_list[-1]:
             ang_l_list.append(angles_all[j,loc[0]])
-            #ang_l_PAAM_list.append(angles_all[j,1])
             t_adjust_l.append(t_adjust[j])
         if angles_all[j,loc[1]]!=ang_r_list[-1]:
             ang_r_list.append(angles_all[j,loc[1]])
-            #ang_r_PAAM_list.append(angles_all[j,3])
             t_adjust_r.append(t_adjust[j])
     
     ang_l_list = np.array(ang_l_list)
     ang_r_list = np.array(ang_r_list)
-    #ang_l_PAAM_list = np.array(ang_l_PAAM_list)
-    #ang_r_PAAM_list = np.array(ang_r_PAAM_list)
 
     ang_l = lambda t: get_SS_func(t_adjust_l,ang_l_list,t)
-    #ang_l_PAAM = lambda t: get_SS_func(t_adjust_l,ang_l_PAAM_list,t)
     ang_r = lambda t: get_SS_func(t_adjust_r,ang_r_list,t)
-    #ang_r_PAAM = lambda t: get_SS_func(t_adjust_r,ang_r_PAAM_list,t)
-
     
     ret[component][str(i_left)]['l'] = ang_l
     ret[component][str(i_right)]['r'] = ang_r
-    #ret['PAAM'][str(i_left)]['l'] = ang_l_PAAM
-    #ret['PAAM'][str(i_right)]['r'] = ang_r_PAAM
     t_all[str(i_left)]['l'] = np.array(t_adjust_l)
     t_all[str(i_right)]['r'] = np.array(t_adjust_r)
     ang_output[str(i_left)]['l'] = ang_l_list
     ang_output[str(i_right)]['r'] = ang_r_list
-    #PAAM_ang[str(i_left)]['l'] = ang_l_PAAM_list
-    #PAAM_ang[str(i_right)]['r'] = ang_r_PAAM_list
 
     return ret,t_all,ang_output
+
+def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,option=False,print_on=False,value=0):
+    if option==False:
+        option = aim.aimset.option_tele
+
+    t_adjust=[]
+    tele_adjust_l = [] 
+    tele_adjust_r = [] 
+    i = (link-2)%3
+    [i_left,i_right,link] = utils.i_slr(i)
+    if tele_l ==False:
+        tele_l = aim.tele_l_ang(i_left,t0)
+    if tele_r==False:
+        tele_r = aim.tele_r_ang(i_right,t0)
+    
+    t_adjust.append(t0)
+    t_val  = t0
+
+    if method=='step':
+        while t_val<t_end:
+            t_val = t_val+step
+
+            func_l = getattr(output.values(aim,i_left,t_val,'l',ksi=[0,0],mode='send',tele_angle_l=tele_l,tele_angle_r=tele_r,ret=[ret]),ret)
+            func_r = getattr(output.values(aim,i_right,t_val,'r',ksi=[0,0],mode='send',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=[ret]),ret)
+
+            if max(abs(func_l),abs(func_r))>=lim:
+                t_adjust.append(t_val-step)
+                tele_l = aim.tele_l_ang(i_left,t_val-step)
+                tele_r = aim.tele_r_ang(i_right,t_val-step)
+                tele_adjust.append([tele_l,tele_r])
+
+    elif method=='solve':
+        t_val = t_adjust[-1]
+        tele_l = tele_point_calc(aim,i_left,t_val,'l',option,max_count=5,scale=1,value=value) 
+        tele_r = tele_point_calc(aim,i_right,t_val,'r',option,max_count=5,scale=1,value=value) 
+        tele_adjust_l.append(tele_l)
+        tele_adjust_r.append(tele_r)
+        
+        while t_val<t_end:
+            f_l = lambda t: abs(getattr(output.values(aim,i_left,t,'l',ksi=[0,0],mode='send',tele_angle_l=tele_l,tele_angle_r=tele_r,ret=[ret]),ret))-lim
+            f_r = lambda t: abs(getattr(output.values(aim,i_right,t,'r',ksi=[0,0],mode='send',tele_angle_l=tele_l,tele_angle_r=tele_r,ret=[ret]),ret))-lim
+            
+            k=1
+            dt = 3600.0*24
+            found=False
+            while found==False:
+                if t_val+dt*(k-1)>=t_end:
+                    t_val=t_end
+                    break
+                else:
+                    try:
+                        under = t_val+dt*(k-1)+100.0
+                        upper = t_val+dt*k
+
+                        t_l = scipy.optimize.brentq(f_l,under,upper,xtol=60.0)
+                        t_r = scipy.optimize.brentq(f_r,under,upper,xtol=60.0)
+                        print(t_l,under,upper)
+                        found=True
+                    except ValueError,e:
+                        if str(e)=='f(a) and f(b) must have different signs':
+                            k=k+1
+                            print(t_val+dt*k)
+         
+            if found==True:
+                print(found)
+                t_adjust.append(min(t_l,t_r))
+                t_val = t_adjust[-1]
+                
+                tele_l = tele_point_calc(aim,i_left,t_val,'l',option,max_count=5,scale=1,value=value) 
+                tele_r = tele_point_calc(aim,i_right,t_val,'r',option,max_count=5,scale=1,value=value) 
+                tele_adjust_l.append(tele_l)
+                tele_adjust_r.append(tele_r)
+                if print_on==True:
+                    print(tele_l,tele_r)
+
+    return t_adjust,[tele_adjust_l,tele_adjust_r],i_left,i_right
+
+
+def tele_point_calc(aim,i,t,side,option,lim=False,method=False,value=0,**kwargs): # Recommended to use aim0
+
+    if option=='center':
+        if lim==False:
+            lim = aim.aimset.limits.xoff
+        if side=='l':
+            ang = output.tele_center_calc(aim,i,t,lim=lim,value=value)[0][0]
+        elif side=='r':
+            ang = output.tele_center_calc(aim,utils.i_slr(i)[2],t,lim=lim,value=value)[0][1]
+
+    elif option=='wavefront':
+        for k, value in kwargs.items:
+            locals()[k] = value
+        if method==False:
+            method = aimm.aimset.tele_method_solve
+
+        if lim==False:
+            lim=aim.aimset.limits.angx
+
+        if side=='l':
+            ang = output.get_tele_wavefront(aim,i,t,'l',method,scale=scale,lim=lim,max_count=max_counti,value=value)
+        elif side=='r':
+            ang = output.get_tele_wavefront(aim,i,t,'r',method,scale=scale,lim=lim,max_count=max_count,value=value)
+
+    return ang
+
+
 
 def get_SS_func(x,y,x_check):
     A = [t for t in x if t<x_check]

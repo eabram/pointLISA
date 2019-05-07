@@ -853,7 +853,7 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
     
     return positions
 
-def tele_center_calc(aim,i,t,scale=1,lim=1e-12,max_count=5,print_on=False):
+def tele_center_calc(aim,i,t,scale=1,lim=1e-12,max_count=5,print_on=False,value=0):
     [i_self,i_left,i_right] = utils.i_slr(i)
 
     tele_l=aim.tele_l_ang(i_self,t)
@@ -865,11 +865,11 @@ def tele_center_calc(aim,i,t,scale=1,lim=1e-12,max_count=5,print_on=False):
         tele_l_old = tele_l
         tele_r_old = tele_r
         pos_send = values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_r,ret=['off'])
-        angx_send = np.sign(pos_send.xoff)*abs(np.arctan(pos_send.xoff/pos_send.zoff))
+        angx_send = np.sign(pos_send.xoff-value)*abs(np.arctan((pos_send.xoff-value)/pos_send.zoff))
         tele_l = tele_l+angx_send
 
         pos_rec = values(aim,i_left,t,'r',tele_angle_l=tele_l,tele_angle_r=tele_r,ret=['off'])
-        angx_rec = np.sign(pos_rec.xoff)*abs(np.arctan(pos_rec.xoff/pos_rec.zoff))
+        angx_rec = np.sign(pos_rec.xoff-value)*abs(np.arctan((pos_rec.xoff-value)/pos_rec.zoff))
         tele_r = tele_r+angx_rec
 
         count=count+1

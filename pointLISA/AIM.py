@@ -35,8 +35,11 @@ class AIM():
                 self.get_offset_inplane(self.offset_tele)
                 
                 if self.init!=True:
+                    try:
+                        self.aim0 = kwargs['aim0']
+                    except KeyError:
+                        self.aim0=AIM(data=None)
                     self.angles0=kwargs.pop('angles0',False)
-                    self.aim0=AIM(data=None)
                     self.aim0.data=data
                     self.aim0.tele_l_ang = self.angles0[0]
                     self.aim0.tele_r_ang = self.angles0[2]
@@ -44,16 +47,21 @@ class AIM():
                     self.aim0.beam_r_ang = self.angles0[3]
                     self.aim0.get_coordinate_systems(option='self')
                     self.aim0.offset_tele = self.offset_tele
+                    for key in settings.__dict__.keys():
+                        setattr(self.aim0,key,settings.__dict__[key])
+                    self.aim0.get_offset_inplane(self.aim0.offset_tele)
+                    setattr(self.aim0,'aimset',self.aimset)
+                    
 
-                    self.angles_old=kwargs.pop('angles_old',False)
-                    self.aim_old=AIM(False)
-                    self.aim_old.data=data
-                    self.aim_old.tele_l_ang = self.angles_old[0]
-                    self.aim_old.tele_r_ang = self.angles_old[2]
-                    self.aim_old.beam_l_ang = self.angles_old[1]
-                    self.aim_old.beam_r_ang = self.angles_old[3]
-                    self.aim_old.offset_tele = self.offset_tele
-                    self.aim_old.get_coordinate_systems(option='self')
+                    #self.angles_old=kwargs.pop('angles_old',False)
+                    #self.aim_old=AIM(False)
+                    #self.aim_old.data=data
+                    #self.aim_old.tele_l_ang = self.angles_old[0]
+                    #self.aim_old.tele_r_ang = self.angles_old[2]
+                    #self.aim_old.beam_l_ang = self.angles_old[1]
+                    #self.aim_old.beam_r_ang = self.angles_old[3]
+                    #self.aim_old.offset_tele = self.offset_tele
+                    #self.aim_old.get_coordinate_systems(option='self')
 
     def get_offset_inplane(self,option):
         offset = {'l': {1: 0.0, 2: 0.0, 3: 0.0},
@@ -109,58 +117,33 @@ class AIM():
         return 0
 
 
-    def tele_control_ang_fc(self,option='wavefront'):
+    def tele_control_ang_fc(self,option='wavefront',value=0):
         # Option 'wavefront' means poiting with the purpose of getting a zero/small tilt of the receiving wavefront
         # 'center' means pointing it to te center of the receiving telescope aperture
         print('Telescope pointing strategy: '+option)
-        if option=='center':
-            ang_l = lambda i,t: output.tele_center_calc(self.aim0,i,t,lim=self.aimset.limits.xoff)[0][0]
-            ang_r = lambda i,t: output.tele_center_calc(self.aim0,utils.i_slr(i)[2],t,lim=self.aimset.limits.xoff)[0][1]
-
-        elif option=='wavefront':
-            #ang_l_calc=[0,0,0]
-            #ang_r_calc=[0,0,0]
-            #for i in range(1,4):
-            #    ang_l_calc[i-1] = lambda t: output.tele_wavefront_calc(self.aim0,i,t,'angx_wf_send',self.aimset.tele_method_solve,scale=1,lim=self.aimset.limits.angx)[0][0]
-            #    j=i+1
-            #    if j==4:
-            #        j=1
-            #    ang_r_calc[j-1] = lambda t: output.tele_wavefront_calc(self.aim0,i,t,'angx_wf_send',self.aimset.tele_method_solve,scale=1,lim=self.aimset.limits.angx)[0][1]
-            #
-            #ang_l = utils.func_over_sc(ang_l_calc)
-            #ang_r = utils.func_over_sc(ang_r_calc)
-            scale=1
-            max_count=5
-            ang_l = lambda i,t: output.get_tele_wavefront(self,i,t,'l',self.aimset.tele_method_solve,scale=scale,lim=self.aimset.limits.angx,max_count=max_count)
-            ang_r = lambda i,t: output.get_tele_wavefront(self,i,t,'r',self.aimset.tele_method_solve,scale=scale,lim=self.aimset.limits.angx,max_count=max_count)
-            #ang_l = lambda i,t: output.tele_wavefront_calc(self.aim0,i,t,self.aimset.tele_method_solve,lim=self.aimset.limits.angx,scale=scale,max_count=max_count)[0][0]
-            #tdel=lambda i,t: self.data.L_sl_func_tot(utils.i_slr(i)[2],t)
         
-            #ang_r = lambda i,t: output.tele_wavefront_calc(self.aim0,utils.i_slr(i)[2],t+tdel(i,t),self.aimset.tele_method_solve,lim=self.aimset.limits.angx,scale=scale,max_count=max_count)[0][1]
-
-            #tdel=lambda i,t: self.data.L_sl_func_tot(i,t)
-            #ang_r = lambda i,t: output.tele_wavefront_calc(self.aim0,utils.i_slr(i)[2],t+tdel(i,t),'angx_wf_send',self.aimset.tele_method_solve,scale=1,lim=self.aimset.limits.angx)[0][1]
-
-            #tele_wavefront_calc(aim,i_send,t,para,method,scale=1,lim=1e-12,max_count=5,print_on=False)
-
-
-
-            #lim=1e-10
-            #i_right = lambda i: utils.i_slr(i)[2]
-
-            #ang_l = lambda i,t: methods.rotate_tele_wavefront(self.data,self.aim0,utils.get_link(i,'l'),t,count_max=np.inf,lim=lim,scale=1)[0]
-            #ang_r = lambda i,t: methods.rotate_tele_wavefront(self.data,self.aim0,utils.get_link(i,'r'),t+self.data.L_rl_func_tot(i_right(i),t),count_max=np.inf,lim=lim,scale=1)[2]
+        max_count=5
+        scale=1
+        ang_l = lambda i,t: methods.tele_point_calc(self.aim0,i,t,'l',option,max_count=max_count,scale=scale,value=value)
+        ang_r = lambda i,t: methods.tele_point_calc(self.aim0,i,t,'r',option,max_count=max_count,scale=scale,value=value)
+        
+        print("value: "+str(value))
 
         self.tele_option = option
         return [ang_l,ang_r]
 
 
-    def tele_aim(self,method=False,lim=1e-10,tele_ang_extra=True,option='wavefront'):
-        print('self.inp'+str(self.inp))
+    def tele_aim(self,method=False,lim=1e-10,tele_ang_extra=True,option=False):
         if method==False:
             method=self.tele_method
         else:
             self.tele_method=method
+        
+        if option=='wavefront':
+            value=self.aimset.value_wiavefront
+        elif option=='center':
+            value=self.aimset.value_center
+
 
         try:
             print('The telescope control method is: '+method)
@@ -190,7 +173,7 @@ class AIM():
                 self.tele_r_ang_func = lambda i,t: np.radians(30)+offset_r[str(i)]
 
             elif method=='full_control':
-                [self.tele_ang_l_fc,self.tele_ang_r_fc] = self.tele_control_ang_fc(option=option)
+                [self.tele_ang_l_fc,self.tele_ang_r_fc] = self.tele_control_ang_fc(option=option,value=value)
                 self.tele_l_ang_func = self.tele_ang_l_fc
                 self.tele_r_ang_func = self.tele_ang_r_fc
 
@@ -204,39 +187,32 @@ class AIM():
                     self.tele_r_ang_func = lambda i,t: methods.functions.spotsize_limit(self.data,self.aim0,i,t,'r',limit=self.wfe.spotsize)
 
             elif 'SS' in method:
-                ### Obtai full control
-                [self.tele_ang_l_fc,self.tele_ang_r_fc] = self.tele_control_ang_fc(option=option)
-                if option=='center':
-                    print('Still have to implement') #...adjust
+                tele_l_tot=[0,0,0]
+                tele_r_tot=[0,0,0]
+                t_l_adjust=[0,0,0]
+                t_r_adjust=[0,0,0]
 
-                m = method.split('SS_')[-1]
-                print('SS by '+m)
-                print('')
-                ret={}
-                t_all={}
-                ang_adjust={}
                 for link in range(1,4):
-                    #if self.count==0:
-                    try:
-                        self.beam_r_ang
-                    except AttributeError:
-                        self.beam_l_ang = self.wfe.data.ang_out_l
-                        self.beam_r_ang = self.wfe.data.ang_out_r
-                    ret,t_all,ang_adjust = pack.functions.get_SS(self.wfe,self,link,ret=ret,m=m,t_all=t_all,ang_output=ang_adjust)
-                    #else:
-                    #    ret,t_all,tele_ang_adjust,PAAM_ang_adjust = pack.functions.get_SS(self.wfe,self.aim_old,link,ret=ret,m=m,t_all=t_all,tele_ang=tele_ang_adjust,PAAM_ang=PAAM_ang_adjust)
+                    t_plot = self.data.t_all[2:-3]
+                    t_adjust,[tele_l,tele_r],i_left,i_right = methods.SS_value(self.aim0,link,t_plot[0],t_plot[-1],'solve',aim.aimset.width/2.0,print_on=False,value=value)
+                    f_l = lambda t: methods.get_SS_func(t_adjust,tele_l,t)
+                    f_r = lambda t: methods.get_SS_func(t_adjust,tele_r,t)
+                    tele_l_tot[i_left-1] = f_l
+                    tele_r_tot[i_right-1] = f_r
+                    t_l_adjust[i_left-1] = t_adjust
+                    t_r_adjust[i_right-1] = t_adjust
 
-                self.t_adjust = t_all
-                self.tele_ang_adjust = ang_adjust
 
-                self.tele_l_ang_SS = lambda i,t: ret['tele'][str(i)]['l'](t)
-                self.tele_r_ang_SS = lambda i,t: ret['tele'][str(i)]['r'](t)
-                #self.PAAM_l_ang_SS = lambda i,t: ret['PAAM'][str(i)]['l'](t)
-                #self.PAAM_r_ang_SS = lambda i,t: ret['PAAM'][str(i)]['r'](t)
-
+                self.t_l_adjust = lambda i,t: t_l_andjust[i-1](t)
+                self.t_r_adjust = lambda i,t: t_r_andjust[i-1](t)
+                self.tele_l_ang_SS = lambda i,t: tele_l_tot[i-1](t)
+                self.tele_r_ang_SS = lambda i,t: tele_r_tot[i-1](t)
 
                 self.tele_l_ang_func = self.tele_l_ang_SS
                 self.tele_r_ang_func = self.tele_r_ang_SS
+
+                self.t_adjust = [t_l_adjust,t_r_adjust]
+                self.tele_adjust = [tele_l_tot,tele_r_tot]
 
             elif type(method)==list and method[0]=='Imported pointing':
                 print(method[0])
