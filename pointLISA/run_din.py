@@ -1,7 +1,15 @@
 from imports import *
 
-def get_pointing(data,filename=False,**kwargs):
+def get_pointing(data,filename=False,set_extr={},**kwargs):
     aimset = settings.aimset
+    if set_extr!={}:
+        for k, value in set_extr.items():
+            if k in aimset.__dict__.keys():
+                setattr(aimset,k,value)
+            else:
+                print(str(k)+' is not a used option')
+    
+
     for key,value in kwargs.items():
         setattr(aimset,key,value)
 
@@ -40,6 +48,9 @@ def get_pointing(data,filename=False,**kwargs):
         PAAM_r_ang0=aim0.beam_r_ang
     angles0 = [tele_l_ang0,PAAM_l_ang0,tele_r_ang0,PAAM_r_ang0]
 
+    
+
+    
     aim = AIM.AIM(data=data,init=aimset.init,sampled=aimset.sampled,angles0=angles0,angles_old=angles_old,offset_tele=aimset.offset_tele,settings=aimset,filename=filename,inp=aimset.inp)
     aim.tele_aim(method=aim.aimset.tele_control,tele_ang_extra=aim.aimset.tele_ang_extra,option=aim.aimset.option_tele)
     out = aim.PAAM_aim(method=aim.aimset.PAAM_control,PAAM_ang_extra=aim.aimset.PAAM_ang_extra,option=aim.aimset.option_PAAM)

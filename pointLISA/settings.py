@@ -54,8 +54,8 @@ aimset.tele_method_solve='iter'
 aimset.PAAM_method_solve='iter'
 aimset.sample_speed =1
 aimset.width = 30000.0
-aimset.value_center = 30000.0
-aimset.value_wavefront = 8.0e-6
+aimset.value_center = 0.0
+aimset.value_wavefront = 0.0
 
 ### Limits/accuracies
 aimset.limits = utils.Object()
