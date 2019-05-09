@@ -1,5 +1,6 @@
 from imports import *
 from pointLISA import *
+import pointLISA
 import LA
 import numpy as np
 import time
@@ -53,7 +54,16 @@ class STAT():
         input_param['timeunit'] = self.timeunit
 
         self.input_param = input_param
-            
+
+    def putp(self,i,t,mode='sampled'):
+        if mode=='sampled':
+            return self.putp_sampled(i,t)
+        elif mode=='LISA':
+            return self.LISA.putp(i,t)
+
+
+
+
     def PAA_func(self):
         print('')
         print('Importing Orbit')
@@ -64,6 +74,8 @@ class STAT():
         utils.LISA_obj(self,type_select=self.LISA_opt)
         print('Done in '+str(time.clock()-tic))
         self.SC = range(1,4)
+        
+        self.putp_sampled = pointLISA.methods.get_putp_sampled(self)
 
         # Calculations
         #LA=utils.la()

@@ -5,6 +5,35 @@ from output import OUTPUT
 import numpy as np
 import output
 
+def get_putp_sampled(data,method='interp1d'):
+    t_all = data.orbit.t
+    pos = []
+    for i in range(1,4):
+        pos_array=[]
+        pos_x=[]
+        pos_y=[]
+        pos_z=[]
+        for t in t_all:
+            value = data.LISA.putp(i,t)
+            if value[0]==0.0:
+                pos_x.append(np.nan)
+                pos_y.append(np.nan)
+                pos_z.append(np.nan)
+            else:
+                pos_x.append(value[0])
+                pos_y.append(value[1])
+                pos_z.append(value[2])
+        
+        pos_x_interp  = interpolate(t_all,pos_x,method=method)
+        pos_y_interp  = interpolate(t_all,pos_y,method=method)
+        pos_z_interp  = interpolate(t_all,pos_z,method=method)
+        pos.append([pos_x_interp,pos_y_interp,pos_z_interp])
+        
+    ret = lambda i,t: np.array([pos[i-1][0](t),pos[i-1][1](t),pos[i-1][2](t)])
+
+    return ret
+
+
 def get_nearest_smaller_value(lst,val):
     lst.sort()
     if val<lst[0]:
@@ -492,8 +521,8 @@ def get_wavefront_parallel(data,aim,i,t,side,PAAM_ang,ret,mode='opposite',precis
                 PAAM_ang = aim.beam_r_ang(i_left,t-tdel)
             coor_start = beam_coor_out(data,i_left,t-tdel,tele_ang,PAAM_ang,aim.offset_tele['r'])
             coor_end = coor_tele(data,i_self,t,tele_ang_end)
-            start = LA.unit(coor_start[0])*data.L_tele+data.LISA.putp(i_left,t-tdel)
-            end = LA.unit(coor_end[0])*data.L_tele+data.LISA.putp(i_self,t-tdel0)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
+            start = LA.unit(coor_start[0])*data.L_tele+data.putp(i_left,t-tdel)
+            end = LA.unit(coor_end[0])*data.L_tele+data.putp(i_self,t-tdel0)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
 
         
         elif side=='r':
@@ -513,8 +542,8 @@ def get_wavefront_parallel(data,aim,i,t,side,PAAM_ang,ret,mode='opposite',precis
                 PAAM_ang = aim.beam_l_ang(i_right,t-tdel)
             coor_start = beam_coor_out(data,i_right,t-tdel,tele_ang,PAAM_ang,aim.offset_tele['l'])
             coor_end = coor_tele(data,i_self,t,tele_ang_end)
-            start = LA.unit(coor_start[0])*data.L_tele+data.LISA.putp(i_right,t-tdel)
-            end = LA.unit(coor_end[0])*data.L_tele+data.LISA.putp(i_self,t-tdel0)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
+            start = LA.unit(coor_start[0])*data.L_tele+data.putp(i_right,t-tdel)
+            end = LA.unit(coor_end[0])*data.L_tele+data.putp(i_self,t-tdel0)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
 
                 
         [zoff,yoff,xoff]=LA.matmul(coor_start,end-start)
@@ -694,7 +723,7 @@ def coor_SC(data,i,t):
     r = LA.unit(data.r_func(i,t_calc))
     n = LA.unit(data.n_func(i,t_calc))
     x = np.cross(n,r)
-    #offset = wfe.data.LISA.putp(i,t)
+    #offset = wfe.data.putp(i,t)
 
     return np.array([r,n,x])
 
@@ -710,7 +739,7 @@ def coor_tele(data,i,t,ang_tele):
     return np.array([r,n,x])
 
 def pos_tele(wfe,i,t,side,ang_tele):
-    offset = np.array(wfe.data.LISA.putp(i,t))
+    offset = np.array(wfe.data.putp(i,t))
     pointing = coor_tele(wfe,i,t,ang_tele)
 
     return offset+pointing

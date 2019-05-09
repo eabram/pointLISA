@@ -63,7 +63,7 @@ class AIM():
                     #self.aim_old.offset_tele = self.offset_tele
                     #self.aim_old.get_coordinate_systems(option='self')
 
-    def get_offset_inplane(self,option):
+    def get_offset_inplane(self,option,**kwargs):
         offset = {'l': {1: 0.0, 2: 0.0, 3: 0.0},
  'r': {1: 0.0, 2: 0.0, 3: 0.0}}
         
@@ -94,20 +94,27 @@ class AIM():
                     offset[side][SC] = -np.nanmean(ang)
         
         elif 'read'==option:
-            read_folder = os.path.dirname(os.path.realpath(__file__))+'/parameters/'+self.data.calc_method+'/'
+            if 'filename' in kwargs.keys():
+                read_file = kwargs['filename']
 
-            for (dirpath, dirnames, filenames) in os.walk(read_folder):
-                for f in filenames:
-                    read_file = open(dirpath+f)
-                    break
-            out=''
-            count=0
-            for line in read_file:
-                count=count+1
-                if count>1:
-                    out=out+line.split('\n')[0]
-            offset = yaml.load(out)
-            read_file.close()
+            else:
+                read_folder = os.path.dirname(os.path.realpath(__file__))+'/parameters/'+self.data.calc_method+'/'
+
+                for (dirpath, dirnames, filenames) in os.walk(read_folder):
+                    for f in filenames:
+                        read_file = open(dirpath+f)
+                        break
+                out=''
+                count=0
+                for line in read_file:
+                    count=count+1
+                    if count>1:
+                        out=out+line.split('\n')[0]
+                offset = yaml.load(out)
+                read_file.close()
+        
+        elif type(option==dict):
+            offset = option
 
         else:
             raise ValueError("Please select offset tele values or method")
@@ -127,7 +134,6 @@ class AIM():
         ang_l = lambda i,t: methods.tele_point_calc(self.aim0,i,t,'l',option,max_count=max_count,scale=scale,value=value)
         ang_r = lambda i,t: methods.tele_point_calc(self.aim0,i,t,'r',option,max_count=max_count,scale=scale,value=value)
         
-        print("value: "+str(value))
 
         self.tele_option = option
         return [ang_l,ang_r]
@@ -437,8 +443,8 @@ class AIM():
         tele_r_coor = methods.coor_tele(self.data,i,t,tele_r_ang(i,t))
         tele_l_vec = LA.unit(methods.coor_tele(self.data,i,t,tele_l_ang(i,t))[0])*self.data.L_tele
         tele_r_vec = LA.unit(methods.coor_tele(self.data,i,t,tele_r_ang(i,t))[0])*self.data.L_tele
-        tele_l_start = tele_l_vec+np.array(self.data.LISA.putp(i,t))
-        tele_r_start = tele_r_vec+np.array(self.data.LISA.putp(i,t))
+        tele_l_start = tele_l_vec+np.array(self.data.putp(i,t))
+        tele_r_start = tele_r_vec+np.array(self.data.putp(i,t))
 
         return [[tele_l_coor,tele_r_coor],[tele_l_vec,tele_r_vec],[tele_l_start,tele_r_start]]
 
@@ -451,8 +457,8 @@ class AIM():
         # Calculating the Transmitted beam direction and position of the telescope aperture
         beam_l_direction = beam_l_coor[0]
         beam_r_direction = beam_r_coor[0]
-        beam_l_start = beam_l_direction+np.array(self.data.LISA.putp(i,t))
-        beam_r_start = beam_r_direction+np.array(self.data.LISA.putp(i,t))
+        beam_l_start = beam_l_direction+np.array(self.data.putp(i,t))
+        beam_r_start = beam_r_direction+np.array(self.data.putp(i,t))
 
         return [[beam_l_coor,beam_r_coor],[beam_l_direction,beam_r_direction],[beam_l_start,beam_r_start]]
 

@@ -30,7 +30,7 @@ delay= True
 relativistic= True
 test_calc = False
 hstep=100 #Time step for calculating the velocity (over hstep seconds average)
-putp=False # If putp is used or iterpolation of putp
+putp_mode='sampled' # Or 'LISA'
 
 ### AIM settings
 aimset = utils.Object()

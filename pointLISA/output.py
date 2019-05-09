@@ -137,6 +137,16 @@ class OUTPUT():
                 return [np.nan,np.nan]
 
 
+    def get_coordinate_systems(self,speed=0):
+        if speed==0:
+            self.aim.get_coordinate_systems()
+
+        elif speed>0:
+           if self.aim.sampled==False:
+               self.aim.aim_sampled = self.aim.sample()
+        self.aim.aim_sampled.get_coordinate_systems()
+
+        return self.aim
 
     def add_attribute(self,e,pos):
         func = 'get_'+str(e).split("attribute '")[-1].replace("'","")
@@ -746,7 +756,7 @@ def get_coor_beam(aim,i,t,side,tele_angle=False,beam_angle=False):
     return ret
 
 def get_start(aim,i,t,side,tele_angle):
-    ret = np.array(aim.data.LISA.putp(i,t)) + LA.unit(get_coor_tele(aim,i,t,side,tele_angle=tele_angle)[0])*aim.data.L_tele
+    ret = np.array(aim.data.putp(i,t)) + LA.unit(get_coor_tele(aim,i,t,side,tele_angle=tele_angle)[0])*aim.data.L_tele
 
     return ret
 

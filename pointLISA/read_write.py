@@ -32,7 +32,7 @@ def get_folder(direct=False,opt_date=True):
 
     return direct
 
-def write(inp,aimset,title='',direct='',extr='',opt_date=True,opt_time=True,time='',extra_title='',include='all',exclude=[]):
+def write(inp,aimset,title='',direct='',extr='',opt_date=True,opt_time=True,time='',extra_title='',include='all',exclude=[],offset=False):
     
     date = get_date(option='date')
     if time=='':
@@ -50,47 +50,55 @@ def write(inp,aimset,title='',direct='',extr='',opt_date=True,opt_time=True,time
         title=extra_title+'_'+title+'.txt'
     writefile = open(direct+'/'+title,'w')
 
-    writefile.write("BEGIN OPTIONS"+'\n')
-    for setting in aimset.__dict__.keys():
-        val = aimset.__dict__[setting]
-        write_on=True
-        try:
-            if '<' in str(val):
-                write_on=False
-        except:
-            pass
-        if write_on:
-            writefile.write(setting+':: '+str(val)+':: '+str(type(val))+'\n')
-    writefile.write("END OPTIONS"+'\n')
-    writefile.write('\n')
+    if offset!=False:
+        writefile.write(str(offset))
+        writefile.close()
 
-    for side in inp.__dict__.keys():
-        for i in getattr(inp,side).__dict__.keys():
-            for m in getattr(getattr(inp,side),i).__dict__.keys():
-                writefile.write('BEGIN\n')
-                outp = getattr(getattr(getattr(inp,side),i),m)
-                #writefile.write("Value:: "+str(m)+'\n')
-                writefile.write("SC:: "+str(i[-1])+'\n')
-                writefile.write("Side:: "+str(side)+'\n')
-                options = outp[-1]
-                options = options.split(', ')
-                for opt in options:
-                    opt_split = opt.split('=')
-                    writefile.write(opt_split[0]+':: '+opt_split[-1]+'\n')
-                for j in range(0,len(outp[0])):
-                    values = outp[0][j]
-                    values_str = '['
-                    for v in values:
-                        values_str = values_str+str(v)+','
-                    values_str = values_str[0:-1] +']'
-                    writefile.write(values_str+'\n')
-                writefile.write('END\n')
-                writefile.write('\n')
-                            
-    writefile.close()
+        return direct+'/'+title
+    
+    else:
 
-    print(title+' saved in:')
-    print(direct)
+        writefile.write("BEGIN OPTIONS"+'\n')
+        for setting in aimset.__dict__.keys():
+            val = aimset.__dict__[setting]
+            write_on=True
+            try:
+                if '<' in str(val):
+                    write_on=False
+            except:
+                pass
+            if write_on:
+                writefile.write(setting+':: '+str(val)+':: '+str(type(val))+'\n')
+        writefile.write("END OPTIONS"+'\n')
+        writefile.write('\n')
+
+        for side in inp.__dict__.keys():
+            for i in getattr(inp,side).__dict__.keys():
+                for m in getattr(getattr(inp,side),i).__dict__.keys():
+                    writefile.write('BEGIN\n')
+                    outp = getattr(getattr(getattr(inp,side),i),m)
+                    #writefile.write("Value:: "+str(m)+'\n')
+                    writefile.write("SC:: "+str(i[-1])+'\n')
+                    writefile.write("Side:: "+str(side)+'\n')
+                    options = outp[-1]
+                    options = options.split(', ')
+                    for opt in options:
+                        opt_split = opt.split('=')
+                        writefile.write(opt_split[0]+':: '+opt_split[-1]+'\n')
+                    for j in range(0,len(outp[0])):
+                        values = outp[0][j]
+                        values_str = '['
+                        for v in values:
+                            values_str = values_str+str(v)+','
+                        values_str = values_str[0:-1] +']'
+                        writefile.write(values_str+'\n')
+                    writefile.write('END\n')
+                    writefile.write('\n')
+                                
+        writefile.close()
+
+        print(title+' saved in:')
+        print(direct)
 
     return direct
 
