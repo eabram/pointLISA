@@ -5,13 +5,15 @@ def get_pointing(data,filename=False,set_din=utils.Object(),aim0=False,aim_old=F
     for k in set_din.__dict__.keys():
         if k in aimset.__dict__.keys():
             setattr(aimset,k,getattr(set_din,k))
-            print('Adjust setting: '+k+' = '+str(getattr(aimset,k)))
+            if print_on:
+                print('Adjust setting: '+k+' = '+str(getattr(aimset,k)))
         else:
             print(str(k)+' is not a used option')
     
     for key,value in kwargs.items():
         setattr(aimset,key,value)
-        print('Adjust setting: '+key+' = '+str(getattr(aimset,key)))
+        if print_on:
+            print('Adjust setting: '+key+' = '+str(getattr(aimset,key)))
 
     #aim0 = kwargs.pop('aim0',False)
     #aim_old = kwargs.pop('aim_old',False)
