@@ -1,6 +1,6 @@
 from imports import *
 
-def get_pointing(data,filename=False,set_din=utils.Object(),aim0=False,aim_old=False,**kwargs):
+def get_pointing(data,filename=False,set_din=utils.Object(),aim0=False,aim_old=False,print_on=False,**kwargs):
     aimset = settings.aimset
     for k in set_din.__dict__.keys():
         if k in aimset.__dict__.keys():
