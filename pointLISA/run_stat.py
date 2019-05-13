@@ -4,12 +4,16 @@ import os
 #import save_fig
 #import writefile
 
-def do_run(input_param={},**kwargs):
+def do_run(input_param={},set_stat=utils.Object,**kwargs):
     para = parameters.__dict__
-    setting = settings.__dict__
+    setting = settings.stat.__dict__
     input_param_new={}
     for key,value in kwargs.items():
         input_param_new[key] = value
+    
+    for k in set_stat.__dict__.keys():
+        if k not in input_param_new:
+            input_param_new[k] = getattr(set_stat,k)
 
     for k in setting.keys():
         if '__'  in k:
