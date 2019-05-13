@@ -100,6 +100,7 @@ class AIM():
             else:
                 read_folder = os.path.dirname(os.path.realpath(__file__))+'/parameters/'+self.data.calc_method+'/'
 
+                print(read_folder)
                 for (dirpath, dirnames, filenames) in os.walk(read_folder):
                     for f in filenames:
                         read_file = open(dirpath+f)

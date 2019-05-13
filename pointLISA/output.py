@@ -145,6 +145,7 @@ class OUTPUT():
            if self.aim.sampled==False:
                self.aim.aim_sampled = self.aim.sample()
         self.aim.aim_sampled.get_coordinate_systems()
+        
 
         return self.aim
 
@@ -729,39 +730,73 @@ class OUTPUT():
 def get_coor_tele(aim,i,t,side,tele_angle=False):
     if tele_angle==False:
         if side == 'l':
-            tele_angle = aim.tele_l_ang(i,t)
+            try:
+                ret = aim.tele_l_coor(i,t)
+            except AttributeError:
+                tele_angle = aim.tele_l_ang(i,t)
         elif side =='r':
-            tele_angle = aim.tele_r_ang(i,t)
-    
-    ret = methods.coor_tele(aim.data,i,t,tele_angle)
-    return ret
+            try:
+                ret = aim.tele_r_coor(i,t)
+            except AttributeError:
+                tele_angle = aim.tele_r_ang(i,t)
+
+    try:
+        return ret
+    except:
+        ret = methods.coor_tele(aim.data,i,t,tele_angle)
+        return ret
 
 def get_coor_beam(aim,i,t,side,tele_angle=False,beam_angle=False):
-    if tele_angle==False:
-        if side == 'l':
-            tele_angle = aim.tele_l_ang(i,t)
-        elif side =='r':
-            tele_angle = aim.tele_r_ang(i,t)
-    if beam_angle==False:
-        if side == 'l':
-            beam_angle = aim.beam_l_ang(i,t)
-        elif side =='r':
-            beam_angle = aim.beam_r_ang(i,t)
+    check=False
+    if tele_angle==False and beam_angle==False:
+        try:
+            if side=='l':
+                ret = aim.beam_l_coor(i,t)
+            elif side=='r':
+                ret = aim.beam_r_coor(i,t)
+            check=True
+        except AttributeError:
+            check=False
+            pass
+    
+    if check==False:
+        if tele_angle==False:
+            if side == 'l':
+                tele_angle = aim.tele_l_ang(i,t)
+            elif side =='r':
+                tele_angle = aim.tele_r_ang(i,t)
+        if beam_angle==False:
+            if side == 'l':
+                beam_angle = aim.beam_l_ang(i,t)
+            elif side =='r':
+                beam_angle = aim.beam_r_ang(i,t)
 
-    if side=='l':
-        ret = methods.beam_coor_out(aim.data,i,t,tele_angle,beam_angle,aim.offset_tele['l'])
-    elif side=='r':
-        ret = methods.beam_coor_out(aim.data,i,t,tele_angle,beam_angle,aim.offset_tele['r'])
+        if side=='l':
+            ret = methods.beam_coor_out(aim.data,i,t,tele_angle,beam_angle,aim.offset_tele['l'])
+        elif side=='r':
+            ret = methods.beam_coor_out(aim.data,i,t,tele_angle,beam_angle,aim.offset_tele['r'])
 
     return ret
 
 def get_start(aim,i,t,side,tele_angle):
-    ret = np.array(aim.data.putp(i,t)) + LA.unit(get_coor_tele(aim,i,t,side,tele_angle=tele_angle)[0])*aim.data.L_tele
+    try:
+        if side=='l':
+            ret = aim.tele_l_start(i,t)
+        elif side=='r':
+            ret = aim.tele_r_start(i,t)
+    except AttributeError:
+        ret = np.array(aim.data.putp(i,t)) + LA.unit(get_coor_tele(aim,i,t,side,tele_angle=tele_angle)[0])*aim.data.L_tele
 
     return ret
 
 def get_direction(aim,i,t,side,tele_angle,beam_angle):
-    ret = get_coor_beam(aim,i,t,side,tele_angle=tele_angle,beam_angle=beam_angle)[0]
+    try:
+        if side=='l':
+            ret = aim.beam_l_coor(i,t)[0]
+        elif side=='r':
+            ret = aim.beam_r_coor(i,t)[0]
+    except AttributeError:
+        ret = get_coor_beam(aim,i,t,side,tele_angle=tele_angle,beam_angle=beam_angle)[0]
 
     return ret
     
