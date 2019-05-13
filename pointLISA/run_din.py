@@ -1,20 +1,20 @@
 from imports import *
 
-def get_pointing(data,filename=False,set_extr={},**kwargs):
+def get_pointing(data,filename=False,set_din=utils.Object(),aim0=False,aim_old=False,**kwargs):
     aimset = settings.aimset
-    if set_extr!={}:
-        for k, value in set_extr.items():
-            if k in aimset.__dict__.keys():
-                setattr(aimset,k,value)
-            else:
-                print(str(k)+' is not a used option')
+    for k in set_din.__dict__.keys():
+        if k in aimset.__dict__.keys():
+            setattr(aimset,k,getattr(set_din,k))
+            print('Adjust setting: '+k+' = '+str(getattr(aimset,k)))
+        else:
+            print(str(k)+' is not a used option')
     
-
     for key,value in kwargs.items():
         setattr(aimset,key,value)
+        print('Adjust setting: '+key+' = '+str(getattr(aimset,key)))
 
-    aim0 = kwargs.pop('aim0',False)
-    aim_old = kwargs.pop('aim_old',False)
+    #aim0 = kwargs.pop('aim0',False)
+    #aim_old = kwargs.pop('aim_old',False)
 
     sampled=False
     count=0
