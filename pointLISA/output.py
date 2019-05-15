@@ -144,7 +144,11 @@ class OUTPUT():
         elif speed>0:
            if self.aim.sampled==False:
                self.aim.aim_sampled = self.aim.sample()
-        self.aim.aim_sampled.get_coordinate_systems()
+        try:
+            self.aim.aim_sampled.get_coordinate_systems()
+        except:
+            self.aim.get_coordinate_systems()
+
         
 
         return self.aim
@@ -593,6 +597,194 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
+    def get_tdel(self,pos):
+        check=False
+        while check==False:
+            try:
+                if pos.mode=='send':
+                    if pos.side=='l':
+                        ret = pos.aim.data.L_sl_func_tot(pos.i_self,pos.t)
+                    elif pos.side=='r':
+                        ret = pos.aim.data.L_sr_func_tot(pos.i_self,pos.t)
+                elif pos.mode=='rec':
+                    if pos.side=='l':
+                        ret = pos.aim.data.L_rl_func_tot(pos.i_self,pos,t)
+                    elif pos.side=='r':
+                        ret = pos.aim.data.L_rr_func_tot(pos.i_self,pos,t)
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError, e:
+                self.add_attribute(e,pos)
+        return pos
+
+    def get_tdel0(self,pos):
+        check=False
+        while check==False:
+            try:
+                if pos.calc_method=='Abram':
+                    ret=0
+                elif pos.calc_method=='Waluschka':
+                    ret = pos.tdel
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError, e:
+                self.add_attribute(e,pos)
+        return pos
+
+    def get_coor_starttele(self,pos):
+        check=False
+        while check==False:
+            try:
+                if pos.mode=='send':
+                    if pos.side=='l':
+                        ret = get_coor_tele(pos.aim,pos.i_self,pos.t,'l',tele_angle=pos.tele_angle_l)
+                    elif pos.side=='r':
+                        ret = get_coor_tele(pos.aim,pos.i_self,pos.t,'r',tele_angle=pos.tele_angle_r)
+                elif pos.mode=='rec':
+                    if pos.side=='l':
+                        ret = get_coor_tele(pos.aim,pos.i_left,pos.t-pos.tdel,'r',tele_angle=pos.tele_angle_r)
+                    elif pos.side=='r':
+                        ret = get_coor_tele(pos.aim,pos.i_right,pos.t-pos.tdel,'l',tele_angle=pos.tele_angle_l)
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError, e:
+                self.add_attribute(e,pos)
+        return pos
+
+    def get_coor_startbeam(self,pos):
+        check=False
+        while check==False:
+            try:
+                if pos.mode=='send':
+                    if pos.side=='l':
+                        ret = get_coor_beam(pos.aim,pos.i_self,pos.t,'l',tele_angle=pos.tele_angle_l,beam_angle=pos.beam_angle_l)
+                        
+                    elif pos.side=='r':
+                        ret = get_coor_beam(pos.aim,pos.i_self,pos.t,'r',tele_angle=pos.tele_angle_r,beam_angle=pos.beam_angle_r)
+                elif pos.mode=='rec':
+                    if pos.side=='l':
+                        ret = get_coor_beam(pos.aim,pos.i_left,pos.t-pos.tdel,'r',tele_angle=pos.tele_angle_r,beam_angle=pos.beam_angle_r)
+                    elif pos.side=='r':
+                        ret = get_coor_beam(pos.aim,pos.i_right,pos.t-pos.tdel,'l',tele_angle=pos.tele_angle_l,beam_angle=pos.beam_angle_l)
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError, e:
+                self.add_attribute(e,pos)
+        return pos
+
+
+
+    def get_coor_end(self,pos):
+        check=False
+        while check==False:
+            try:
+                if pos.mode=='send':
+                    if pos.side=='l':
+                        ret = get_coor_tele(pos.aim,pos.i_left,pos.t+pos.tdel,'r',tele_angle=pos.tele_angle_r)
+                    elif pos.side=='r':
+                        ret = get_coor_tele(pos.aim,pos.i_right,pos.t+pos.tdel,'l',tele_angle=pos.tele_angle_l)
+                elif pos.mode=='rec':
+                    if pos.side=='l':
+                        ret = get_coor_tele(pos.aim,pos.i_self,pos.t,'l',tele_angle=pos.tele_angle_l)
+                    elif pos.side=='r':
+                        ret = get_coor_tele(pos.aim,pos.i_self,pos.t,'r',tele_angle=pos.tele_angle_r)
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError, e:
+                self.add_attribute(e,pos)
+        return pos
+
+    def get_start(self,pos):
+        check=False
+        while check==False:
+            try:
+                if pos.mode=='send':
+                    if pos.side=='l':
+                        ret = get_start_calc(pos.aim,pos.i_self,pos.t+pos.tdel0,'l',pos.tele_angle_l)
+                    elif pos.side=='r':
+                        ret = get_start_calc(pos.aim,pos.i_self,pos.t+pos.tdel0,'r',pos.tele_angle_r)
+                elif pos.mode=='rec':
+                    if pos.side=='l':
+                        ret = get_start_calc(pos.aim,pos.i_left,pos.t-pos.tdel,'r',pos.tele_angle_r)
+                    elif pos.side=='r':
+                        ret = get_start_calc(pos.aim,pos.i_right,pos.t-pos.tdel,'l',pos.tele_angle_l)
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError, e:
+                self.add_attribute(e,pos)
+        return pos
+
+    def get_end(self,pos):
+        check=False
+        while check==False:
+            try:
+                if pos.mode=='send':
+                    if pos.side=='l':
+                        ret = get_start_calc(pos.aim,pos.i_left,pos.t+pos.tdel,'r',pos.tele_angle_r)+pos.coor_end[1]*pos.ksi[1]+pos.coor_end[2]*pos.ksi[0]
+                    elif pos.side=='r':
+                        ret = get_start_calc(pos.aim,pos.i_right,pos.t+pos.tdel,'l',pos.tele_angle_l)+pos.coor_end[1]*pos.ksi[1]+pos.coor_end[2]*pos.ksi[0]
+                elif pos.mode=='rec':
+                    if pos.side=='l':
+                        ret = get_start_calc(pos.aim,pos.i_self,pos.t-pos.tdel0,'l',pos.tele_angle_l)+pos.coor_end[1]*pos.ksi[1]+pos.coor_end[2]*pos.ksi[0]
+                    elif pos.side=='r':
+                        ret = get_start_calc(pos.aim,pos.i_self,pos.t-pos.tdel0,'r',pos.tele_angle_r)+pos.coor_end[1]*pos.ksi[1]+pos.coor_end[2]*pos.ksi[0]
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError, e:
+                self.add_attribute(e,pos)
+        return pos
+
+    def get_direction(self,pos):
+        check=False
+        while check==False:
+            try:
+                ret = pos.coor_startbeam[0]
+                check=True
+            except AttributeError, e:
+                self.add_attribute(e,pos)
+        return pos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     def mean_var(self,i,t,side,ret,mode='mean',Nbins=False,tele_angle_l=False,tele_angle_r=False,beam_angle_l=False,beam_angle_r=False):
         if Nbins!=False:
             self.pupil(Nbins=Nbins)
@@ -778,7 +970,7 @@ def get_coor_beam(aim,i,t,side,tele_angle=False,beam_angle=False):
 
     return ret
 
-def get_start(aim,i,t,side,tele_angle):
+def get_start_calc(aim,i,t,side,tele_angle):
     try:
         if side=='l':
             ret = aim.tele_l_start(i,t)
@@ -788,18 +980,6 @@ def get_start(aim,i,t,side,tele_angle):
         ret = np.array(aim.data.putp(i,t)) + LA.unit(get_coor_tele(aim,i,t,side,tele_angle=tele_angle)[0])*aim.data.L_tele
 
     return ret
-
-def get_direction(aim,i,t,side,tele_angle,beam_angle):
-    try:
-        if side=='l':
-            ret = aim.beam_l_coor(i,t)[0]
-        elif side=='r':
-            ret = aim.beam_r_coor(i,t)[0]
-    except AttributeError:
-        ret = get_coor_beam(aim,i,t,side,tele_angle=tele_angle,beam_angle=beam_angle)[0]
-
-    return ret
-    
 
 def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=False,beam_angle_l=False,beam_angle_r=False,ret=[]):
     [i_self,i_left,i_right] = utils.i_slr(i)
@@ -823,8 +1003,8 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
             coor_startbeam=get_coor_beam(aim,i_self,t,'l',tele_angle=tele_angle_l,beam_angle=beam_angle_l)
  
             coor_end=get_coor_tele(aim,i_left,t+tdel,'r',tele_angle=tele_angle_r)
-            start=get_start(aim,i_self,t+tdel0,'l',tele_angle_l)
-            end=get_start(aim,i_left,t+tdel,'r',tele_angle_r)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
+            start=get_start_calc(aim,i_self,t+tdel0,'l',tele_angle_l)
+            end=get_start_calc(aim,i_left,t+tdel,'r',tele_angle_r)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
             direction=coor_startbeam[0]
 
         elif side=='r':
@@ -837,8 +1017,8 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
             coor_startbeam=get_coor_beam(aim,i_self,t,'r',tele_angle=tele_angle_r,beam_angle=beam_angle_r)       
             coor_end=get_coor_tele(aim,i_right,t+tdel,'l',tele_angle=tele_angle_l)
 
-            start=get_start(aim,i_self,t+tdel0,'r',tele_angle_r)
-            end=get_start(aim,i_right,t+tdel,'l',tele_angle_l)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
+            start=get_start_calc(aim,i_self,t+tdel0,'r',tele_angle_r)
+            end=get_start_calc(aim,i_right,t+tdel,'l',tele_angle_l)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
             direction=coor_startbeam[0]
 
     elif mode=='rec':
@@ -853,8 +1033,8 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
             coor_startbeam=get_coor_beam(aim,i_left,t-tdel,'r',tele_angle=tele_angle_r,beam_angle=beam_angle_r)
             coor_end=get_coor_tele(aim,i_self,t,'l',tele_angle=tele_angle_l)
             
-            start=get_start(aim,i_left,t-tdel,'r',tele_angle_r)
-            end=get_start(aim,i_self,t-tdel0,'l',tele_angle_l)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
+            start=get_start_calc(aim,i_left,t-tdel,'r',tele_angle_r)
+            end=get_start_calc(aim,i_self,t-tdel0,'l',tele_angle_l)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
             direction=coor_startbeam[0]
             
         elif side=='r':
@@ -868,22 +1048,32 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
             coor_startbeam=get_coor_beam(aim,i_right,t-tdel,'l',tele_angle=tele_angle_l,beam_angle=beam_angle_l)
             coor_end=get_coor_tele(aim,i_self,t,'r',tele_angle=tele_angle_r)
             
-            start=aim.tele_l_start(i_right,t-tdel)
-            end=aim.tele_r_start(i_self,t-tdel0)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
-            start=get_start(aim,i_right,t-tdel,'l',tele_angle_l)
-            end=get_start(aim,i_self,t-tdel0,'r',tele_angle_r)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
+            start=get_start_calc(aim,i_right,t-tdel,'l',tele_angle_l)
+            end=get_start_calc(aim,i_self,t-tdel0,'r',tele_angle_r)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
             direction=coor_startbeam[0]
     
     positions=utils.Object()
-    positions.start=start
-    positions.end=end
-    positions.coor_starttele=coor_starttele
-    positions.coor_startbeam=coor_startbeam
-    positions.coor_end=coor_end
-    positions.direction=direction
-    positions.tdel=tdel
-    positions.tdel0=tdel0
-    positions.ksi=ksi
+    positions.mode=mode
+    positions.side=side
+    positions.method = aim.data.calc_method
+    positions.i_self = i_self
+    positions.i_left = i_left
+    positions.i_right = i_right
+    positions.t = t
+    positions.ksi = ksi
+    positions.tele_angle_l = tele_angle_l
+    positions.tele_angle_r = tele_angle_r
+    positions.beam_angle_l = beam_angle_l
+    positions.beam_angle_r = beam_angle_r
+    positions.aim=aim
+    
+    param = ['start','end','coor_starttele','coor_startbeam','coor_end','direction','tdel','tdel0','ksi']
+    for p in param:
+        try:
+            setattr(positions,p,locals()[p])
+        except Exception as e:
+            print(e)
+            pass
 
     for r in ret:
         if r not in positions.__dict__.keys():

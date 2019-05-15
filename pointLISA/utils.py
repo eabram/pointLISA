@@ -290,64 +290,6 @@ def relativistic_aberrations(OBJ,i,t,tdel,side,relativistic=True): #used
    
     return u_new
 
-#def add_velo(v,u):
-#    c=np.float64(300000000.0)
-#    v_mag = np.linalg.norm(v)
-#    gamma = 1.0/((1-((v/c)**2))**0.5)
-#    u_prime = (1.0/(1.0-(np.dot(u,v)/(c**2))))*((u/gamma) - v+(1.0/(c**2))*(gamma/(1+gamma))*(np.dot(u,v))*v)
-#
-#    return u_prime
-#
-#def get_receiving(OBJ,i,t,side):
-#    #LA = la()
-#    [i_self,i_left,i_right] = i_slr(i)
-#    
-#    if side=='l':
-#        tdel = OBJ.L_rl_func_tot(i_self,t)
-#        v_send = OBJ.v_abs(i_left,t-tdel)
-#    elif side=='r':
-#        tdel = OBJ.L_rr_func_tot(i_self,t)
-#        v_send = OBJ.v_abs(i_right,t-tdel)
-#    
-#    if OBJ.calc_method=='Abram':
-#        tdel0=0
-#    elif OBJ.calc_method=='Waluschka':
-#        tdel0=tdel
-#    
-#    if OBJ.aberration==True:
-#        v_rec = OBJ.v_abs(i_self,t)
-#        if OBJ.relativistic==True:
-#            ux = v_rec
-#            v = v_send
-#            v_rec_sendframe = add_velo(v,ux)
-#            if side=='l':
-#                c_vec_sendframe = LA.unit(OBJ.v_r_func_tot(i_left,t-tdel))*np.float64(c)
-#            elif side=='r':
-#                c_vec_sendframe = LA.unit(OBJ.v_l_func_tot(i_right,t-tdel))*np.float64(c)
-#
-#            c_vec_recframe = add_velo(v_rec_sendframe,c_vec_sendframe)
-#            return (tdel*np.float64(c)*c_vec_recframe)/(np.linalg.norm(c_vec_recframe))
-#        elif OBJ.relativistic==False:
-#            if side=='l':
-#                c_vec =  np.array(OBJ.putp(i_self,t-tdel0)) - np.array(OBJ.putp(i_left,t-tdel))
-#            elif side=='r':
-#                c_vec = np.array(OBJ.putp(i_self,t-tdel0)) - np.array(OBJ.putp(i_right,t-tdel))
-#            c_vec = (np.float64(c)*c_vec)/(np.linalg.norm(c_vec))
-#            ret = c_vec + (v_rec-v_send)
-#            return (tdel*np.float64(c)*ret)/np.linalg.norm(ret)
-#
-#
-#    elif OBJ.aberration==False:
-#        if side=='l':
-#            return np.array(OBJ.putp(i_self,t-tdel0)) - np.array(OBJ.putp(i_left,t-tdel))
-#        elif side=='r':
-#            return np.array(OBJ.putp(i_self,t-tdel0)) - np.array(OBJ.putp(i_right,t-tdel))
-#
-#    #angle = LA.angle(-c_vec_recframe,wfe.data.v_l_func_tot(i,t))
-#
-#    #return angle
-
-
 def calc_PAA_ltot(OBJ,i,t):
     #LA = la()
     #if OBJ.abb:
@@ -397,48 +339,6 @@ def calc_PAA_rout(OBJ,i,t):
     calc_ang=LA.ang_in_out(OBJ.v_r_func_tot(i,t),-OBJ.u_r_func_tot(i,t),OBJ.n_func(i,t),OBJ.r_func(i,t),give='out')
     
     return calc_ang
-
-#def calc_PAA(OBJ,i,t,side,ab=True):
-#    LA = la()
-#    coor = NOISE_LISA.functions.coor_SC(OBJ,i,t)
-#    if side=='l':
-#        if ab==True:
-#            beam_in = -(LA.matmul(coor,OBJ.u_l_func_tot(i,t)))
-#        elif ab==False:
-#            beam_in = -(LA.matmul(coor,OBJ.u_l0_func_tot(i,t)))
-#        beam_out = (LA.matmul(coor,OBJ.v_l_func_tot(i,t)))
-#    elif side=='r':
-#        if ab==True:
-#            beam_in = -(LA.matmul(coor,OBJ.u_r_func_tot(i,t)))
-#        elif ab==False:
-#            beam_in = -(LA.matmul(coor,OBJ.u_r0_func_tot(i,t)))
-#        beam_out = (LA.matmul(coor,OBJ.v_r_func_tot(i,t)))
-#
-#    beam_in_in = (np.array([beam_in[2],beam_in[0]]))
-#    beam_in_out = (np.array([beam_in[1],beam_in[0]]))
-#    beam_out_in = (np.array([beam_out[2],beam_out[0]]))
-#    beam_out_out = (np.array([beam_out[1],beam_out[0]]))
-#    #
-#    #PAA_in_calc = beam_out_in - beam_in_in
-#    #PAA_in = (np.arctan(PAA_in_calc[1]/PAA_in_calc[0]))
-#    #
-#    #
-#    #PAA_out_calc = beam_out_out - beam_in_out
-#    #PAA_out = abs(np.arctan(PAA_out_calc[1]/PAA_out_calc[0]))
-#
-#
-#    #PAA_in = np.arccos(np.dot(beam_out_in,beam_in_in)/(np.linalg.norm(beam_out_in)*np.linalg.norm(beam_in_in)))
-#    #PAA_out = np.arccos(np.dot(beam_out_out,beam_in_out)/(np.linalg.norm(beam_out_out)*np.linalg.norm(beam_in_out)))
-#    
-#    PAA_in = LA.angle(beam_out_in,beam_in_in)
-#    PAA_out = LA.angle(beam_out_out,beam_in_out)
-#    PAA_tot = LA.angle(beam_out,beam_in)
-#
-#    return [PAA_in,PAA_out,PAA_tot]
-
-
-
-
 
 # Velocity
 def velocity_abs_calc(OBJ,i_select,t,hstep): #used
