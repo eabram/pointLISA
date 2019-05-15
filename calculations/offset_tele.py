@@ -6,7 +6,7 @@ def get_offset(direct=False)
         direct = os.getcwd()+'/orbit_analysis/'
 
     if not os.path.exists(direct):
-        os.makedirs(directory)
+        os.makedirs(direct)
 
     length_calc=20
     relativistic=True

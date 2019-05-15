@@ -201,7 +201,7 @@ class AIM():
 
                 for link in range(1,4):
                     t_plot = self.data.t_all[2:-3]
-                    t_adjust,[tele_l,tele_r],i_left,i_right = methods.SS_value(self.aim0,link,t_plot[0],t_plot[-1],'solve',aim.aimset.width/2.0,print_on=False,value=value)
+                    t_adjust,[tele_l,tele_r],i_left,i_right = methods.SS_value(self.aim0,link,t_plot[0],t_plot[-1],'solve',self.aimset.width/2.0,print_on=False,value=value)
                     f_l = lambda t: methods.get_SS_func(t_adjust,tele_l,t)
                     f_r = lambda t: methods.get_SS_func(t_adjust,tele_r,t)
                     tele_l_tot[i_left-1] = f_l
@@ -210,8 +210,9 @@ class AIM():
                     t_r_adjust[i_right-1] = t_adjust
 
 
-                self.t_l_adjust = lambda i,t: t_l_andjust[i-1](t)
-                self.t_r_adjust = lambda i,t: t_r_andjust[i-1](t)
+
+                self.t_l_adjust = lambda i,t: t_l_adjust[i-1]
+                self.t_r_adjust = lambda i,t: t_r_adjust[i-1]
                 self.tele_l_ang_SS = lambda i,t: tele_l_tot[i-1](t)
                 self.tele_r_ang_SS = lambda i,t: tele_r_tot[i-1](t)
 
