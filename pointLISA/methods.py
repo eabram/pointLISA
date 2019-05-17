@@ -1080,8 +1080,11 @@ def tele_point_calc(aim,i,t,side,option,lim=False,method=False,value=0,**kwargs)
             ang = output.tele_center_calc(aim,utils.i_slr(i)[2],t,lim=lim,value=value)[0][1]
 
     elif option=='wavefront':
-        for k, value in kwargs.items:
-            locals()[k] = value
+        try:
+            for k, value in kwargs.items:
+                locals()[k] = value
+        except NameError:
+            pass
         if method==False:
             method = aimm.aimset.tele_method_solve
 
