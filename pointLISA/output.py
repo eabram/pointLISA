@@ -1263,15 +1263,17 @@ def get_tele_wavefront(aim,i,t,side,method,scale=1,lim=1e-12,max_count=20,print_
     
     try:
         ang = tele_wavefront_calc(aim.aim0,i_l,t-tdel,aim.aimset.tele_method_solve,lim=aim.aimset.limits.angx,scale=scale,max_count=max_count,print_on=print_on)
+        aim_sel = aim.aim0
     except AttributeError:
         ang = tele_wavefront_calc(aim,i_l,t-tdel,aim.aimset.tele_method_solve,lim=aim.aimset.limits.angx,scale=scale,max_count=max_count,print_on=print_on)
+        aim_sel=aim
 
 
     if side=='l':
-        pos = values(aim.aim0,i_l,t,'l',ksi=[0,0],mode='send',tele_angle_l=ang[0][0],tele_angle_r=ang[0][1],ret=['angx_wf_send']).angx_wf_send
+        pos = values(aim_sel,i_l,t,'l',ksi=[0,0],mode='send',tele_angle_l=ang[0][0],tele_angle_r=ang[0][1],ret=['angx_wf_send']).angx_wf_send
         ret=ang[0][0]
     elif side=='r':
-        pos = values(aim.aim0,i_r,t,'r',ksi=[0,0],mode='send',tele_angle_l=ang[0][0],tele_angle_r=ang[0][1],ret=['angx_wf_send']).angx_wf_send
+        pos = values(aim_sel,i_r,t,'r',ksi=[0,0],mode='send',tele_angle_l=ang[0][0],tele_angle_r=ang[0][1],ret=['angx_wf_send']).angx_wf_send
         ret=ang[0][1]
     
     if print_on:
