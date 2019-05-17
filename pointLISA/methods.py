@@ -1083,7 +1083,7 @@ def tele_point_calc(aim,i,t,side,option,lim=False,method=False,value=0,**kwargs)
         try:
             for k, value in kwargs.items:
                 locals()[k] = value
-        except NameError:
+        except:
             pass
         if method==False:
             method = aimm.aimset.tele_method_solve
