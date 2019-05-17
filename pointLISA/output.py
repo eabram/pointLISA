@@ -991,6 +991,9 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
     elif 'OUTPUT' in str(inp):
         aim = inp.aim
         outp = inp
+    else:
+        raise ValueError
+
 
     if mode=='send':
         if side=='l':
