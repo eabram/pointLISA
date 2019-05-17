@@ -1257,8 +1257,12 @@ def get_tele_wavefront(aim,i,t,side,method,scale=1,lim=1e-12,max_count=20,print_
         i_l = utils.i_slr(i)[2]
         i_r = i
         tdel = aim.data.L_rr_func_tot(i_r,t)
+    
+    try:
+        ang = tele_wavefront_calc(aim.aim0,i_l,t-tdel,aim.aimset.tele_method_solve,lim=aim.aimset.limits.angx,scale=scale,max_count=max_count,print_on=print_on)
+    except AttributeError:
+        ang = tele_wavefront_calc(aim,i_l,t-tdel,aim.aimset.tele_method_solve,lim=aim.aimset.limits.angx,scale=scale,max_count=max_count,print_on=print_on)
 
-    ang = tele_wavefront_calc(aim.aim0,i_l,t-tdel,aim.aimset.tele_method_solve,lim=aim.aimset.limits.angx,scale=scale,max_count=max_count,print_on=print_on)
 
     if side=='l':
         pos = values(aim.aim0,i_l,t,'l',ksi=[0,0],mode='send',tele_angle_l=ang[0][0],tele_angle_r=ang[0][1],ret=['angx_wf_send']).angx_wf_send
