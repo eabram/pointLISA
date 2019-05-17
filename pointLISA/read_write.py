@@ -130,30 +130,38 @@ def read_options(filename,print_on=False):
     return aimset
 
 def read_output(filename,ret=utils.Object()):
-    if ret==False:
-        ret = utils.Object()
 
     readfile = open(filename,'r')
     read_on=False
 
-    Y = utils.Object()
+    #Y = utils.Object()
     for line in readfile:
         #print(line)
         if 'END\n'==line:
             R[R['value']][1] = 'value='+R['value']+', mode='+R['mode']
             try:
-                getattr(Y,R['Side'])
+                getattr(ret,R['Side'])
             except:
-                setattr(Y,R['Side'],utils.Object())
+                setattr(ret,R['Side'],utils.Object())
                 #getattr(Y,R['Side'])
             
             try:
-                getattr(getattr(Y,R['Side']),'i'+R['SC'])
+                getattr(getattr(ret,R['Side']),'i'+R['SC'])
             except:
-                setattr(getattr(Y,R['Side']),'i'+R['SC'],utils.Object())
+                setattr(getattr(ret,R['Side']),'i'+R['SC'],utils.Object())
             
-        
-            setattr(getattr(getattr(Y,R['Side']),'i'+R['SC']),R['value'],R[R['value']])
+            try: 
+                R_old = getattr(getattr(getattr(ret,R['Side']),'i'+R['SC']),R['value'])
+                print(R['value'])
+                X = R[R['value']]
+                R_old[0][0] = R_old[0][0].append(X[0][0])
+                R_old[0][1] = R_old[0][1].append(X[0][1])
+                print(R_old[1])
+                print(X_[1])
+
+
+            except AttributeError:
+                setattr(getattr(getattr(ret,R['Side']),'i'+R['SC']),R['value'],R[R['value']])
             
             #setattr(getattr(getattr(Y,R['Side']),'i'+R['SC']),[R['value']],R[R['value']])
             read_on=False
@@ -181,7 +189,7 @@ def read_output(filename,ret=utils.Object()):
             read_on=True
             R={}
     options = read_options(filename)
-    setattr(Y,'options',options)
+    setattr(ret,'options',options)
 
     point_options = options.tele_control+'_'+options.PAAM_control+'__'+options.option_tele+'_'+options.option_PAAM
 
@@ -192,6 +200,6 @@ def read_output(filename,ret=utils.Object()):
     except:
         setattr(ret,point_options,utils.Object())
 
-    setattr(getattr(ret,point_options),point_settings,Y)
+    setattr(getattr(ret,point_options),point_settings,ret)
 
     return ret,point_options,point_settings

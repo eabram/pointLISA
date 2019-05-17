@@ -147,7 +147,7 @@ class AIM():
             self.tele_method=method
         
         if option=='wavefront':
-            value=self.aimset.value_wiavefront
+            value=self.aimset.value_wavefront
         elif option=='center':
             value=self.aimset.value_center
 
