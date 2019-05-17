@@ -1086,7 +1086,7 @@ def tele_point_calc(aim,i,t,side,option,lim=False,method=False,value=0,**kwargs)
         except:
             pass
         if method==False:
-            method = aimm.aimset.tele_method_solve
+            method = aim.aimset.tele_method_solve
 
         if lim==False:
             lim=aim.aimset.limits.angx
