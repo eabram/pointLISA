@@ -1092,7 +1092,7 @@ def tele_point_calc(aim,i,t,side,option,lim=False,method=False,value=0,scale=1,*
             lim=aim.aimset.limits.angx
 
         if side=='l':
-            ang = output.get_tele_wavefront(aim,i,t,'l',method,scale=scale,lim=lim,max_count=max_counti,value=value)
+            ang = output.get_tele_wavefront(aim,i,t,'l',method,scale=scale,lim=lim,max_count=max_count,value=value)
         elif side=='r':
             ang = output.get_tele_wavefront(aim,i,t,'r',method,scale=scale,lim=lim,max_count=max_count,value=value)
 
