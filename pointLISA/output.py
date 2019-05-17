@@ -1248,7 +1248,7 @@ def tele_wavefront_calc(aim,i_l,t,method,scale=1,lim=1e-12,max_count=20,print_on
                 break
     return [[tele_angle_l,tele_angle_r],mode]
 
-def get_tele_wavefront(aim,i,t,side,method,scale=1,lim=1e-12,max_count=20,print_on=False):
+def get_tele_wavefront(aim,i,t,side,method,scale=1,lim=1e-12,max_count=20,print_on=False,value=0.0):
     
     if side=='l':
         i_l = i
