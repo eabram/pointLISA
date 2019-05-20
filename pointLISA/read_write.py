@@ -130,65 +130,77 @@ def read_options(filename,print_on=False):
 
     return aimset
 
-def read_output(filename,ret=utils.Object()):
+def read_output(filenames=False,direct=False):
+    ret=utils.Object()
+    if type(direct)==str:
+        direct=[direct]
 
-    readfile = open(filename,'r')
-    read_on=False
+    if filenames==False:
+        f_list=[]
+        for direct_calc in direct:
+            for (dirpath, dirnames, filenames_calc) in os.walk(direct_calc):
+                for f in filenames_calc:
+                    f_list.append(dirpath+'/'+f.split('/')[-1])
 
-    #Y = utils.Object()
-    for line in readfile:
-        #print(line)
-        if 'END\n'==line:
-            R[R['value']][1] = 'value='+R['value']+', mode='+R['mode']
-            try:
-                getattr(ret,R['Side'])
-            except:
-                setattr(ret,R['Side'],utils.Object())
-                #getattr(Y,R['Side'])
-            
-            try:
-                getattr(getattr(ret,R['Side']),'i'+R['SC'])
-            except:
-                setattr(getattr(ret,R['Side']),'i'+R['SC'],utils.Object())
-            
-            try: 
-                R_old = getattr(getattr(getattr(ret,R['Side']),'i'+R['SC']),R['value'])
-                print(R['value'])
-                X = R[R['value']]
-                R_old[0][0] = R_old[0][0].append(X[0][0])
-                R_old[0][1] = R_old[0][1].append(X[0][1])
-                print(R_old[1])
-                print(X_[1])
-
-
-            except AttributeError:
-                setattr(getattr(getattr(ret,R['Side']),'i'+R['SC']),R['value'],R[R['value']])
-            
-            #setattr(getattr(getattr(Y,R['Side']),'i'+R['SC']),[R['value']],R[R['value']])
-            read_on=False
-        elif read_on:
-            if ':: ' in line:
-                [key, value] = line.split('\n')[0].split(':: ')
-                R[key] = value
-            else:
-                value = line.split('\n')[0]
-                value = value[1:-1]
-                values=[]
-                for v in value.split(','):
-                    try:
-                        values.append(np.float64(v))
-                    except:
-                        print(line)
-                values = np.array(values)
+    filenames = f_list
+    for filename in filenames:
+        readfile = open(filename,'r')
+        read_on=False
+        for line in readfile:
+            #print(line)
+            if 'END\n'==line:
+                R[R['value']][1] = 'value='+R['value']+', mode='+R['mode']
                 try:
-                    R[R['value']]
+                    getattr(ret,R['Side'])
                 except:
-                    R[R['value']] = [[],0]
-                R[R['value']][0].append(values)
+                    setattr(ret,R['Side'],utils.Object())
+                    #getattr(Y,R['Side'])
                 
-        elif 'BEGIN\n'==line:
-            read_on=True
-            R={}
+                try:
+                    getattr(getattr(ret,R['Side']),'i'+R['SC'])
+                except:
+                    setattr(getattr(ret,R['Side']),'i'+R['SC'],utils.Object())
+                
+                try: 
+                    R_old = getattr(getattr(getattr(ret,R['Side']),'i'+R['SC']),R['value'])
+                    #print(R['value'])
+                    X = R[R['value']]
+                    R_old[0][0] = R_old[0][0].append(X[0][0])
+                    R_old[0][1] = R_old[0][1].append(X[0][1])
+                    #print(R_old[1])
+                    #print(X_[1])
+
+
+                except AttributeError:
+                    setattr(getattr(getattr(ret,R['Side']),'i'+R['SC']),R['value'],R[R['value']])
+                
+                #setattr(getattr(getattr(Y,R['Side']),'i'+R['SC']),[R['value']],R[R['value']])
+                read_on=False
+            elif read_on:
+                if ':: ' in line:
+                    [key, value] = line.split('\n')[0].split(':: ')
+                    R[key] = value
+                else:
+                    value = line.split('\n')[0]
+                    value = value[1:-1]
+                    values=[]
+                    for v in value.split(','):
+                        try:
+                            values.append(np.float64(v))
+                        except:
+                            print(line)
+                    values = np.array(values)
+                    try:
+                        R[R['value']]
+                    except:
+                        R[R['value']] = [[],0]
+                    R[R['value']][0].append(values)
+                    
+            elif 'BEGIN\n'==line:
+                read_on=True
+                R={}
+        print(filename)
+        readfile.close()
     options = read_options(filename)
     setattr(ret,'options',options)
 
@@ -202,5 +214,10 @@ def read_output(filename,ret=utils.Object()):
         setattr(ret,point_options,utils.Object())
 
     setattr(getattr(ret,point_options),point_settings,ret)
+    
+    readfile.close()
+    
+    ret_new = ret
+    del ret
 
-    return ret,point_options,point_settings
+    return ret_new,point_options,point_settings

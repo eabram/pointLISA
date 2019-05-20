@@ -4,12 +4,12 @@ import numpy as np
 import methods
 
 class OUTPUT():
-    def __init__(self,aim,dummy=False,**kwargs):
-        if dummy==False:
+    def __init__(self,aim=False,**kwargs):
+        if aim!=False:
             self.aim = aim
         else:
             self.aim = utils.Object()
-            self.aim.data = aim.data
+            self.aim.data = kwargs['data']
 
         ### Obtain parameters
         for k, value in parameters.__dict__.items():

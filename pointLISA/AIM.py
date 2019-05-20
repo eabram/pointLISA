@@ -135,13 +135,14 @@ class AIM():
         return 0
 
 
-    def tele_control_ang_fc(self,option='wavefront',value=0):
+    def tele_control_ang_fc(self,option='wavefront',value=False):
         # Option 'wavefront' means poiting with the purpose of getting a zero/small tilt of the receiving wavefront
         # 'center' means pointing it to te center of the receiving telescope aperture
         print('Telescope pointing strategy: '+option)
         
         max_count=5
         scale=1
+
         ang_l = lambda i,t: methods.tele_point_calc(self.aim0,i,t,'l',option,max_count=max_count,scale=scale,value=value)
         ang_r = lambda i,t: methods.tele_point_calc(self.aim0,i,t,'r',option,max_count=max_count,scale=scale,value=value)
         
