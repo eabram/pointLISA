@@ -10,9 +10,11 @@ class AIM():
     def __init__(self,data=False,settings=utils.Object(),filename=False,**kwargs):
         if data!=None:
             self.data = data
-            self.aimset=settings
-            for key in settings.__dict__.keys():
-                setattr(self,key,settings.__dict__[key])
+            aimset0 = settings
+            aimset = utils.Object()
+            #self.aimset=settings
+            #for key in settings.__dict__.keys():
+            #    setattr(self,key,settings.__dict__[key])
             
             if filename!=False:
                 self.aimset = read_write.read_options(filename)
@@ -21,13 +23,21 @@ class AIM():
                 #print(key)
                 if filename!=False:
                     try:
-                        getattr(self.aimset,key)
+                        getattr(aimset,key)
                     except:
                         setattr(self,key,value)
-                        setattr(self.aimset,key,value)
+                        setattr(aimset,key,value)
                 else:
                         setattr(self,key,value)
-                        setattr(self.aimset,key,value)
+                        setattr(aimset,key,value)
+            
+            for key in settings.__dict__.keys():
+                if key not in aimset.__dict__.keys():
+                    setattr(aimset,key,settings.__dict__[key])
+                    setattr(self,key,settings.__dict__[key])
+            self.aimset = aimset
+
+            
 
 
             if data!=False:
@@ -311,17 +321,17 @@ class AIM():
 
         if option=='center':
             #ang_l = lambda i,t: output.PAAM_center_calc(self.aim0,i,t,tele_l=self.tele_l_ang(i,t),tele_r=self.tele_r_ang(utils.i_slr(i)[1],t),lim=self.aimset.limits.yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value)[0][0]
-            ang_l = lambda i,t: output.PAAM_center_calc(self.aim0,i,t,tele_l=self.tele_l_ang(i,t),tele_r=self.tele_r_ang(utils.i_slr(i)[1],t),lim=self.aimset.limits.yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.optimize_PAAM_margin)[0][0]
+            ang_l = lambda i,t: output.PAAM_center_calc(self.aim0,i,t,tele_l=self.tele_l_ang(i,t),tele_r=self.tele_r_ang(utils.i_slr(i)[1],t),lim=self.aimset.limit_yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.optimize_PAAM_margin)[0][0]
             #ang_r = lambda i,t: output.PAAM_center_calc(self.aim0,utils.i_slr(i)[2],t,tele_l=self.tele_l_ang(utils.i_slr(i)[2],t),tele_r=self.tele_r_ang(i,t),lim=self.aimset.limits.yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value)[0][1]
-            ang_r = lambda i,t: output.PAAM_center_calc(self.aim0,utils.i_slr(i)[2],t,tele_l=self.tele_l_ang(utils.i_slr(i)[2],t),tele_r=self.tele_r_ang(i,t),lim=self.aimset.limits.yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.optimize_PAAM_margin)[0][1]
+            ang_r = lambda i,t: output.PAAM_center_calc(self.aim0,utils.i_slr(i)[2],t,tele_l=self.tele_l_ang(utils.i_slr(i)[2],t),tele_r=self.tele_r_ang(i,t),lim=self.aimset.limit_yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.optimize_PAAM_margin)[0][1]
             
             #ang_l = lambda i,t: output.PAAM_center_calc(self.aim0,i,t,lim=self.aimset.limits.yoff)[0][0]
             #ang_r = lambda i,t: output.PAAM_center_calc(self.aim0,utils.i_slr(i)[2],t,lim=self.aimset.limits.yoff)[0][1]
 
 
         elif option=='wavefront':
-            ang_l = lambda i,t: output.PAAM_wavefront_calc(self,i,t,'l',lim=self.aimset.limits.angy)
-            ang_r = lambda i,t: output.PAAM_wavefront_calc(self,i,t,'r',lim=self.aimset.limits.angy)
+            ang_l = lambda i,t: output.PAAM_wavefront_calc(self,i,t,'l',lim=self.aimset.limit_angy)
+            ang_r = lambda i,t: output.PAAM_wavefront_calc(self,i,t,'r',lim=self.aimset.limit_angy)
             #ang_l = lambda i,t: methods.rotate_PAA_wavefront(self.data,self.aim_old,i,t,'l','angy')
             #ang_r = lambda i,t: methods.rotate_PAA_wavefront(self.data,self.aim_old,i,t,'r','angy')
 

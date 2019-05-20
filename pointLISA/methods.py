@@ -4,6 +4,8 @@ from scipy.interpolate import interp1d
 from output import OUTPUT
 import numpy as np
 import output
+import datetime
+import os
 
 def get_putp_sampled(data,method='interp1d'):
     t_all = data.orbit.t
@@ -1073,7 +1075,7 @@ def tele_point_calc(aim,i,t,side,option,lim=False,method=False,value=0,scale=1,m
 
     if option=='center':
         if lim==False:
-            lim = aim.aimset.limits.xoff
+            lim = aim.aimset.limit_xoff
         if side=='l':
             ang = output.tele_center_calc(aim,i,t,lim=lim,value=value)[0][0]
         elif side=='r':
@@ -1089,7 +1091,7 @@ def tele_point_calc(aim,i,t,side,option,lim=False,method=False,value=0,scale=1,m
             method = aim.aimset.tele_method_solve
 
         if lim==False:
-            lim=aim.aimset.limits.angx
+            lim=aim.aimset.limit_angx
 
         if side=='l':
             ang = output.get_tele_wavefront(aim,i,t,'l',method,scale=scale,lim=lim,max_count=max_count,value=value)

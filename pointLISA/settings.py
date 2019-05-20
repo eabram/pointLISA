@@ -60,10 +60,10 @@ aimset.value_center = 0.0
 aimset.value_wavefront = 0.0
 
 ### Limits/accuracies
-aimset.limits = utils.Object()
-aimset.limits.xoff = np.float64(1.0e-9) #tele center
-aimset.limits.yoff = np.float64(1.0e-9) #PAAM center
-aimset.limits.angx = np.float64(1.0e-9) #tele wavefront
-aimset.limits.angy = np.float64(1.0e-9) #PAAM wavefront
+#aimset.limits = utils.Object()
+aimset.limit_xoff = np.float64(1.0e-9) #tele center
+aimset.limit_yoff = np.float64(1.0e-9) #PAAM center
+aimset.limit_angx = np.float64(1.0e-9) #tele wavefront
+aimset.limit_angy = np.float64(1.0e-9) #PAAM wavefront
 
 del os, imports, utils, np

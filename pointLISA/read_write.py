@@ -32,7 +32,7 @@ def get_folder(direct=False,opt_date=True):
 
     return direct
 
-def write(inp,aimset,title='',direct='',extr='',opt_date=True,opt_time=True,time='',extra_title='',include='all',exclude=[],offset=False):
+def write(inp,aim,title='',direct='',extr='',opt_date=True,opt_time=True,time='',extra_title='',include='all',exclude=[],offset=False):
     
     date = get_date(option='date')
     if time=='':
@@ -57,18 +57,19 @@ def write(inp,aimset,title='',direct='',extr='',opt_date=True,opt_time=True,time
         return direct+'/'+title
     
     else:
-
         writefile.write("BEGIN OPTIONS"+'\n')
-        for setting in aimset.__dict__.keys():
-            val = aimset.__dict__[setting]
-            write_on=True
-            try:
-                if '<' in str(val):
-                    write_on=False
-            except:
-                pass
-            if write_on:
-                writefile.write(setting+':: '+str(val)+':: '+str(type(val))+'\n')
+        settings_all = [aim.data.stat,aim.aimset]
+        for j in settings_all:
+            for setting in j.__dict__.keys():
+                val = j.__dict__[setting]
+                write_on=True
+                try:
+                    if '<' in str(val_new[v]):
+                        write_on=False
+                except:
+                    pass
+                if write_on:
+                    writefile.write(setting+':: '+str(val)+':: '+str(type(val))+'\n')
         writefile.write("END OPTIONS"+'\n')
         writefile.write('\n')
 

@@ -54,6 +54,10 @@ class STAT():
         input_param['timeunit'] = self.timeunit
 
         self.input_param = input_param
+        stat = utils.Object()
+        for k in input_param.keys():
+            setattr(stat,k,input_param[k])
+        self.stat = stat
 
     def putp(self,i,t,mode='sampled'):
         if mode=='sampled':
