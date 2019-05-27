@@ -1093,7 +1093,7 @@ class OUTPUT():
         if t==False:
            t_plot = self.t_calc(calc=True) #add parameters
         else:
-            t_plot=np.array([t])
+            t_plot=np.array(t)
         
 
         if i =='all':
@@ -1113,7 +1113,8 @@ class OUTPUT():
 
         for k in ret:
             if option=='both' or option=='function':
-                setattr(func,k,lambda i,t,side: getattr(self.mean_var(i,t,side,ret=[k],Nbins=Nbins,mode=mode),k))
+                #setattr(func,k,lambda i,t,side: getattr(self.mean_var(i,t,side,[k],Nbins=Nbins,mode=mode),k))
+                setattr(func,k,lambda i,t,side: self.mean_var(i,t,side,[k],Nbins=Nbins,mode=mode))
             if option=='both' or option=='sampled':
                 for s in side:
                     for i_sel in i:

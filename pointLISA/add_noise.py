@@ -27,7 +27,7 @@ def response(i,side,aim,dz_dis=0.05,dt=False,t_start=False,t_end=False,component
     if t_start==False:
         t_start = aim.data.t_all[3]
     else:
-        t_start = t_start - 24*3600
+        t_start = t_start + 24.0*3600.0
     if t_end==False:
         t_end = aim.data.t_all[-4]
     if dt==False:
@@ -171,36 +171,6 @@ def get_noise(aim,dt=100):
 
     return aim_new
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # PAAM 
 def get_static(jit_on):
     if jit_on==True:
@@ -224,14 +194,14 @@ def get_static(jit_on):
     return Dx, Dy
 
 def get_PAAM_jitter(aim,jit_on):
-    t_plot =aim.wfe.t_all[4:-4]
+    t_plot =aim.data.t_all[4:-4]
     aim.Dx_stat,aim.Dy_stat = get_static(jit_on)
     n = lambda f: (1+0.0028/f)**2 # noise shape function
 
     try:
         aim.noise
     except AttributeError:
-        aim.noise = NOISE_LISA.Noise(aim)
+        aim.noise = utils.Object() #NOISE_LISA.Noise(aim) ...
 
     f0=1.0e-6
     f_max=1.0e-2
@@ -256,14 +226,14 @@ def get_PAAM_jitter(aim,jit_on):
         rotax_jitter_all[i] = {}
 
         for s in ['l','r']:
-            [x,y],func = aim.noise.Noise_time(f0,f_max,N,PSD_ang_jit[0],t_plot[-1])
-            angular_jitter = NOISE_LISA.functions.interpolate(x,np.real(y)*PSD_ang_jit[1])
+            [x,y],func = Noise_time(f0,f_max,N,PSD_ang_jit[0],t_plot[-1])
+            angular_jitter = methods.interpolate(x,np.real(y)*PSD_ang_jit[1])
 
-            [x,y],func = aim.noise.Noise_time(f0,f_max,N,PSD_long_jit[0],t_plot[-1])
-            long_jitter = NOISE_LISA.functions.interpolate(x,np.real(y)*PSD_long_jit[1])
+            [x,y],func = Noise_time(f0,f_max,N,PSD_long_jit[0],t_plot[-1])
+            long_jitter = methods.interpolate(x,np.real(y)*PSD_long_jit[1])
 
-            [x,y],func = aim.noise.Noise_time(f0,f_max,N,PSD_rotax_jit[0],t_plot[-1])
-            rotax_jitter = NOISE_LISA.functions.interpolate(x,np.real(y)*PSD_rotax_jit[1])
+            [x,y],func = Noise_time(f0,f_max,N,PSD_rotax_jit[0],t_plot[-1])
+            rotax_jitter = methods.interpolate(x,np.real(y)*PSD_rotax_jit[1])
 
             angular_jitter_all[i][s] = angular_jitter
             long_jitter_all[i][s] = long_jitter
@@ -299,24 +269,21 @@ def get_OPD(i,s,aim_new,aim_old,beam_l_ang=False,beam_r_ang=False):
     return [Dx_all,Dy_all,OPD_all,alpha_all]
 
 def get_jittered_aim(aim,jit_on,dt_tele=False,dt_PAAM = False):
-    #if jit_on==False:
-    #    aim_new = aim
-    #    try:
-    #        aim_new.noise
-    #    except AttributeError:
-    #        aim_new.noise = NOISE_LISA.Noise(aim)
+    aim_new = AIM.AIM(data=None)
+    for k in aim.__dict__.keys():
+        if '<function' in str(aim.__dict__[k]):
+            pass
+            #print k
+        else:
+            setattr(aim_new,k,getattr(aim,k))
 
-    aim_new = NOISE_LISA.AIM(wfe=False)
-
-    aim_new.copy_aim(aim,option='new_angles')
     if dt_PAAM==False:
-        dt_PAAM = aim.wfe.t_all[1]-aim.wfe.t_all[0]
+        dt_PAAM = aim.data.t_all[1]-aim.data.t_all[0]
     if dt_tele==False:
         if 'SS' in aim_new.tele_method:
             dt_tele=100
         else:
-            dt_tele = aim.wfe.t_all[1]-aim.wfe.t_all[0]
-
+            dt_tele = aim.data.t_all[1]-aim.data.t_all[0]
 
     tele_l_ang_res = {}
     tele_r_ang_res = {}
@@ -330,18 +297,13 @@ def get_jittered_aim(aim,jit_on,dt_tele=False,dt_PAAM = False):
 
     aim_new.tele_l_ang = lambda i,t: tele_l_ang_res[i](t)
     aim_new.tele_r_ang = lambda i,t: tele_r_ang_res[i](t)
-    #aim_new.beam_l_ang = lambda i,t: beam_l_ang[i](t)
-    #aim_new.beam_r_ang = lambda i,t: beam_r_ang[i](t)
     
-    #beam_ang = [beam_l_ang,beam_r_ang]
-    #beam_ang = [False,False]
-    
-    #aim_new.wfe = aim.wfe
     try:
         aim_new.noise
         del aim_new.noise
     except AttributeError:
-        aim_new.noise = NOISE_LISA.Noise(aim)
+        #aim_new.noise = NOISE_LISA.Noise(aim) # ...
+        aim_new.noise = utils.Object()
 
     [angular_jitter_all,long_jitter_all,rotax_jitter_all] = get_PAAM_jitter(aim_new,jit_on)
     aim_new.noise.angular_jitter = angular_jitter_all
@@ -373,9 +335,9 @@ def get_jittered_aim(aim,jit_on,dt_tele=False,dt_PAAM = False):
         
     return aim_new
 
-def SC_jitter(wfe=False,aim=False): #Hier code van Lupi
-    if wfe==False:
-        wfe = aim.wfe
+#def SC_jitter(wfe=False,aim=False): #Hier code van Lupi
+#    if wfe==False:
+#        wfe = aim.wfe
 
 
 

@@ -612,4 +612,33 @@ class AIM():
                 angx=False
 
         return [angx,angy,delay]
+    
+#    def copy_aim(self,aim_old,option=False): #...copying all essential parameters
+#        for attr in aim_old.__dict__.keys():
+#
+#            if attr not in self.__dict__.keys() or attr=='wfe':
+#                t = str(aim_old.__dict__[attr])
+#                go=False
+#                if option!=False:
+#                    if option=='new_angles':
+#                        if 'instance' in t:
+#                            print(t)
+#                            if 'WFE' in t:
+#                                if type(self.wfe)==bool:
+#                                    go=True
+#                                else:
+#                                    go=False
+#                            else:
+#                                go=False
+#                        elif 'function' in t:
+#                            go =False
+#                        else:
+#                            go=True
+#                else:
+#                    go=True
+#                if go==True:
+#                    #print(attr)
+#                    setattr(self,attr,aim_old.__dict__[attr])
+#
+#    return 0
 
