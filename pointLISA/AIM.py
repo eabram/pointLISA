@@ -333,6 +333,10 @@ class AIM():
         elif option=='wavefront':
             ang_l = lambda i,t: output.PAAM_wavefront_calc(self,i,t,'l',lim=self.aimset.limit_angy)
             ang_r = lambda i,t: output.PAAM_wavefront_calc(self,i,t,'r',lim=self.aimset.limit_angy)
+
+
+            #ang_l = lambda i,t: output.PAAM_wavefront_calc(self,i,t,'l',lim=self.aimset.limit_angy)
+            #ang_r = lambda i,t: output.PAAM_wavefront_calc(self,i,t,'r',lim=self.aimset.limit_angy)
             #ang_l = lambda i,t: methods.rotate_PAA_wavefront(self.data,self.aim_old,i,t,'l','angy')
             #ang_r = lambda i,t: methods.rotate_PAA_wavefront(self.data,self.aim_old,i,t,'r','angy')
 

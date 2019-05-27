@@ -1591,98 +1591,98 @@ def get_tele_wavefront(aim,i,t,side,method,scale=1,lim=1e-12,max_count=20,print_
 
 
 
-def tele_wavefront_calc_old(aim,i_send,t,para,method,scale=1,lim=1e-12,max_count=5,print_on=False): #The sending is always the left telescope and the receiving the right one
-    # Optimization per 8 seconds accurate
-    
-    i_rec = utils.i_slr(i_send)[1]
-
-    if i_send==0:
-        i_send=3
-    if i_rec==0:
-        i_rec=3
-    t_send=t
-    t_rec=t_send #...because considering traveling time makes it more complex (solve for functions)
-
-    tele_angle_l=aim.tele_l_ang(i_send,t)
-    tele_angle_r=aim.tele_r_ang(i_rec,t)
-    
-    calc_send=100
-    calc_rec=100
-    calc_send_old=calc_send
-    calc_rec_old=calc_send
-    
-    count=0
-    lim_val=100
-    
-    if method=='iter':
-        while count<max_count:
-            calc_send_old = calc_send
-            calc_rec_old = calc_rec
-            tele_angle_l_old = tele_angle_l
-            tele_angle_r_old = tele_angle_r
-
-            pos_send = values(aim,i_send,t_send,'l',mode='send',tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r)
-            calc_rec = getattr(getattr(OUTPUT(aim),'get_'+para)(pos_send),para)
-            tele_angle_r = tele_angle_r-scale*calc_rec
-            pos_rec = values(aim,i_rec,t_rec,'r',mode='send',tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r)
-            calc_send = getattr(getattr(OUTPUT(aim),'get_'+para)(pos_rec),para)
-            tele_angle_l = tele_angle_l-scale*calc_send
-            count=count+1
-            
-            lim_val = max(abs(calc_send),abs(calc_rec))
-            
-            if print_on:
-                print(tele_angle_l,tele_angle_r)
-                print(calc_send,calc_rec)
-                print(max(abs(calc_send),abs(calc_rec)),max(abs(calc_send),abs(calc_rec))>lim)
-                print('')
-            
-            if abs(calc_send_old)-lim<=abs(calc_send) and abs(calc_send)<=abs(calc_send_old)+lim and abs(calc_rec_old)-lim<=abs(calc_rec) and abs(calc_rec)<=abs(calc_rec_old)+lim:
-                mode = 'Result is converged'
-                if print_on:
-                    print(mode)
-                break
-            
-            if count>= max_count:
-                mode = 'Maximum iteration limit has been reached'
-                if print_on:
-                    print(mode)
-                break
-
-    elif method=='solve':
-        mode=method
-        tele_angle_l=aim.tele_l_ang(i_send,t)
-        tele_angle_r=aim.tele_r_ang(i_rec,t)
-        lim_val=100
-
-        count=0
-        val_send_old = tele_angle_l
-        val_rec_old = tele_angle_r
-        pos_send = lambda tele_l: values(aim,i_send,t_send,'l',mode='send',tele_angle_l=tele_l,tele_angle_r=tele_angle_r)
-        calc_send = lambda tele_l: getattr(getattr(OUTPUT(aim),'get_'+para)(pos_send(tele_l)),para)
-        tele_angle_l = scipy.optimize.brentq(calc_send,np.radians(-30-5),np.radians(-30+5),xtol=lim)
-        pos_rec = lambda tele_r: values(aim,i_rec,t_rec,'r',mode='send',tele_angle_l=tele_angle_l,tele_angle_r=tele_r)
-        calc_rec =lambda tele_r:  getattr(getattr(OUTPUT(aim),'get_'+para)(pos_rec(tele_r)),para)
-        tele_angle_r = scipy.optimize.brentq(calc_rec,np.radians(30-5),np.radians(30+5),xtol=lim)
-         
-        lim_val=max(abs(calc_send(tele_angle_l)),abs(calc_rec(tele_angle_r)))
-        
-        if print_on:
-            print(tele_angle_l,tele_angle_r)
-            print(calc_send(tele_angle_l),calc_rec(tele_angle_r))
-            print('')
-
-        #count=count+1
-        #if count>=max_count:
-        #    mode='Maximum iterations reached'
-        #    if print_on:
-        #        print(mode)
-        #    break
-
-        #if val_send_old==tele_angle_l and val_rec_old==tele_angle_r:
-        #    mode='Convergence received'
-        #    if print_on:
-        #        print(mode)
-        #    break
-
-    return [[tele_angle_l,tele_angle_r],mode]
+#def tele_wavefront_calc_old(aim,i_send,t,para,method,scale=1,lim=1e-12,max_count=5,print_on=False): #The sending is always the left telescope and the receiving the right one
+#    # Optimization per 8 seconds accurate
+#    
+#    i_rec = utils.i_slr(i_send)[1]
+#
+#    if i_send==0:
+#        i_send=3
+#    if i_rec==0:
+#        i_rec=3
+#    t_send=t
+#    t_rec=t_send #...because considering traveling time makes it more complex (solve for functions)
+#
+#    tele_angle_l=aim.tele_l_ang(i_send,t)
+#    tele_angle_r=aim.tele_r_ang(i_rec,t)
+#    
+#    calc_send=100
+#    calc_rec=100
+#    calc_send_old=calc_send
+#    calc_rec_old=calc_send
+#    
+#    count=0
+#    lim_val=100
+#    
+#    if method=='iter':
+#        while count<max_count:
+#            calc_send_old = calc_send
+#            calc_rec_old = calc_rec
+#            tele_angle_l_old = tele_angle_l
+#            tele_angle_r_old = tele_angle_r
+#
+#            pos_send = values(aim,i_send,t_send,'l',mode='send',tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r)
+#            calc_rec = getattr(getattr(OUTPUT(aim),'get_'+para)(pos_send),para)
+#            tele_angle_r = tele_angle_r-scale*calc_rec
+#            pos_rec = values(aim,i_rec,t_rec,'r',mode='send',tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r)
+#            calc_send = getattr(getattr(OUTPUT(aim),'get_'+para)(pos_rec),para)
+#            tele_angle_l = tele_angle_l-scale*calc_send
+#            count=count+1
+#            
+#            lim_val = max(abs(calc_send),abs(calc_rec))
+#            
+#            if print_on:
+#                print(tele_angle_l,tele_angle_r)
+#                print(calc_send,calc_rec)
+#                print(max(abs(calc_send),abs(calc_rec)),max(abs(calc_send),abs(calc_rec))>lim)
+#                print('')
+#            
+#            if abs(calc_send_old)-lim<=abs(calc_send) and abs(calc_send)<=abs(calc_send_old)+lim and abs(calc_rec_old)-lim<=abs(calc_rec) and abs(calc_rec)<=abs(calc_rec_old)+lim:
+#                mode = 'Result is converged'
+#                if print_on:
+#                    print(mode)
+#                break
+#            
+#            if count>= max_count:
+#                mode = 'Maximum iteration limit has been reached'
+#                if print_on:
+#                    print(mode)
+#                break
+#
+#    elif method=='solve':
+#        mode=method
+#        tele_angle_l=aim.tele_l_ang(i_send,t)
+#        tele_angle_r=aim.tele_r_ang(i_rec,t)
+#        lim_val=100
+#
+#        count=0
+#        val_send_old = tele_angle_l
+#        val_rec_old = tele_angle_r
+#        pos_send = lambda tele_l: values(aim,i_send,t_send,'l',mode='send',tele_angle_l=tele_l,tele_angle_r=tele_angle_r)
+#        calc_send = lambda tele_l: getattr(getattr(OUTPUT(aim),'get_'+para)(pos_send(tele_l)),para)
+#        tele_angle_l = scipy.optimize.brentq(calc_send,np.radians(-30-5),np.radians(-30+5),xtol=lim)
+#        pos_rec = lambda tele_r: values(aim,i_rec,t_rec,'r',mode='send',tele_angle_l=tele_angle_l,tele_angle_r=tele_r)
+#        calc_rec =lambda tele_r:  getattr(getattr(OUTPUT(aim),'get_'+para)(pos_rec(tele_r)),para)
+#        tele_angle_r = scipy.optimize.brentq(calc_rec,np.radians(30-5),np.radians(30+5),xtol=lim)
+#         
+#        lim_val=max(abs(calc_send(tele_angle_l)),abs(calc_rec(tele_angle_r)))
+#        
+#        if print_on:
+#            print(tele_angle_l,tele_angle_r)
+#            print(calc_send(tele_angle_l),calc_rec(tele_angle_r))
+#            print('')
+#
+#        #count=count+1
+#        #if count>=max_count:
+#        #    mode='Maximum iterations reached'
+#        #    if print_on:
+#        #        print(mode)
+#        #    break
+#
+#        #if val_send_old==tele_angle_l and val_rec_old==tele_angle_r:
+#        #    mode='Convergence received'
+#        #    if print_on:
+#        #        print(mode)
+#        #    break
+#
+#    return [[tele_angle_l,tele_angle_r],mode]
