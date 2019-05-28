@@ -168,10 +168,12 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                if (pos.ksi[0]**2+pos.kso[1]**2)<=self.aim.data.D:
+                if (pos.ksi[0]**2+pos.kso[1]**2)<=self.aim.data.D/2.0:
                     ret = pos.coor_end[0]*np.nan
                 else:
                    ret = pos.ksi[0]*pos.coor_end[2]+pos.ksi[1]*pos.coor_end[1]
+                print('ret:')
+                print(ret)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError, e:
