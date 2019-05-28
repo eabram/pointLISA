@@ -1036,7 +1036,10 @@ class OUTPUT():
             A=[]
             for x in self.xlist:
                 for y in self.ylist:
-                    A.append(getattr(func(x,y),ret[0]))
+                    if (x**2+y**2)**0.5)>=self.aim.data.D/2.0:
+                        A.append(getattr(func(x,y),ret[0])*np.nan)
+                    else:
+                        A.append(getattr(func(x,y),ret[0]))
             if mode=='mean':
                 return np.nanmean(A)
             elif mode=='var':
