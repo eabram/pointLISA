@@ -19,7 +19,10 @@ class OUTPUT():
     
     def pupil(self,Nbins=2): #Aperture
         try:
-            del self.xlist,self.ylist,self,Deltax,self.Deltay,self.Nbinsx,self.Nbinsy
+            del_at = ['xlist','ylist','Deltax','Deltay','Nbinsx','Nbinsy']
+            for at in del_at: 
+                delattr(self,at)
+            #del self.xlist,self.ylist,self,Deltax,self.Deltay,self.Nbinsx,self.Nbinsy
         except:
             pass
 
@@ -999,6 +1002,7 @@ class OUTPUT():
     def mean_var(self,i,t,side,ret,mode='mean',Nbins=False,tele_angle_l=False,tele_angle_r=False,beam_angle_l=False,beam_angle_r=False):
         if Nbins!=False:
             self.pupil(Nbins=Nbins)
+            setattr(func,k,lambda i,t,side: getattr(self.mean_var(i,t,side,[k],Nbins=Nbins,mode=mode),k))
         else:
             try:
                 self.xlist
