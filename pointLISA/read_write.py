@@ -149,6 +149,9 @@ def read_output(filenames=False,direct=False):
         for line in readfile:
             #print(line)
             if 'END\n'==line:
+                if R['mode']=='mean_surface':
+                    #R[R['value']][0][1] = np.matrix(R[R['value']][0][1])
+                    pass
                 R[R['value']][1] = 'value='+R['value']+', mode='+R['mode']
                 try:
                     getattr(ret,R['Side'])
@@ -181,21 +184,39 @@ def read_output(filenames=False,direct=False):
                     [key, value] = line.split('\n')[0].split(':: ')
                     R[key] = value
                 else:
-                    value = line.split('\n')[0]
-                    value = value[1:-1]
-                    values=[]
-                    for v in value.split(','):
+                    if R['mode']=='mean_surface':
+                        values=[]
+                        value = line.split('\n')[0]
                         try:
-                            values.append(np.float64(v))
+                            R[R['value']]
+                            new=False
                         except:
-                            print(line)
-                    values = np.array(values)
-                    try:
-                        R[R['value']]
-                    except:
-                        R[R['value']] = [[],0]
-                    R[R['value']][0].append(values)
-                    
+                            R[R['value']] = [[0,''],0]
+                            new=True
+                        if new==True:
+                            R[R['value']][0][0] = np.array(utils.flatten(np.array(np.matrix(value))))
+                        elif new==False:
+                            R[R['value']][0][1] = R[R['value']][0][1]+value
+
+                    else:
+                        value = line.split('\n')[0]
+                        value = value[1:-1]
+                        values=[]
+                        for v in value.split(','):
+                            try:
+                                values.append(np.float64(v))
+                            except:
+                                print(line)
+                                print('Error')
+                                print(R['mode'])
+
+                        values = np.array(values)
+                        try:
+                            R[R['value']]
+                        except:
+                            R[R['value']] = [[],0]
+                        R[R['value']][0].append(values)
+                        
             elif 'BEGIN\n'==line:
                 read_on=True
                 R={}
