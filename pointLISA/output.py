@@ -1002,7 +1002,6 @@ class OUTPUT():
     def mean_var(self,i,t,side,ret,mode='mean',Nbins=False,tele_angle_l=False,tele_angle_r=False,beam_angle_l=False,beam_angle_r=False):
         if Nbins!=False:
             self.pupil(Nbins=Nbins)
-            #setattr(func,k,lambda i,t,side: getattr(self.mean_var(i,t,side,[k],Nbins=Nbins,mode=mode),k))
         else:
             try:
                 self.xlist
@@ -1023,8 +1022,10 @@ class OUTPUT():
                 return np.nanmean(A)
             elif mode=='var':
                 return np.nanvar(A)/(np.float64(len(A) - A.count(np.nan)))
-            elif mode=='mean_var':
+            elif mode=='mean_var'
                 return np.array([np.nanmean(A),np.nanvar(A)/(np.float64(len(A) - A.count(np.nan)))])
+            elif mode=='surface':
+                return A
 
         
 
