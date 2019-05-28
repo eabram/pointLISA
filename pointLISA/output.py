@@ -164,11 +164,22 @@ class OUTPUT():
 
     ### Returns important parameters
     
+    def get_end_ksi(self,pos):
+        check=False
+        while check==False:
+            try:
+                ret = pos.ksi[0]*pos.coor_end[2]+pos.ksi[1]*pos.coor_end[1]
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError, e:
+                self.add_attribute(e,pos)
+        return pos
+
     def get_off(self,pos):
         check=False
         while check==False:
             try:
-                ret = LA.matmul(pos.coor_startbeam_out,pos.end-pos.start)
+                ret = LA.matmul(pos.coor_startbeam_out,pos.end+pos.end_ksi-pos.start)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 setattr(pos,'xoff',ret[2])
                 setattr(pos,'yoff',ret[1])
