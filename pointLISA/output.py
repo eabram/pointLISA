@@ -23,7 +23,7 @@ class OUTPUT():
         except:
             pass
 
-        D_calc=self.D
+        D_calc=self.aim.D
 
         xlist = np.linspace(-D_calc*0.5,D_calc*0.5,Nbins+1)
         self.xlist = xlist[0:-1]+0.5*(xlist[1]-xlist[0])
