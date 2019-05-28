@@ -168,10 +168,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                if (pos.ksi[0]**2+pos.kso[1]**2)<=self.aim.data.D/2.0:
-                    ret = pos.coor_end[0]*np.nan
-                else:
-                   ret = pos.ksi[0]*pos.coor_end[2]+pos.ksi[1]*pos.coor_end[1]
+                ret = pos.ksi[0]*pos.coor_end[2]+pos.ksi[1]*pos.coor_end[1]
                 print('ret:')
                 print(ret)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
@@ -1013,7 +1010,11 @@ class OUTPUT():
 
 
 
-
+    def pupil_func(self,f,x,y):
+        if (x**2+y**2)**0.5>self.aim.data.D/2.0:
+            return np.nan
+        else:
+            return f(x,y)
 
     def mean_var(self,i,t,side,ret,mode='mean',Nbins=False,tele_angle_l=False,tele_angle_r=False,beam_angle_l=False,beam_angle_r=False):
         if Nbins!=False:
@@ -1026,7 +1027,9 @@ class OUTPUT():
         if type(ret)!=list:
             ret=[ret]
 
-        func = lambda x,y: values(self,i,t,side,ret=ret,ksi=[x,y],tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r,beam_angle_l=beam_angle_l,beam_angle_r=beam_angle_r)
+        func_calc = lambda x,y: values(self,i,t,side,ret=ret,ksi=[x,y],tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r,beam_angle_l=beam_angle_l,beam_angle_r=beam_angle_r)
+        func = lambda x,y: self.pupil_func(func_calc,x,y)
+
         if mode=='center':
             return getattr(func(0,0),ret[0])
         elif 'var' in mode or 'mean' in mode:
