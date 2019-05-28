@@ -1002,7 +1002,7 @@ class OUTPUT():
     def mean_var(self,i,t,side,ret,mode='mean',Nbins=False,tele_angle_l=False,tele_angle_r=False,beam_angle_l=False,beam_angle_r=False):
         if Nbins!=False:
             self.pupil(Nbins=Nbins)
-            setattr(func,k,lambda i,t,side: getattr(self.mean_var(i,t,side,[k],Nbins=Nbins,mode=mode),k))
+            #setattr(func,k,lambda i,t,side: getattr(self.mean_var(i,t,side,[k],Nbins=Nbins,mode=mode),k))
         else:
             try:
                 self.xlist
