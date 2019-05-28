@@ -1024,7 +1024,7 @@ class OUTPUT():
                 return np.nanvar(A)/(np.float64(len(A) - A.count(np.nan)))
             elif mode=='mean_var':
                 return np.array([np.nanmean(A),np.nanvar(A)/(np.float64(len(A) - A.count(np.nan)))])
-            elif mode=='surface':
+            elif mode=='mean_surface':
                 return A
 
         
