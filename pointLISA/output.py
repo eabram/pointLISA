@@ -1022,7 +1022,7 @@ class OUTPUT():
                 return np.nanmean(A)
             elif mode=='var':
                 return np.nanvar(A)/(np.float64(len(A) - A.count(np.nan)))
-            elif mode=='mean_var'
+            elif mode=='mean_var':
                 return np.array([np.nanmean(A),np.nanvar(A)/(np.float64(len(A) - A.count(np.nan)))])
             elif mode=='surface':
                 return A
