@@ -103,6 +103,35 @@ def write(inp,aim,title='',direct='',extr='',opt_date=True,opt_time=True,time=''
 
     return direct
 
+def make_matrix(A):
+    B = A.split(']')
+    out=[]
+    for j in B:
+        if j!='':
+            C = j.replace('[','')
+            C = C.replace(']','')
+            C = C.replace(',','')
+            D = C.split(' ')
+            try:
+                D.remove('')
+            except ValueError:
+                pass
+            clear=False
+            while clear==False:
+                try:
+                    ind = D.index('')
+                    del D[ind]
+                except:
+                    clear=True
+                    pass
+            E=[]
+            #print(D)
+            s = int(len(D)**0.5)
+            for k in range(0,s):
+                E.append(D[k*s:(k+1)*s])
+            out.append(np.matrix(E,dtype=np.float64))
+    
+    return out
 
 def read_options(filename,print_on=False):
     aimset=utils.Object()
@@ -140,7 +169,8 @@ def read_output(filenames=False,direct=False):
         for direct_calc in direct:
             for (dirpath, dirnames, filenames_calc) in os.walk(direct_calc):
                 for f in filenames_calc:
-                    f_list.append(dirpath+'/'+f.split('/')[-1])
+                    if '.swp' not in f:
+                        f_list.append(dirpath+'/'+f.split('/')[-1])
 
     filenames = f_list
     for filename in filenames:
@@ -150,7 +180,9 @@ def read_output(filenames=False,direct=False):
             #print(line)
             if 'END\n'==line:
                 if R['mode']=='mean_surface':
-                    #R[R['value']][0][1] = np.matrix(R[R['value']][0][1])
+
+                    #B = R[R['value']][0][1]
+                    R[R['value']][0][1] = make_matrix(R[R['value']][0][1])
                     pass
                 R[R['value']][1] = 'value='+R['value']+', mode='+R['mode']
                 try:

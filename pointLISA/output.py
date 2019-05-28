@@ -190,7 +190,36 @@ class OUTPUT():
             except AttributeError, e:
                 self.add_attribute(e,pos)
         return pos
-        
+    
+    def get_tele_ang(self,pos):
+        check=False
+        while check==False:
+            try:
+                if pos.side=='l':
+                    ret = self.aim.tele_l_ang(pos.i_self,pos.t)
+                elif pos.side=='r':
+                    ret = self.aim.tele_r_ang(pos.i_self,pos.t)
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError, e:
+                self.add_attribute(e,pos)
+        return pos
+
+    def get_PAAM_ang(self,pos):
+        check=False
+        while check==False:
+            try:
+                if pos.side=='l':
+                    ret = self.aim.beam_l_ang(pos.i_self,pos.t)
+                elif pos.side=='r':
+                    ret = self.aim.beam_r_ang(pos.i_self,pos.t)
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError, e:
+                self.add_attribute(e,pos)
+        return pos
+
+
     def get_xoff(self,pos):
         check=False
         while check==False:
