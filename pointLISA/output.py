@@ -181,7 +181,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = LA.matmul(pos.coor_startbeam_out,pos.end+pos.end_ksi-pos.start)
+                ret = LA.matmul(pos.coor_startbeam_out,pos.end-pos.start)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 setattr(pos,'xoff',ret[2])
                 setattr(pos,'yoff',ret[1])
@@ -1027,8 +1027,8 @@ class OUTPUT():
         if type(ret)!=list:
             ret=[ret]
 
-        func_calc = lambda x,y: values(self,i,t,side,ret=ret,ksi=[x,y],tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r,beam_angle_l=beam_angle_l,beam_angle_r=beam_angle_r)
-        func = lambda x,y: self.pupil_func(func_calc,x,y)
+        func = lambda x,y: values(self,i,t,side,ret=ret,ksi=[x,y],tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r,beam_angle_l=beam_angle_l,beam_angle_r=beam_angle_r)
+        #func = lambda x,y: self.pupil_func(func_calc,x,y)
 
         if mode=='center':
             return getattr(func(0,0),ret[0])
