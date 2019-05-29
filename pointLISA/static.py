@@ -12,12 +12,21 @@ import utils
 
 class STAT():
     def __init__(self,input_param,para,**kwargs):
+        input_param_new = {}
+        for k in input_param.keys():
+            if '__' not in k:
+                input_param_new[k] = input_param[k]
+        del input_param
+        input_param = input_param_new
+        del input_param_new
+
         from imports import *
         for k in para:
             globals()[k] = para[k]
             setattr(self,k,para[k])
-        for k in input_param:
-            setattr(self,k,input_param[k])
+        for k in input_param.keys():
+            if '__' not in k:
+                setattr(self,k,input_param[k])
 
         for key,value in kwargs.items():
             input_param[key] = value
@@ -56,7 +65,14 @@ class STAT():
         self.input_param = input_param
         stat = utils.Object()
         for k in input_param.keys():
-            setattr(stat,k,input_param[k])
+            if '__' not in k:
+                try:
+                    setattr(stat,k,input_param[k])
+                except:
+                    print('Not copy:')
+                    print(k,input_param[k])
+                    print('')
+                    pass
         self.stat = stat
 
     def putp(self,i,t,mode='sampled'):

@@ -18,9 +18,8 @@ class ORBIT():
     def __init__(self,input_param,**kwargs):
         for k in input_param.keys():
             setattr(self,k,input_param[k])
-
         if self.directory_imp != False:
-            self.directory_imp=home+self.directory_imp
+            self.directory_imp=input_param['home']+self.directory_imp
         input_param['directory_imp'] =  self.directory_imp
         if self.filename=='None':
             print('Please select filename')

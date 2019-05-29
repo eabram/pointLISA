@@ -4,9 +4,18 @@ import os
 #import save_fig
 #import writefile
 
-def do_run(input_param={},set_stat=utils.Object,**kwargs):
+def do_run(input_file=None,input_param={},set_stat=utils.Object,**kwargs):
     para = parameters.__dict__
     setting = settings.stat.__dict__
+    if input_file!=None:
+        setting_new = read_write.read_options(input_file).__dict__
+        for k in setting.keys():
+            try:
+                setting[k] = setting_new[k]
+            except KeyError:
+                pass
+
+    
     input_param_new={}
     for key,value in kwargs.items():
         input_param_new[key] = value
@@ -65,10 +74,14 @@ def do_run(input_param={},set_stat=utils.Object,**kwargs):
 
         if execute == True:
             filename_save = i.split('/')[-1].split('_')[0]
-            data=STAT(input_param,para,filename = i).PAA_func() 
+            #for k in input_param.keys():
+            #    print(k,input_param[k])
+            data=STAT(input_param,para,filename = i).PAA_func()
+            data.input_file = input_file
+
             filename_done.append(filename_name)
             count=count+1
-
+            
             if test_calc==False: 
                 data_all[filename_save] = data
                 data_all[str(count)] = data

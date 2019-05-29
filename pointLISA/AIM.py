@@ -3,22 +3,29 @@ import output
 import numpy as np
 import os
 import yaml
+from pointLISA import *
+import pointLISA
 # This class obtaines the pointing of the PAAM and telescope
 
 
 class AIM():
-    def __init__(self,data=False,settings=utils.Object(),filename=False,**kwargs):
+    def __init__(self,data=False,setting=utils.Object(),filename=False,**kwargs):        
+        #import pointLISA
+        from pointLISA import *
+        for key, value in kwargs.items():
+            setattr(self,key,value)
+
         if data!=None:
             self.data = data
-            aimset0 = settings
+            aimset0 = setting
             aimset = utils.Object()
             #self.aimset=settings
             #for key in settings.__dict__.keys():
             #    setattr(self,key,settings.__dict__[key])
             
-            if filename!=False:
-                self.aimset = read_write.read_options(filename)
-            
+            #if data.input_file!=False:
+            #    aimset_read = read_write.read_options(data.input_file)
+                 
             for key,value in kwargs.items():
                 #print(key)
                 if filename!=False:
@@ -31,14 +38,17 @@ class AIM():
                         setattr(self,key,value)
                         setattr(aimset,key,value)
             
-            for key in settings.__dict__.keys():
+            for key in setting.__dict__.keys():
                 if key not in aimset.__dict__.keys():
-                    setattr(aimset,key,settings.__dict__[key])
-                    setattr(self,key,settings.__dict__[key])
+                    setattr(aimset,key,setting.__dict__[key])
+                    setattr(self,key,setting.__dict__[key])
+
+            for k in settings.aimset.__dict__.keys():
+                if k not in aimset.__dict__.keys():
+                    setattr(aimset,k,settings.aimset.__dict__[k])
             self.aimset = aimset
 
             
-
 
             if data!=False:
                 print('Start calculating telescope and PAAM aim')
@@ -48,7 +58,7 @@ class AIM():
                     try:
                         self.aim0 = kwargs['aim0']
                     except KeyError:
-                        self.aim0=AIM(data=None)
+                        self.aim0=AIM.AIM(data=None)
                     self.angles0=kwargs.pop('angles0',False)
                     self.aim0.data=data
                     self.aim0.tele_l_ang = self.angles0[0]
@@ -170,7 +180,8 @@ class AIM():
 
         print(' ')
 
-        if self.inp==False:
+        #if self.inp==False:
+        if self.data.input_file==None or self.init==True:
             if method=='no_control':
                 if tele_ang_extra==False:
                     offset_l = {'1':0,'2':0,'3':0}
@@ -254,45 +265,67 @@ class AIM():
 
             else:
                 raise ValueError('Please select valid telescope pointing method')
-
-        elif 'pointLISA.utils.Object' in str(type(self.aimset.inp)):
-            option = self.tele_control+'_'+self.PAAM_control+'__'+self.option_tele+'_'+self.option_PAAM
-            setting = self.tele_method_solve+'_'+self.PAAM_method_solve+'__'+self.optimize_PAAM+'_'+str(self.optimize_PAAM_value).replace('.','d')
-
-            self.inp = getattr(getattr(self.aimset.inp,option),setting)
-            print('Reading imported telescope angles')
-
-            XL = []
-            YL = []
-            XR = []
-            YR = []
-            
-            tele_l_ang_func = []
-            tele_r_ang_func = []
-            beam_l_ang_func = []
-            beam_r_ang_func = []
-
+    
+        else:
+            print('Importing pointing angles from:')
+            print(self.data.input_file)
+            ret = pointLISA.read_write.read_output(filenames=self.data.input_file)
+            tele_l_ang=[]
+            tele_r_ang=[]
+            beam_l_ang=[]
+            beam_r_ang=[]
             for i in range(1,4):
-                [xlt,ylt] = getattr(getattr(self.inp.l,'i'+str(i)),'tele_l_ang')[0]
-                [xrt,yrt] = getattr(getattr(self.inp.r,'i'+str(i)),'tele_r_ang')[0]
-                [xlb,ylb] = getattr(getattr(self.inp.l,'i'+str(i)),'beam_l_ang')[0]
-                [xrb,yrb] = getattr(getattr(self.inp.r,'i'+str(i)),'beam_r_ang')[0]
+                t_l =  getattr(getattr(ret[0],'l'),'i'+str(i)).tele_ang
+                t_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).tele_ang
+                b_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).PAAM_ang
+                b_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).PAAM_ang
+                tele_l_ang.append(methods.interpolate(t_l[0][0],t_l[0][1]))
+                tele_r_ang.append(methods.interpolate(t_r[0][0],t_r[0][1]))
+                beam_l_ang.append(methods.interpolate(t_l[0][0],t_l[0][1]))
+                beam_r_ang.append(methods.interpolate(t_r[0][0],t_r[0][1]))
 
-                tele_l_ang_func.append(methods.interpolate(xlt,ylt))
-                tele_r_ang_func.append(methods.interpolate(xrt,yrt))
-                beam_l_ang_func.append(methods.interpolate(xlb,ylb))
-                beam_r_ang_func.append(methods.interpolate(xrb,yrb))
+            self.tele_l_ang_func = lambda i,t: tele_l_ang[i-1](t)
+            self.tele_r_ang_func = lambda i,t: tele_r_ang[i-1](t)
+            self.beam_l_ang_func = lambda i,t: beam_l_ang[i-1](t)
+            self.beam_r_ang_func = lambda i,t: beam_r_ang[i-1](t)
 
-            self.tele_l_ang = lambda i,t: tele_l_ang_func[i-1](t)
-            self.tele_r_ang = lambda i,t: tele_r_ang_func[i-1](t)
-            self.beam_l_ang = lambda i,t: beam_l_ang_func[i-1](t)
-            self.beam_r_ang = lambda i,t: beam_r_ang_func[i-1](t)            
-
+#        elif 'pointLISA.utils.Object' in str(type(self.aimset.inp)):
+#            option = self.tele_control+'_'+self.PAAM_control+'__'+self.option_tele+'_'+self.option_PAAM
+#            setting = self.tele_method_solve+'_'+self.PAAM_method_solve+'__'+self.optimize_PAAM+'_'+str(self.optimize_PAAM_value).replace('.','d')
+#
+#            self.inp = getattr(getattr(self.aimset.inp,option),setting)
+#            print('Reading imported telescope angles')
+#
+#            XL = []
+#            YL = []
+#            XR = []
+#            YR = []
+#            
+#            tele_l_ang_func = []
+#            tele_r_ang_func = []
+#            beam_l_ang_func = []
+#            beam_r_ang_func = []
+#
+#            for i in range(1,4):
+#                [xlt,ylt] = getattr(getattr(self.inp.l,'i'+str(i)),'tele_l_ang')[0]
+#                [xrt,yrt] = getattr(getattr(self.inp.r,'i'+str(i)),'tele_r_ang')[0]
+#                [xlb,ylb] = getattr(getattr(self.inp.l,'i'+str(i)),'beam_l_ang')[0]
+#                [xrb,yrb] = getattr(getattr(self.inp.r,'i'+str(i)),'beam_r_ang')[0]
+#
+#                tele_l_ang_func.append(methods.interpolate(xlt,ylt))
+#                tele_r_ang_func.append(methods.interpolate(xrt,yrt))
+#                beam_l_ang_func.append(methods.interpolate(xlb,ylb))
+#                beam_r_ang_func.append(methods.interpolate(xrb,yrb))
+#
+#            self.tele_l_ang = lambda i,t: tele_l_ang_func[i-1](t)
+#            self.tele_r_ang = lambda i,t: tele_r_ang_func[i-1](t)
+#            self.beam_l_ang = lambda i,t: beam_l_ang_func[i-1](t)
+#            self.beam_r_ang = lambda i,t: beam_r_ang_func[i-1](t)            
+#
         
         try:
             self.tele_l_ang
         except AttributeError:
-
             if self.sampled==True:
                 try:
                     self.t_sample

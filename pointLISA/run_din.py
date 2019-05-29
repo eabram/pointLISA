@@ -1,7 +1,42 @@
 from imports import *
 
-def get_pointing(data,filename=False,set_din=utils.Object(),aim0=False,aim_old=False,print_on=False,**kwargs):
-    aimset = settings.aimset
+def get_pointing(data,import_file=None,filename=False,set_din=utils.Object(),aim0=False,aim_old=False,print_on=False,**kwargs):
+    from pointLISA import *
+    try:
+        input_file = data.input_file
+    except:
+        input_file=None
+
+    aimset_din = settings.aimset
+    aimset_new = utils.Object()
+    if input_file!=None:
+        aimset = read_write.read_options(input_file).__dict__
+        for k in aimset_din.__dict__.keys():
+            try:
+                setattr(aimset_new,k,aimset[k])
+            except KeyError:
+                setattr(aimset_new,k,aimset_din.__dict__[k])
+                pass
+
+        del aimset, aimset_din
+        aimset = aimset_new
+        del aimset_new
+    else:
+        aimset = aimset_din
+        del aimset_din
+
+#    for k in aimset.__dict__.keys():
+#        print(k,getattr(aimset,k))
+
+    if type(set_din)==dict:
+        new = utils.Object
+        for k in set_din.keys():
+            if '__' not in k:
+                setattr(new,k,set_din[k])
+        del set_din
+        set_din = new
+        del new
+
     for k in set_din.__dict__.keys():
         if k in aimset.__dict__.keys():
             setattr(aimset,k,getattr(set_din,k))
@@ -15,16 +50,11 @@ def get_pointing(data,filename=False,set_din=utils.Object(),aim0=False,aim_old=F
         if print_on:
             print('Adjust setting: '+key+' = '+str(getattr(aimset,key)))
 
-    #aim0 = kwargs.pop('aim0',False)
-    #aim_old = kwargs.pop('aim_old',False)
 
     sampled=False
     count=0
 
     print('check')
-
-#    if aimset.PAAM_ang_extra==True:
-#        aimset.PAAM_ang_extra = methods.get_extra_ang_mean(aimsetself,'PAAM')
 
     if aim_old==False:
         tele_l_ang=False
@@ -52,12 +82,25 @@ def get_pointing(data,filename=False,set_din=utils.Object(),aim0=False,aim_old=F
 
     
 
+    if data.input_file==None:    
+        aim = AIM.AIM(data=data,setting = set_din,init=aimset.init,sampled=aimset.sampled,angles0=angles0,angles_old=angles_old,offset_tele=aimset.offset_tele,settings=aimset,filename=filename,inp=False)
+        aim.tele_aim(method=aim.aimset.tele_control,tele_ang_extra=aim.aimset.tele_ang_extra,option=aim.aimset.option_tele)
+        out = aim.PAAM_aim(method=aim.aimset.PAAM_control,PAAM_ang_extra=aim.aimset.PAAM_ang_extra,option=aim.aimset.option_PAAM)
+    else:
+        print('tele:')
+        print(aimset.tele_control)
+        print('PAAM:')
+        print(aimset.PAAM_control)
+
+        aim = AIM.AIM(data=data,init=aimset.init,sampled=aimset.sampled,angles0=angles0,angles_old=angles_old,offset_tele=aimset.offset_tele,settings=aimset,filename=filename,inp=False,aimset_read=aimset)
+        aim.tele_aim(method=aimset.tele_control,tele_ang_extra=aimset.tele_ang_extra,option=aimset.option_tele)
+
+        out = aim.PAAM_aim(method=aimset.PAAM_control,PAAM_ang_extra=aimset.PAAM_ang_extra,option=aimset.option_PAAM)
+
     
-    aim = AIM.AIM(data=data,init=aimset.init,sampled=aimset.sampled,angles0=angles0,angles_old=angles_old,offset_tele=aimset.offset_tele,settings=aimset,filename=filename,inp=aimset.inp)
-    aim.tele_aim(method=aim.aimset.tele_control,tele_ang_extra=aim.aimset.tele_ang_extra,option=aim.aimset.option_tele)
-    out = aim.PAAM_aim(method=aim.aimset.PAAM_control,PAAM_ang_extra=aim.aimset.PAAM_ang_extra,option=aim.aimset.option_PAAM)
-    
-    return out
+    #return out
+
+    return aim
 
 
 

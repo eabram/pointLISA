@@ -133,7 +133,7 @@ def make_matrix(A):
     
     return out
 
-def read_options(filename,print_on=False):
+def read_options(filename,print_on=False,del_auto=True):
     aimset=utils.Object()
     read_on=False
     readfile = open(filename,'r')
@@ -157,6 +157,11 @@ def read_options(filename,print_on=False):
         if 'END OPTIONS' in str(line):
             break
 
+    if del_auto==True:
+        exceptions = ['dir_orbits','dir_savefig','filename','home','directory_imp','test_calc']
+        for ex in exceptions:
+            setattr(aimset, ex, getattr(settings.stat,ex))
+
     return aimset
 
 def read_output(filenames=False,direct=False):
@@ -172,7 +177,11 @@ def read_output(filenames=False,direct=False):
                     if '.swp' not in f:
                         f_list.append(dirpath+'/'+f.split('/')[-1])
 
-    filenames = f_list
+        filenames = f_list
+    else:
+        if type(filenames)!=list:
+            filenames = [filenames]
+
     for filename in filenames:
         readfile = open(filename,'r')
         read_on=False
