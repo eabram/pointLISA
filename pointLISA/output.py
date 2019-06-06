@@ -1453,7 +1453,7 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
 
 def tele_center_calc(aim,i,t,scale=1,lim=1e-12,max_count=5,print_on=False,value=0):
     [i_self,i_left,i_right] = utils.i_slr(i)
-    print(aim.tele_l,t)
+    print(aim.tele_l_ang,t)
     tele_l=aim.tele_l_ang(i_self,t)
     tele_r=aim.tele_r_ang(i_left,t)
     
