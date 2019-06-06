@@ -87,6 +87,9 @@ class AIM():
         offset = {'l': {1: 0.0, 2: 0.0, 3: 0.0},
  'r': {1: 0.0, 2: 0.0, 3: 0.0}}
         
+        if option=='0':
+            option =0
+
         if option==0:
             pass
 
