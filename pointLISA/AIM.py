@@ -155,9 +155,13 @@ class AIM():
         
         max_count=5
         scale=1
-
-        ang_l = lambda i,t: methods.tele_point_calc(self.aim0,i,t,'l',option,max_count=max_count,scale=scale,value=value)
-        ang_r = lambda i,t: methods.tele_point_calc(self.aim0,i,t,'r',option,max_count=max_count,scale=scale,value=value)
+        
+        if self.init==False:
+            ang_l = lambda i,t: methods.tele_point_calc(self.aim0,i,t,'l',option,max_count=max_count,scale=scale,value=value)
+            ang_r = lambda i,t: methods.tele_point_calc(self.aim0,i,t,'r',option,max_count=max_count,scale=scale,value=value)
+         elif self.init==True:
+            ang_l = lambda i,t: methods.tele_point_calc(self,i,t,'l',option,max_count=max_count,scale=scale,value=value)
+            ang_r = lambda i,t: methods.tele_point_calc(self,i,t,'r',option,max_count=max_count,scale=scale,value=value)
         
 
         self.tele_option = option
