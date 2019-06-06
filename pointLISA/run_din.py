@@ -47,6 +47,7 @@ def get_pointing(data,import_file=None,filename=False,set_din=utils.Object(),aim
     
     for key,value in kwargs.items():
         setattr(aimset,key,value)
+        setattr(set_din,key,value)
         if print_on:
             print('Adjust setting: '+key+' = '+str(getattr(aimset,key)))
 
