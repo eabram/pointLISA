@@ -141,6 +141,8 @@ class AIM():
                 days = len(self.data.t_all)
                 pos_l = methods.get_nearest_smaller_value(keys,days)
                 k_l = keys[pos_l]
+                print(k_l)
+                print(days)
                 k_r = keys[pos_l+1]
                 sm = offset_all[k_l]
                 bi = offset_all[k_r]
