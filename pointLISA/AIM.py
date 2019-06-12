@@ -139,21 +139,26 @@ class AIM():
                 keys = offset_all.keys()
                 keys.sort()
                 days = len(self.data.t_all)
-                pos_l = methods.get_nearest_smaller_value(keys,days)
-                print(pos_l)
-                k_l = keys[pos_l]
-                k_r = keys[pos_l+1]
-                sm = offset_all[k_l]
-                bi = offset_all[k_r]
-                offset={}
-                for s in sm.keys():
-                    offset[s]={}
-                    for i in sm[s].keys():
-                        if days==k_l:
-                            offset[s][i] = sm[s][i]
-                        else:
-                            offset[s][i] = sm[s][i] + ((bi[s][i]-sm[s][i])/(k_r-k_l))*(days-k_l)
-                
+                try:
+                    offset = offset_all[days]
+                except KeyError:
+                    try:
+                        pos_l = methods.get_nearest_smaller_value(keys,days)
+                        k_l = keys[pos_l]
+                        k_r = keys[pos_l+1]
+                        sm = offset_all[k_l]
+                        bi = offset_all[k_r]
+                        offset={}
+                        for s in sm.keys():
+                            offset[s]={}
+                            for i in sm[s].keys():
+                                if days==k_l:
+                                    offset[s][i] = sm[s][i]
+                                else:
+                                    offset[s][i] = sm[s][i] + ((bi[s][i]-sm[s][i])/(k_r-k_l))*(days-k_l)
+                    except:
+                        offset = offset_all[keys[-1]]
+
                 print('Offset is:')
                 print(offset)
                 print('')
