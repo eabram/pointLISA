@@ -148,7 +148,10 @@ class AIM():
                 for s in sm.keys():
                     offset[s]={}
                     for i in sm[s].keys():
-                        offset[s][i] = sm[s][i] + ((bi[s][i]-sm[s][i])/(k_r-k_l))*(days-k_l)
+                        if days==k_l:
+                            offset[s][i] = sm[s][i]
+                        else:
+                            offset[s][i] = sm[s][i] + ((bi[s][i]-sm[s][i])/(k_r-k_l))*(days-k_l)
                 
                 print('Offset is:')
                 print(offset)
