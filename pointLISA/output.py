@@ -1172,9 +1172,9 @@ class OUTPUT():
                 for s in side:
                     for i_sel in i:
                         if s=='l':
-                            A = [getattr(self.aim,'t_adjust')[0][int(i_sel)-1],getattr(self.aim,'tele_adjust_samp')[0][int(i_sel)-1]
+                            A = [getattr(self.aim,'t_adjust')[0][int(i_sel)-1],getattr(self.aim,'tele_adjust_samp')[0][int(i_sel)-1]]
                         elif s=='r':
-                            A = [getattr(self.aim,'t_adjust')[1][int(i_sel)-1],getattr(self.aim,'tele_adjust_samp')[10][int(i_sel)-1]
+                            A = [getattr(self.aim,'t_adjust')[1][int(i_sel)-1],getattr(self.aim,'tele_adjust_samp')[10][int(i_sel)-1]]
                         B = [A,'value='+k+', mode='+str(mode)]
                         setattr(getattr(getattr(sampled,s),'i'+str(i_sel)),k,B)
             else:
