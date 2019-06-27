@@ -1,17 +1,21 @@
 from pointLISA import *
 import pointLISA
 import os
+import shutil
 
-rets = ['tele_ang','PAAM_ang','xoff','yoff','zoff','r','R','angx_ab_rec','angy_ab_rec','angx_nab_rec','angy_nab_rec','angx_ab_send','angy_ab_send','angx_nab_send','angy_nab_send','angx_rec','angy_rec','angx_send','any_send','angx_wf_send','angy_wf_send','piston','z_extra','FOV_wavefront','u','power']
-#rets=[['xoff','yoff','zoff']]
+#rets = ['tele_ang','PAAM_ang','xoff','yoff','zoff','r','R','angx_ab_rec','angy_ab_rec','angx_nab_rec','angy_nab_rec','angx_ab_send','angy_ab_send','angx_nab_send','angy_nab_send','angx_rec','angy_rec','angx_send','any_send','angx_wf_send','angy_wf_send','piston','z_extra','FOV_wavefront','u','power']
+#rets = ['xoff']
+rets=[['xoff','yoff','zoff'],['angx_ab_rec','angy_ab_rec','angx_ab_send','angy_ab_send'],['u','power'],'FOV_wavefront',['piston','z_extra']]
 SC=[1,2,3]
 #SC=[1]
 sides=['l','r']
 #sides=['l']
 #mode=['center','meanvar','mean_surface']
-mode=['meanvar','mean_surface']
-#mode=['center']
+#mode=['meanvar','mean_surface']
+mode=['center']
 Nbins=2
+clear_go=False
+overwrite=False
 
 def get_all(input_file=None,set_stat=utils.Object(),set_din=utils.Object()):
     data = pointLISA.run_stat.do_run(input_file=input_file,set_stat=set_stat)
@@ -19,16 +23,47 @@ def get_all(input_file=None,set_stat=utils.Object(),set_din=utils.Object()):
     aim= pointLISA.run_din.get_pointing(data,aim0=aim0,aim_old=aim0,sampled=False,set_din=set_din,init=False)
 
     return aim
-folder='/home/ester/git/Results/20190606'
-f_list=[]
-for (dirpath, dirnames, filenames_calc) in os.walk(folder):
-    for f in filenames_calc:
-        if '.txt' in f:
-            f_list.append(dirpath+'/'+f.split('/')[-1])
 
-f_test=[f_list[0]]
-for f in f_test:
-    try:
+source_folder = '/home/ester/git/Results/20190626/_022/'
+folder='/home/ester/git/Results/test/20190626/_022/'
+for (dirpath, dirnames, filenames_calc) in os.walk(source_folder):
+    for f in filenames_calc:
+        name=dirpath+'/'+f.split('/')[-1]
+        new_name = name.split(source_folder)[-1]
+        #print(new_name)
+        #print('')
+        try:
+            shutil.copy2(source_folder+new_name,folder+new_name)
+        except:
+            Q=new_name.split('/')
+            q=''
+            for i in range(0,len(Q)-1):
+                q=q+'/'+Q[i]
+            print(q)
+            os.makedirs(folder+q+'/')
+            print('')
+            shutil.copy2(source_folder+new_name,folder+new_name)
+
+        
+
+ 
+run=True
+if run==True:
+    f_list=[]
+    for (dirpath, dirnames, filenames_calc) in os.walk(folder):
+        for f in filenames_calc:
+            if '.txt' in f:
+                if 'Res' not in f and '400' in dirpath:
+                    f_list.append(dirpath+'/'+f.split('/')[-1])
+                if 'Res' in f and clear_go==True:
+                    os.remove(dirpath+'/'+f)
+                    
+
+    f_list.sort()
+    #f_test=[f_list[0]]
+    f_test=f_list
+    for f in f_test:
+        #try:
         aim = get_all(input_file=f)
         
         try:
@@ -55,20 +90,23 @@ for f in f_test:
                             for tr in ret_inp:
                                 tit_ret = tit_ret+tr+'_'
                         print(ret_inp)
-                        inp = out.make_functions(include=ret_inp,option='sampled',i=i,side=s,mode=m,t_plot=t_plot,Nbins=Nbins)
-                        print(ret)
+
                         title = f.split('/')[-1]
                         title=title.split('_SC')[0]
-                        #direct = f.split(title)[0]
-                        direct = '/home/ester/git/Results/test/plots'
-                        title=title+'_Res_'+tit_ret+'_SC_'+str(i)+'_side_'+s+'_mode_'+m
-                        print(inp[1])
-                        print('')
-                        read_write.write(inp[1],aim,title=title,direct=direct,opt_date=False,opt_time=False,time='',extra_title='',include='all',exclude=[],offset=False)
-                        print(direct+title)
-    except:
-        print(f+' has no proper information')
-        #print(e)
+                        direct = f.split(title)[0]
+                        title=title+'_Res_'+tit_ret+'_SC_'+str(i)+'_side_'+s+'_mode_'+m+'.txt'
+                        if (os.path.exists(title)==False) or (os.path.exists(title) and overwrite==True):
+                            inp = out.make_functions(include=ret_inp,option='sampled',i=i,side=s,mode=m,t_plot=t_plot,Nbins=Nbins)
+                            print(ret)
+                            #direct = '/home/ester/git/Results/test/20190625/plots/'
+                            print(inp[1])
+                            print('')
+                            read_write.write(inp[1],aim,title=title,direct=direct,opt_date=False,opt_time=False,time='',extra_title='',include='all',exclude=[],offset=False)
+                            print(direct+title)
+                            del inp
+        #except:
+        #    print(f+' has no proper information')
+        #    #print(e)
 
 
 

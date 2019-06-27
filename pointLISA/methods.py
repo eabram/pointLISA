@@ -1049,7 +1049,7 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,o
 
                         t_l = scipy.optimize.brentq(f_l,under,upper,xtol=60.0)
                         t_r = scipy.optimize.brentq(f_r,under,upper,xtol=60.0)
-                        print(t_l,under,upper)
+                        #print(t_l,under,upper)
                         found=True
                     except ValueError,e:
                         if str(e)=='f(a) and f(b) must have different signs':

@@ -845,7 +845,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = (abs(pos.u)**2)[0]*np.cos(pos.angx_rec)*np.cos(pos.angy_rec)
+                ret = (abs(pos.u)**2)[0]#*np.cos(pos.angx_rec)*np.cos(pos.angy_rec)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:

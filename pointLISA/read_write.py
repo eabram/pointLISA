@@ -32,7 +32,7 @@ def get_folder(direct=False,opt_date=True):
 
     return direct
 
-def write(inp,aim,title='',direct='',extr='',opt_date=True,opt_time=True,time='',extra_title='',include='all',exclude=[],offset=False):
+def write(inp,aim,title='',direct='',extr='',opt_date=True,opt_time=True,time='',extra_title='',include='all',exclude=[],offset=False,overwrite=True):
     
     date = get_date(option='date')
     if time=='':
@@ -48,7 +48,19 @@ def write(inp,aim,title='',direct='',extr='',opt_date=True,opt_time=True,time=''
         title=extra_title+'_'+time+'_'+title+'.txt'
     elif opt_time==False:
         title=extra_title+'_'+title+'.txt'
-    writefile = open(direct+'/'+title,'w')
+
+    name=direct+'/'+title
+    check=name.split('.')
+    if len(check)>=2:
+        new_name=''
+        for c in check[0:len(check)-1]:
+            new_name=new_name+c+'.'
+        name=new_name[0:len(new_name)-1]
+
+    if overwrite==True and os.path.exists(name)==True:
+        os.remove(name)
+
+    writefile = open(name,'w')
 
     if offset!=False:
         writefile.write(str(offset))
@@ -58,18 +70,21 @@ def write(inp,aim,title='',direct='',extr='',opt_date=True,opt_time=True,time=''
     
     else:
         writefile.write("BEGIN OPTIONS"+'\n')
-        settings_all = [aim.data.stat,aim.aimset]
-        for j in settings_all:
-            for setting in j.__dict__.keys():
-                val = j.__dict__[setting]
-                write_on=True
-                try:
-                    if '<' in str(val_new[v]):
-                        write_on=False
-                except:
-                    pass
-                if write_on:
-                    writefile.write(setting+':: '+str(val)+':: '+str(type(val))+'\n')
+        try:
+            settings_all = [aim.data.stat,aim.aimset]
+            for j in settings_all:
+                for setting in j.__dict__.keys():
+                    val = j.__dict__[setting]
+                    write_on=True
+                    try:
+                        if '<' in str(val_new[v]):
+                            write_on=False
+                    except:
+                        pass
+                    if write_on:
+                        writefile.write(setting+':: '+str(val)+':: '+str(type(val))+'\n')
+        except AttributeError:
+            pass
         writefile.write("END OPTIONS"+'\n')
         writefile.write('\n')
 
