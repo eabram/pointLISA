@@ -1054,7 +1054,7 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,o
                     except ValueError,e:
                         if str(e)=='f(a) and f(b) must have different signs':
                             k=k+1
-                            print(t_val+dt*k)
+                            #print(t_val+dt*k)
          
             if found==True:
                 print(found)

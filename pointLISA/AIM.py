@@ -280,6 +280,7 @@ class AIM():
 
                 self.t_adjust = [t_l_adjust,t_r_adjust]
                 self.tele_adjust = [tele_l_tot,tele_r_tot]
+                self.tele_adjust_samp=[tele_l_tot,tele_r_tot]
 
             elif type(method)==list and method[0]=='Imported pointing':
                 print(method[0])

@@ -1168,18 +1168,28 @@ class OUTPUT():
 
 
         for k in ret:
-            if option=='both' or option=='function':
-                #setattr(func,k,lambda i,t,side: getattr(self.mean_var(i,t,side,[k],Nbins=Nbins,mode=mode),k))
-                setattr(func,k,lambda i,t,side: self.mean_var(i,t,side,[k],Nbins=Nbins,mode=mode))
-            if option=='both' or option=='sampled':
+            if 'adjust' in k:
                 for s in side:
                     for i_sel in i:
-                        A=[t_plot]
-                        A.append(np.array([self.mean_var(i_sel,t,s,ret=[k],Nbins=Nbins,mode=mode) for t in t_plot]))
-
+                        if s=='l':
+                            A = getattr(self.aim,k)[0][int(s_sel)-1]
+                        elif s=='r':
+                            A = getattr(self.aim,k)[1][int(s_sel)-1]
                         B = [A,'value='+k+', mode='+str(mode)]
-                        #print(getattr(sampled,s),k,B)
                         setattr(getattr(getattr(sampled,s),'i'+str(i_sel)),k,B)
+            else:
+                if option=='both' or option=='function':
+                    #setattr(func,k,lambda i,t,side: getattr(self.mean_var(i,t,side,[k],Nbins=Nbins,mode=mode),k))
+                    setattr(func,k,lambda i,t,side: self.mean_var(i,t,side,[k],Nbins=Nbins,mode=mode))
+                if option=='both' or option=='sampled':
+                    for s in side:
+                        for i_sel in i:
+                            A=[t_plot]
+                            A.append(np.array([self.mean_var(i_sel,t,s,ret=[k],Nbins=Nbins,mode=mode) for t in t_plot]))
+
+                            B = [A,'value='+k+', mode='+str(mode)]
+                            #print(getattr(sampled,s),k,B)
+                            setattr(getattr(getattr(sampled,s),'i'+str(i_sel)),k,B)
         #self.func = func
         #self.sampled = sampled
         return [func,sampled]
