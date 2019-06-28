@@ -117,9 +117,6 @@ if run==True:
                                 read_write.write(inp[1],aim,title=title,direct=direct,opt_date=False,opt_time=False,time='',extra_title='',include='all',exclude=[],offset=False)
                                 print(direct+title)
                                 del inp
-            #except:
-            #    print(f+' has no proper information')
-            #    #print(e)
 
 
 
