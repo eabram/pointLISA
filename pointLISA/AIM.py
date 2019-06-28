@@ -310,22 +310,22 @@ class AIM():
             ret = pointLISA.read_write.read_output(filenames=self.data.input_file)
             tele_l_ang=[]
             tele_r_ang=[]
-            beam_l_ang=[]
-            beam_r_ang=[]
+            #beam_l_ang=[]
+            #beam_r_ang=[]
             for i in range(1,4):
                 t_l =  getattr(getattr(ret[0],'l'),'i'+str(i)).tele_ang
                 t_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).tele_ang
-                b_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).PAAM_ang
-                b_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).PAAM_ang
+                #b_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).PAAM_ang
+                #b_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).PAAM_ang
                 tele_l_ang.append(methods.interpolate(t_l[0][0],t_l[0][1]))
                 tele_r_ang.append(methods.interpolate(t_r[0][0],t_r[0][1]))
-                beam_l_ang.append(methods.interpolate(t_l[0][0],t_l[0][1]))
-                beam_r_ang.append(methods.interpolate(t_r[0][0],t_r[0][1]))
+                #beam_l_ang.append(methods.interpolate(t_l[0][0],t_l[0][1]))
+                #beam_r_ang.append(methods.interpolate(t_r[0][0],t_r[0][1]))
 
             self.tele_l_ang_func = lambda i,t: tele_l_ang[i-1](t)
             self.tele_r_ang_func = lambda i,t: tele_r_ang[i-1](t)
-            self.beam_l_ang_func = lambda i,t: beam_l_ang[i-1](t)
-            self.beam_r_ang_func = lambda i,t: beam_r_ang[i-1](t)
+            #self.beam_l_ang_func = lambda i,t: beam_l_ang[i-1](t)
+            #self.beam_r_ang_func = lambda i,t: beam_r_ang[i-1](t)
 
 #        elif 'pointLISA.utils.Object' in str(type(self.aimset.inp)):
 #            option = self.tele_control+'_'+self.PAAM_control+'__'+self.option_tele+'_'+self.option_PAAM
@@ -426,63 +426,86 @@ class AIM():
 
         # Obtaining PAAM angles for 'fc' (full_control), 'nc' (no_control) and 'SS' (step and stair)
         
-        try:
-            self.beam_l_ang
-            print('Reading imported PAAM angles')
-            
-        except AttributeError:
-            if method=='full_control':
-                [ang_l,ang_r] = self.PAAM_control_ang_fc(option=option)
+        if self.data.input_file==None or self.init==True:
+            try:
+                self.beam_l_ang
+                print('Reading imported PAAM angles')
+                
+            except AttributeError:
+                if method=='full_control':
+                    [ang_l,ang_r] = self.PAAM_control_ang_fc(option=option)
 
-            elif method=='no_control':
-                #self.do_static_tele_angle('PAAM')
-                if PAAM_ang_extra==False:
-                    ang_l = lambda i,t: 0
-                    ang_r = lambda i,t: 0
+                elif method=='no_control':
+                    #self.do_static_tele_angle('PAAM')
+                    if PAAM_ang_extra==False:
+                        ang_l = lambda i,t: 0
+                        ang_r = lambda i,t: 0
+                    else:
+                        [offset_l,offset_r] = PAAM_ang_extra
+                        ang_l = lambda i,t: offset_l[i-1]*0.5
+                        ang_r = lambda i,t: offset_r[i-1]*0.5
+
+                elif method=='SS':
+                    ang_l_SS = lambda i,t: ang_fc_l(i,t-(t%dt)) # Adjusting the pointing every dt seconds
+                    ang_r_SS = lambda i,t: ang_fc_r(i,t-(t%dt))
+                    print('Taken '+method+' step response for PAAM SS control with tau='+str(tau)+' sec')
+                    mode='overdamped'
+
+                elif method=='SS_lim':
+                    ang_l_SS = lambda i: self.SS_control(ang_fc_l,i,False,dt=False,xlim=False,accuracy=3600,FOV=self.FOV_control,step=False)
+                    ang_r_SS = lambda i: self.SS_control(ang_fc_r,i,False,dt=False,xlim=False,accuracy=3600,FOV=self.FOV_control,step=False)
+                    print('Taken '+method+' step response for PAAM SS control with tau='+str(tau)+' sec and step limit='+str(self.FOV_control*1e6)+' radians')
+                    mode='not_damped' #...damped SS not implemented jet for SS_lim
                 else:
-                    [offset_l,offset_r] = PAAM_ang_extra
-                    ang_l = lambda i,t: offset_l[i-1]*0.5
-                    ang_r = lambda i,t: offset_r[i-1]*0.5
-
-            elif method=='SS':
-                ang_l_SS = lambda i,t: ang_fc_l(i,t-(t%dt)) # Adjusting the pointing every dt seconds
-                ang_r_SS = lambda i,t: ang_fc_r(i,t-(t%dt))
-                print('Taken '+method+' step response for PAAM SS control with tau='+str(tau)+' sec')
-                mode='overdamped'
-
-            elif method=='SS_lim':
-                ang_l_SS = lambda i: self.SS_control(ang_fc_l,i,False,dt=False,xlim=False,accuracy=3600,FOV=self.FOV_control,step=False)
-                ang_r_SS = lambda i: self.SS_control(ang_fc_r,i,False,dt=False,xlim=False,accuracy=3600,FOV=self.FOV_control,step=False)
-                print('Taken '+method+' step response for PAAM SS control with tau='+str(tau)+' sec and step limit='+str(self.FOV_control*1e6)+' radians')
-                mode='not_damped' #...damped SS not implemented jet for SS_lim
-            else:
-                raise ValueError('Please select a valid PAAM pointing method')
+                    raise ValueError('Please select a valid PAAM pointing method')
 
 
-            if 'SS' in method:
-                ang_l = self.step_response(ang_l_SS,'PAAM',dt,tau=tau,mode=mode)
-                ang_r = self.step_response(ang_r_SS,'PAAM',dt,tau=tau,mode=mode)
-                f_noise_l = lambda i,t: (ang_l(i,t)-ang_l_SS(i,t))**2
-                f_noise_r = lambda i,t: (ang_r(i,t)-ang_r_SS(i,t))**2
-                self.PAAM_ang_l_SS = ang_l_SS
-                self.PAAM_ang_r_SS = ang_r_SS
-                self.PAAM_step = dt
+                if 'SS' in method:
+                    ang_l = self.step_response(ang_l_SS,'PAAM',dt,tau=tau,mode=mode)
+                    ang_r = self.step_response(ang_r_SS,'PAAM',dt,tau=tau,mode=mode)
+                    f_noise_l = lambda i,t: (ang_l(i,t)-ang_l_SS(i,t))**2
+                    f_noise_r = lambda i,t: (ang_r(i,t)-ang_r_SS(i,t))**2
+                    self.PAAM_ang_l_SS = ang_l_SS
+                    self.PAAM_ang_r_SS = ang_r_SS
+                    self.PAAM_step = dt
 
 
-            self.beam_l_ang = ang_l
-            self.beam_r_ang = ang_r
-            
-            if self.sampled==True:
-                sampled = self.sample()
-                self.aim_sampled = sampled
-                #self.aim_sampled.get_coordinate_systems(iteration_val=False,option='self')
-            else:
-                self.aim_sampled=False
+                self.beam_l_ang = ang_l
+                self.beam_r_ang = ang_r
+                
+                if self.sampled==True:
+                    sampled = self.sample()
+                    self.aim_sampled = sampled
+                    #self.aim_sampled.get_coordinate_systems(iteration_val=False,option='self')
+                else:
+                    self.aim_sampled=False
 
-        #self.get_coordinate_systems(iteration_val=False,option='self')
-        if self.inp!=False:
-            self.aim_sampled = self
+            #self.get_coordinate_systems(iteration_val=False,option='self')
+            if self.inp!=False:
+                self.aim_sampled = self
+
+        else:
+            print('Importing pointing angles from:')
+            print(self.data.input_file)
+            ret = pointLISA.read_write.read_output(filenames=self.data.input_file)
+            beam_l_ang=[]
+            beam_r_ang=[]
+            for i in range(1,4):
+                b_l =  getattr(getattr(ret[0],'l'),'i'+str(i)).PAAM_ang
+                b_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).PAAM_ang
+                beam_l_ang.append(methods.interpolate(b_l[0][0],b_l[0][1]))
+                beam_r_ang.append(methods.interpolate(b_r[0][0],b_r[0][1]))
+
+            self.beam_l_ang_func = lambda i,t: beam_l_ang[i-1](t)
+            self.beam_r_ang_func = lambda i,t: beam_r_ang[i-1](t)
+            self.beam_l_ang = lambda i,t: beam_l_ang[i-1](t)
+            self.beam_r_ang = lambda i,t: beam_r_ang[i-1](t)
+
+
+
         return self
+
+
 
     def sample(self): 
         self_new = AIM(data=None)

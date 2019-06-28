@@ -1,4 +1,5 @@
 from imports import *
+import copy
 
 def get_pointing(data,import_file=None,filename=False,set_din=utils.Object(),aim0=False,aim_old=False,print_on=False,**kwargs):
     from pointLISA import *
@@ -19,10 +20,12 @@ def get_pointing(data,import_file=None,filename=False,set_din=utils.Object(),aim
                 pass
 
         del aimset, aimset_din
-        aimset = aimset_new
+        aimset = copy.copy(aimset_new)
         del aimset_new
     else:
-        aimset = aimset_din
+        aimset = copy.copy(aimset_din)
+            #print(dirpath.split(source_folder)[-1]+'/')
+            #print(dirpath.split(source_folder)[-1]+'/')
         del aimset_din
 
 #    for k in aimset.__dict__.keys():
@@ -34,7 +37,7 @@ def get_pointing(data,import_file=None,filename=False,set_din=utils.Object(),aim
             if '__' not in k:
                 setattr(new,k,set_din[k])
         del set_din
-        set_din = new
+        set_din = copy.copy(new)
         del new
 
     for k in set_din.__dict__.keys():
