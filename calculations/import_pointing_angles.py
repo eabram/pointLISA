@@ -32,7 +32,7 @@ def get_all(input_file=None,set_stat=utils.Object(),set_din=utils.Object()):
 
 #folder_sel = '20190627/_02/'
 #folder_sel = '20190626/_01/'
-folder_sel='20190626/_01/full_control__400_days/read_offset_ab_rel/'
+folder_sel='20190626/_01/full_control__400_days/'#read_offset_ab_rel/'
 folder_0='/home/ester/git/Results/'
 source_folder = folder_0+folder_sel
 folder=folder_0+'test/'+folder_sel

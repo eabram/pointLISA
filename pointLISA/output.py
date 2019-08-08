@@ -1279,7 +1279,7 @@ def get_coor_beam_in(aim,i,t,tdel,side,tele_angle_send=False,beam_angle_send=Fal
             coor_velo = np.array([r_prime,n_prime,x_prime])
             c_velo = LA.matmul(coor_velo,c_vec)
             v = np.linalg.norm(velo)
-            den = 1.0 - ((v/(c**2))*coor_velo[2])
+            den = 1.0 - ((v/(c**2))*c_velo[2]) #1.0 - ((v/(c**2))*coor_velo[2]) ...adjusted
             num = ((1.0-((v**2)/(c**2)))**0.5)
 
             ux_prime = (c_velo[2] - v)/den
