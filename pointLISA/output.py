@@ -846,7 +846,7 @@ class OUTPUT():
         while check==False:
             try:
                 I_0 = (self.P_L*np.pi*(self.w0_laser**2))/2.0
-                ret = (I_0*np.exp((-2*(pos.xoff**2+pos.yoff**2))/(self.w(pos.zoff)**2)))*np.cos(pos.angx_rec_ab)*np.cos(pos.angy_rec_ab) 
+                ret = (I_0*np.exp((-2*(pos.xoff**2+pos.yoff**2))/(self.w(pos.zoff)**2)))*np.cos(pos.angx_rec)*np.cos(pos.angy_rec) 
                 #ret = (abs(pos.u)**2)[0]#*np.cos(pos.angx_rec)*np.cos(pos.angy_rec)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
@@ -1482,6 +1482,8 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
 
     for r in ret:
         if r not in positions.__dict__.keys():
+            print('Test...')
+            print(r)
             try:
                 positions_new = getattr(outp,'get_'+r)(positions)
                 del positions
