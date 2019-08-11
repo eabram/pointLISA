@@ -12,7 +12,7 @@ labda =np.float64(1065*(10**-9)) # m
 eta_opt = np.float64(0.23) # ...look up
 eta_pd = np.float64(0.68) # A/W
 P_L = np.float64(1) # W ...verify with new LISA technical speifications
-D = np.float64(0.20) # Diameter [m]
+#D = np.float64(0.20) # Diameter [m]
 MAGNIFICATION = np.float64(80) # Check value in Technote
 
 nu_0 = c/labda

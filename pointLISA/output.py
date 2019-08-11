@@ -796,44 +796,58 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
-    def get_u(self,pos,Nbins_inp=2):
+#    def get_u(self,pos,Nbins_inp=2):
+#        check=False
+#        while check==False:
+#            try:
+#                r = pos.r
+#                z=pos.zoff
+#                angx=pos.angx_send
+#                angy=pos.angy_send
+#
+#                try:
+#                    Nbins=self.Nbins
+#                except:
+#                    self.Nbins = Nbins_inp
+#                try:
+#                    xlist=self.xlist
+#                    ylist=self.ylist
+#                except AttributeError:
+#                    self.pupil(Nbins=self.Nbins)
+#                    xlist=self.xlist
+#                    ylist=self.ylist
+#                labda = self.aim.data.labda
+#                k = (2*np.pi)/labda
+#
+#                if len(xlist)==1 and len(ylist)==1:
+#                    dksi = (self.D**2)*(np.pi/4.0)
+#                else:
+#                    dksi = (xlist[1]-xlist[0])*(ylist[1]-ylist[0])
+#
+#                ret=0
+#                for i in range(0,len(xlist)):
+#                    for j in range(0,len(ylist)):
+#                        ksi = np.array([xlist[i],ylist[j]])
+#                        T1 = np.exp((1j*k*np.dot(r,ksi))/z)
+#                        T2 = self.u0(ksi)
+#                        T3 = np.exp(1j*self.w0(angx,angy,ksi))
+#                        ret = ret+T1*T2*T3
+#                ret = ret*dksi*(1j*k*np.exp(-(1j*k*(np.linalg.norm(r)**2))/(2*z))/(2*np.pi*z))
+#
+#                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+#                check=True
+#            except AttributeError,e:
+#                #print(e)
+#                self.add_attribute(e,pos)
+#        return pos
+
+    def get_I(self,pos):
         check=False
         while check==False:
             try:
-                r = pos.r
-                z=pos.zoff
-                angx=pos.angx_send
-                angy=pos.angy_send
-
-                try:
-                    Nbins=self.Nbins
-                except:
-                    self.Nbins = Nbins_inp
-                try:
-                    xlist=self.xlist
-                    ylist=self.ylist
-                except AttributeError:
-                    self.pupil(Nbins=self.Nbins)
-                    xlist=self.xlist
-                    ylist=self.ylist
-                labda = self.aim.data.labda
-                k = (2*np.pi)/labda
-
-                if len(xlist)==1 and len(ylist)==1:
-                    dksi = (self.D**2)*(np.pi/4.0)
-                else:
-                    dksi = (xlist[1]-xlist[0])*(ylist[1]-ylist[0])
-
-                ret=0
-                for i in range(0,len(xlist)):
-                    for j in range(0,len(ylist)):
-                        ksi = np.array([xlist[i],ylist[j]])
-                        T1 = np.exp((1j*k*np.dot(r,ksi))/z)
-                        T2 = self.u0(ksi)
-                        T3 = np.exp(1j*self.w0(angx,angy,ksi))
-                        ret = ret+T1*T2*T3
-                ret = ret*dksi*(1j*k*np.exp(-(1j*k*(np.linalg.norm(r)**2))/(2*z))/(2*np.pi*z))
-
+                I_0 = (self.P_L*math.pi*(self.w0_laser**2))/2.0
+                ret = (I_0*math.exp((-2*(pos.xoff**2+pos.y_off**2))/(self.w(pos.z_off)**2)))*np.cos(pos.angx_rec_ab)*np.cos(pos.angy_rec_ab) 
+                #ret = (abs(pos.u)**2)[0]#*np.cos(pos.angx_rec)*np.cos(pos.angy_rec)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -841,11 +855,25 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
+
+
     def get_power(self,pos):
         check=False
         while check==False:
             try:
-                ret = (abs(pos.u)**2)[0]#*np.cos(pos.angx_rec)*np.cos(pos.angy_rec)
+                try:
+                    xlist=self.xlist
+                    ylist=self.ylist
+                except AttributeError:
+                    self.pupil(Nbins=self.Nbins)
+                    xlist=self.xlist
+                    ylist=self.ylist
+
+                if len(xlist)==1 and len(ylist)==1:
+                    dksi = (self.D**2)*(np.pi/4.0)
+                else:
+                    dksi = (xlist[1]-xlist[0])*(ylist[1]-ylist[0])
+                ret = dksi*pos.I
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
