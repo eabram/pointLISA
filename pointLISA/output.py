@@ -845,8 +845,8 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                I_0 = (self.P_L*math.pi*(self.w0_laser**2))/2.0
-                ret = (I_0*math.exp((-2*(pos.xoff**2+pos.y_off**2))/(self.w(pos.z_off)**2)))*np.cos(pos.angx_rec_ab)*np.cos(pos.angy_rec_ab) 
+                I_0 = (self.P_L*np.pi*(self.w0_laser**2))/2.0
+                ret = (I_0*np.exp((-2*(pos.xoff**2+pos.y_off**2))/(self.w(pos.z_off)**2)))*np.cos(pos.angx_rec_ab)*np.cos(pos.angy_rec_ab) 
                 #ret = (abs(pos.u)**2)[0]#*np.cos(pos.angx_rec)*np.cos(pos.angy_rec)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
