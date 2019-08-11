@@ -1488,7 +1488,8 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
                 positions_new = getattr(outp,'get_'+r)(positions)
                 del positions
                 positions = positions_new
-            except AttributeError:
+            except AttributeError,e:
+                print(e)
                 setattr(positions,r,getattr(aim,r)(i,t))
     
     return positions
