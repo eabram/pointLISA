@@ -1482,8 +1482,6 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
 
     for r in ret:
         if r not in positions.__dict__.keys():
-            print('Test...')
-            print(r)
             try:
                 positions_new = getattr(outp,'get_'+r)(positions)
                 del positions
