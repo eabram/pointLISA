@@ -6,7 +6,7 @@ import copy
 
 #rets = ['tele_ang','PAAM_ang','xoff','yoff','zoff','r','R','angx_ab_rec','angy_ab_rec','angx_nab_rec','angy_nab_rec','angx_ab_send','angy_ab_send','angx_nab_send','angy_nab_send','angx_rec','angy_rec','angx_send','any_send','angx_wf_send','angy_wf_send','piston','z_extra','FOV_wavefront','u','power']
 #rets = ['xoff']
-rets=[['xoff','yoff','zoff','r'],['angx_ab_rec','angy_ab_rec','angx_ab_send','angy_ab_send'],['u','power'],'FOV_wavefront',['piston','z_extra'],['angx_wf_send','angy_wf_send']]
+rets=[['xoff','yoff','zoff','r'],['angx_ab_rec','angy_ab_rec','angx_ab_send','angy_ab_send'],['I','I0'],'FOV_wavefront',['piston','z_extra'],['angx_wf_send','angy_wf_send']]
 #rets=[['xoff','yoff'],['angx_wf_send','angy_wf_send']]
 #rets=[['PAAM_ang','tele_ang']]
 SC=[1,2,3]
@@ -18,7 +18,7 @@ sides=['l','r']
 mode=['center']
 Nbins=2
 clear_go=False
-overwrite=False
+overwrite=True
 
 def get_all(input_file=None,set_stat=utils.Object(),set_din=utils.Object()):
     set_stat_copy = copy.copy(set_stat)
@@ -32,7 +32,8 @@ def get_all(input_file=None,set_stat=utils.Object(),set_din=utils.Object()):
 
 #folder_sel = '20190627/_02/'
 #folder_sel = '20190626/_01/'
-folder_sel='20190626/_01/full_control__400_days/'#read_offset_ab_rel/'
+#folder_sel='20190810/_01/full_control__400_days/'#read_offset_ab_rel/'
+folder_sel='Data_for_Graphs/NC/'#read_offset_ab_rel/'
 folder_0='/home/ester/git/Results/'
 source_folder = folder_0+folder_sel
 folder=folder_0+'test/'+folder_sel

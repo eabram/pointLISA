@@ -845,8 +845,22 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                I_0 = (self.P_L*np.pi*(self.w0_laser**2))/2.0
-                ret = (I_0*np.exp((-2*(pos.xoff**2+pos.yoff**2))/(self.w(pos.zoff)**2)))*np.cos(pos.angx_rec)*np.cos(pos.angy_rec) 
+                #I_0 = (self.P_L*np.pi*(self.w0_laser**2))/2.0
+                ret = (po.I0*np.exp((-2*(pos.xoff**2+pos.yoff**2))/(self.w(pos.zoff)**2)))*np.cos(pos.angx_rec)*np.cos(pos.angy_rec) 
+                #ret = (abs(pos.u)**2)[0]#*np.cos(pos.angx_rec)*np.cos(pos.angy_rec)
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
+    
+    def get_I0(self,pos):
+        check=False
+        while check==False:
+            try:
+                ret = (self.P_L*np.pi*(self.w0_laser**2))/2.0
+                #ret = I_0*np.cos(pos.angx_rec)*np.cos(pos.angy_rec)
                 #ret = (abs(pos.u)**2)[0]#*np.cos(pos.angx_rec)*np.cos(pos.angy_rec)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True

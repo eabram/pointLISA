@@ -187,6 +187,9 @@ def write(inp,title='',direct ='',extr='',list_inp=False,sampled=False,headers=[
         title=extra_title+'_'+time+'_'+title+'.txt'
     elif opt_time==False:
         title=extra_title+'_'+title+'.txt'
+    if '.txt' not in title:
+        title = title+'.txt'
+
     writefile = open(direct+'/'+title,'w')
 
     #if len(inp)==1:
