@@ -56,6 +56,7 @@ aimset.tele_method_solve='iter'
 aimset.PAAM_method_solve='iter'
 aimset.sample_speed =1
 aimset.width = 30000.0
+aimset.FOV = 8.0e-6
 aimset.value_center = 0.0
 aimset.value_wavefront = 0.0
 aimset.PAAM_deg = 1 # Number of rotational axis of PAAM (either 1 or 2)

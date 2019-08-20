@@ -187,9 +187,6 @@ class AIM():
             ang_l = lambda i,t: methods.tele_point_calc(self.aim0,i,t,'l',option,max_count=max_count,scale=scale,value=value)
             ang_r = lambda i,t: methods.tele_point_calc(self.aim0,i,t,'r',option,max_count=max_count,scale=scale,value=value)
         elif self.init==True:
-            print(self.tele_l_ang(1,12321))
-            print(self.aim0.tele_l_ang(1,12321))
-
             ang_l = lambda i,t: methods.tele_point_calc(self,i,t,'l',option,max_count=max_count,scale=scale,value=value)
             ang_r = lambda i,t: methods.tele_point_calc(self,i,t,'r',option,max_count=max_count,scale=scale,value=value)
         
@@ -257,10 +254,17 @@ class AIM():
                 tele_r_tot=[0,0,0]
                 t_l_adjust=[0,0,0]
                 t_r_adjust=[0,0,0]
+                
+                if option=='wavefront':
+                    ret = 'angx_wf_send'
+                    lim=self.aimset.FOV #Klopt niet want alleen in inplane i.p.v. totaal, kan ook met I
+                elif option=='center':
+                    ret = 'xoff'
+                    lim=self.aimset.width/2.0
 
                 for link in range(1,4):
                     t_plot = self.data.t_all[2:-3]
-                    t_adjust,[tele_l,tele_r],i_left,i_right = methods.SS_value(self.aim0,link,t_plot[0],t_plot[-1],'solve',self.aimset.width/2.0,print_on=False,value=value)
+                    t_adjust,[tele_l,tele_r],i_left,i_right = methods.SS_value(self.aim0,link,t_plot[0],t_plot[-1],'solve',lim,ret=ret,print_on=False,value=value)
                     f_l = lambda t: methods.get_SS_func(t_adjust,tele_l,t)
                     f_r = lambda t: methods.get_SS_func(t_adjust,tele_r,t)
                     tele_l_tot[i_left-1] = f_l
@@ -284,8 +288,8 @@ class AIM():
 
             elif type(method)==list and method[0]=='Imported pointing':
                 print(method[0])
-                self.tele_l_ang = lambda i,t: pack.functions.get_tele_SS(False,False,i,t,'l',x=method[1]['SC'+str(i)+', left']['x'],y=method[1]['SC'+str(i)+', left']['y'])
-                self.tele_r_ang = lambda i,t: pack.functions.get_tele_SS(False,False,i,t,'r',x=method[1]['SC'+str(i)+', right']['x'],y=method[1]['SC'+str(i)+', right']['y'])
+                self.tele_l_ang = lambda i,t: methods.get_tele_SS(False,False,i,t,'l',x=method[1]['SC'+str(i)+', left']['x'],y=method[1]['SC'+str(i)+', left']['y'])
+                self.tele_r_ang = lambda i,t: methods.get_tele_SS(False,False,i,t,'r',x=method[1]['SC'+str(i)+', right']['x'],y=method[1]['SC'+str(i)+', right']['y'])
 
                 t_adjust={}
                 tele_ang_adjust = {}
@@ -312,54 +316,34 @@ class AIM():
             tele_r_ang=[]
             #beam_l_ang=[]
             #beam_r_ang=[]
-            for i in range(1,4):
-                t_l =  getattr(getattr(ret[0],'l'),'i'+str(i)).tele_ang
-                t_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).tele_ang
-                #b_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).PAAM_ang
-                #b_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).PAAM_ang
-                tele_l_ang.append(methods.interpolate(t_l[0][0],t_l[0][1]))
-                tele_r_ang.append(methods.interpolate(t_r[0][0],t_r[0][1]))
-                #beam_l_ang.append(methods.interpolate(t_l[0][0],t_l[0][1]))
-                #beam_r_ang.append(methods.interpolate(t_r[0][0],t_r[0][1]))
+            if self.tele_method=='SS':
+                self.tele_l_ang = lambda i,t: methods.get_tele_SS(False,False,i,t,'l',x=ret['SC'+str(i)+', left']['x'],y=ret['SC'+str(i)+', left']['y'])
+                self.tele_r_ang = lambda i,t: methods.get_tele_SS(False,False,i,t,'r',x=ret['SC'+str(i)+', right']['x'],y=ret['SC'+str(i)+', right']['y'])
 
-            self.tele_l_ang_func = lambda i,t: tele_l_ang[i-1](t)
-            self.tele_r_ang_func = lambda i,t: tele_r_ang[i-1](t)
-            #self.beam_l_ang_func = lambda i,t: beam_l_ang[i-1](t)
-            #self.beam_r_ang_func = lambda i,t: beam_r_ang[i-1](t)
+                t_adjust={}
+                tele_ang_adjust = {}
+                for i in range(1,4):
+                    t_adjust[str(i)]={}
+                    tele_ang_adjust[str(i)]={}
+                    
+                    [t_adjust[str(i)]['l'],tele_ang_adjust[str(i)]['l']]=getattr(ret[0].l,'i'+str(i)).adjust[0]
+                    [t_adjust[str(i)]['r'],tele_ang_adjust[str(i)]['r']]=getattr(ret[0].r,'i'+str(i)).adjust[0]
 
-#        elif 'pointLISA.utils.Object' in str(type(self.aimset.inp)):
-#            option = self.tele_control+'_'+self.PAAM_control+'__'+self.option_tele+'_'+self.option_PAAM
-#            setting = self.tele_method_solve+'_'+self.PAAM_method_solve+'__'+self.optimize_PAAM+'_'+str(self.optimize_PAAM_value).replace('.','d')
-#
-#            self.inp = getattr(getattr(self.aimset.inp,option),setting)
-#            print('Reading imported telescope angles')
-#
-#            XL = []
-#            YL = []
-#            XR = []
-#            YR = []
-#            
-#            tele_l_ang_func = []
-#            tele_r_ang_func = []
-#            beam_l_ang_func = []
-#            beam_r_ang_func = []
-#
-#            for i in range(1,4):
-#                [xlt,ylt] = getattr(getattr(self.inp.l,'i'+str(i)),'tele_l_ang')[0]
-#                [xrt,yrt] = getattr(getattr(self.inp.r,'i'+str(i)),'tele_r_ang')[0]
-#                [xlb,ylb] = getattr(getattr(self.inp.l,'i'+str(i)),'beam_l_ang')[0]
-#                [xrb,yrb] = getattr(getattr(self.inp.r,'i'+str(i)),'beam_r_ang')[0]
-#
-#                tele_l_ang_func.append(methods.interpolate(xlt,ylt))
-#                tele_r_ang_func.append(methods.interpolate(xrt,yrt))
-#                beam_l_ang_func.append(methods.interpolate(xlb,ylb))
-#                beam_r_ang_func.append(methods.interpolate(xrb,yrb))
-#
-#            self.tele_l_ang = lambda i,t: tele_l_ang_func[i-1](t)
-#            self.tele_r_ang = lambda i,t: tele_r_ang_func[i-1](t)
-#            self.beam_l_ang = lambda i,t: beam_l_ang_func[i-1](t)
-#            self.beam_r_ang = lambda i,t: beam_r_ang_func[i-1](t)            
-#
+                self.tele_l_ang = lambda i,t: methods.get_tele_SS(False,False,i,t,'l',x=t_adjust[str(i)]['l'],y=tele_ang_adjust[str(i)]['l'])
+                self.tele_r_ang = lambda i,t: methods.get_tele_SS(False,False,i,t,'l',x=t_adjust[str(i)]['r'],y=tele_ang_adjust[str(i)]['r'])
+                
+                self.t_adjust = t_adjust
+                self.tele_ang_adjust = tele_ang_adjust
+            
+            else:
+                for i in range(1,4):
+                    t_l =  getattr(getattr(ret[0],'l'),'i'+str(i)).tele_ang
+                    t_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).tele_ang
+                    tele_l_ang.append(methods.interpolate(t_l[0][0],t_l[0][1]))
+                    tele_r_ang.append(methods.interpolate(t_r[0][0],t_r[0][1]))
+
+                self.tele_l_ang = lambda i,t: tele_l_ang[i-1](t)
+                self.tele_r_ang = lambda i,t: tele_r_ang[i-1](t)
         
         try:
             self.tele_l_ang
@@ -500,8 +484,6 @@ class AIM():
             self.beam_r_ang_func = lambda i,t: beam_r_ang[i-1](t)
             self.beam_l_ang = lambda i,t: beam_l_ang[i-1](t)
             self.beam_r_ang = lambda i,t: beam_r_ang[i-1](t)
-
-
 
         return self
 

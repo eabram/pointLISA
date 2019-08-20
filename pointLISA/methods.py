@@ -1075,7 +1075,6 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,o
 
 
 def tele_point_calc(aim,i,t,side,option,lim=False,method=False,value=0,scale=1,max_count=20,**kwargs): # Recommended to use aim0
-
     if option=='center':
         if lim==False:
             lim = aim.aimset.limit_xoff

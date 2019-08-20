@@ -846,7 +846,7 @@ class OUTPUT():
         while check==False:
             try:
                 #I_0 = (self.P_L*np.pi*(self.w0_laser**2))/2.0
-                ret = (po.I0*np.exp((-2*(pos.xoff**2+pos.yoff**2))/(self.w(pos.zoff)**2)))*np.cos(pos.angx_rec)*np.cos(pos.angy_rec) 
+                ret = (pos.I0*np.exp((-2*(pos.xoff**2+pos.yoff**2))/(self.w(pos.zoff)**2)))*np.cos(pos.angx_rec)*np.cos(pos.angy_rec) 
                 #ret = (abs(pos.u)**2)[0]#*np.cos(pos.angx_rec)*np.cos(pos.angy_rec)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
@@ -1665,8 +1665,7 @@ def tele_wavefront_calc(aim,i_l,t,method,scale=1,lim=1e-12,max_count=20,print_on
                 break
     return [[tele_angle_l,tele_angle_r],mode]
 
-def get_tele_wavefront(aim,i,t,side,method,scale=1,lim=1e-12,max_count=20,print_on=False,value=0.0):
-    
+def get_tele_wavefront(aim,i,t,side,method,scale=1,lim=1e-12,max_count=20,print_on=False,value=0.0): 
     if side=='l':
         i_l = i
         tdel=0
