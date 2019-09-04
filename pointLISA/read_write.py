@@ -158,7 +158,13 @@ def read_options(filename,print_on=False,del_auto=True):
             rr=r.split(':: ')
             try:
                 type_sel = rr[-1].split('\n')[0].split("'")[1]
-                ret = getattr(np,type_sel)(rr[1])
+                if type_sel=='bool':
+                    if 'False' in rr[1]:
+                        ret = False
+                    elif 'True' in rr[1]:
+                        ret =True
+                else:
+                    ret = getattr(np,type_sel)(rr[1])
                 setattr(aimset,rr[0],ret)
             except:
                 if type_sel=='numpy.float64':
@@ -172,12 +178,20 @@ def read_options(filename,print_on=False,del_auto=True):
         if 'END OPTIONS' in str(line):
             break
 
+    aimset_ex=utils.Object()
     if del_auto==True:
         exceptions = ['dir_orbits','dir_savefig','filename','home','directory_imp','test_calc']
         for ex in exceptions:
-            setattr(aimset, ex, getattr(settings.stat,ex))
+            setattr(aimset_ex, ex, getattr(settings.stat,ex))
 
-    return aimset
+    aimset_ret = utils.Object()
+    for k in aimset_ex.__dict__.keys():
+        setattr(aimset_ret,k,getattr(aimset_ex,k))
+    for k in aimset.__dict__.keys():
+        if k not in aimset_ret.__dict__.keys():
+            setattr(aimset_ret,k,getattr(aimset,k))
+
+    return aimset_ret
 
 def read_output(filenames=False,direct=False):
     ret=utils.Object()

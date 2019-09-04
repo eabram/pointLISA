@@ -322,6 +322,18 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
+    def get_R_vec_tele_rec(self,pos):
+        check=False
+        while check==False:
+            try:
+                ret = LA.matmul(pos.coor_endtele,pos.R_vec_origin)
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
+
     def get_beam_receive_rec(self,pos):
         check=False
         while check==False:
@@ -685,7 +697,6 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-
                 tele_end = LA.matmul(pos.coor_starttele,pos.coor_end[0])
                 R_vec_tele_send_y = pos.R_vec_tele_send
                 R_vec_tele_send_y[2] = 0
@@ -698,6 +709,34 @@ class OUTPUT():
                 #print(e)
                 self.add_attribute(e,pos)
         return pos
+
+    def get_angx_wf_rec(self,pos):
+        check=False
+        while check==False:
+            try:
+                R_vec_rec = -pos.R_vec_tele_rec
+                ret = np.sign(pos.R_vec_tele_rec[2])*np.arctan(abs(pos.R_vec_tele_rec[2]/pos.R_vec_tele_rec[0]))
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
+
+    def get_angy_wf_rec(self,pos):
+        check=False
+        while check==False:
+            try:
+                R_vec_rec = -pos.R_vec_tele_rec
+                ret = np.sign(pos.R_vec_tele_rec[1])*np.arctan(abs(pos.R_vec_tele_rec[1]/pos.R_vec_tele_rec[0]))
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
+
+
 
 ### Hier gebleven
     def get_beam_direction_origin(self,pos):
@@ -955,15 +994,15 @@ class OUTPUT():
             try:
                 if pos.mode=='send':
                     if pos.side=='l':
-                        ret = get_coor_beam_out(pos.aim,pos.i_self,pos.t,'l',tele_angle=pos.tele_angle_l,beam_angle=pos.beam_angle_l)
+                        ret = get_coor_beam_out(pos.aim,pos.i_self,pos.t,'l',tele_angle=pos.tele_angle_l,beam_angle=pos.beam_angle_l,offset=pos.offset_l)
                         
                     elif pos.side=='r':
-                        ret = get_coor_beam_out(pos.aim,pos.i_self,pos.t,'r',tele_angle=pos.tele_angle_r,beam_angle=pos.beam_angle_r)
+                        ret = get_coor_beam_out(pos.aim,pos.i_self,pos.t,'r',tele_angle=pos.tele_angle_r,beam_angle=pos.beam_angle_r,offset=pos.offset_r)
                 elif pos.mode=='rec':
                     if pos.side=='l':
-                        ret = get_coor_beam_out(pos.aim,pos.i_left,pos.t-pos.tdel,'r',tele_angle=pos.tele_angle_r,beam_angle=pos.beam_angle_r)
+                        ret = get_coor_beam_out(pos.aim,pos.i_left,pos.t-pos.tdel,'r',tele_angle=pos.tele_angle_r,beam_angle=pos.beam_angle_r,offset=pos.offset_r)
                     elif pos.side=='r':
-                        ret = get_coor_beam_out(pos.aim,pos.i_right,pos.t-pos.tdel,'l',tele_angle=pos.tele_angle_l,beam_angle=pos.beam_angle_l)
+                        ret = get_coor_beam_out(pos.aim,pos.i_right,pos.t-pos.tdel,'l',tele_angle=pos.tele_angle_l,beam_angle=pos.beam_angle_l,offset=pos.offset_l)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError, e:
@@ -1281,19 +1320,25 @@ def get_coor_beam_in(aim,i,t,tdel,side,tele_angle_send=False,beam_angle_send=Fal
     if check==False:
         if tele_angle_send==False:
             if side=='l':
-                tele_angle_send = aim.tele_r_ang(i_left,t-tdel)
+                #tele_angle_send = aim.tele_r_ang(i_left,t-tdel)
+                tele_angle_send = np.radians(30.0)
             elif side=='r':
-                tele_angle_send = aim.tele_l_ang(i_right,t-tdel)
+                #tele_angle_send = aim.tele_l_ang(i_right,t-tdel)
+                tele_angle_send = np.radians(-30.0)
         if beam_angle_send==False:
             if side=='l':
-                beam_angle_send = aim.beam_r_ang(i_left,t-tdel)
+                #beam_angle_send = aim.beam_r_ang(i_left,t-tdel)
+                beam_angle_send = 0.0
             elif side=='r':
-                beam_angle_send = aim.beam_l_ang(i_right,t-tdel)
+                #beam_angle_send = aim.beam_l_ang(i_right,t-tdel)
+                beam_angle_send = 0.0
 
         if side=='l':
-            u_not_ab = methods.beam_coor_out(aim.data,i_left,t-tdel,tele_angle_send,beam_angle_send,aim.offset_tele['r'])[0]
+            offset = get_offset_tele(aim,i_left,t-tdel,'r')
+            u_not_ab = methods.beam_coor_out(aim.data,i_left,t-tdel,tele_angle_send,beam_angle_send,offset)[0]
         elif side=='r':
-            u_not_ab = methods.beam_coor_out(aim.data,i_right,t-tdel,tele_angle_send,beam_angle_send,aim.offset_tele['l'])[0]
+            offset = get_offset_tele(aim,i_right,t-tdel,'l')
+            u_not_ab = methods.beam_coor_out(aim.data,i_right,t-tdel,tele_angle_send,beam_angle_send,offset)[0]
 
     if aim.data.aberration==False:
         ret = u_not_ab
@@ -1348,36 +1393,55 @@ def get_coor_beam_in(aim,i,t,tdel,side,tele_angle_send=False,beam_angle_send=Fal
 
     return ret
 
-def get_coor_beam_out(aim,i,t,side,tele_angle=False,beam_angle=False):
+def get_coor_beam_out(aim,i,t,side,tele_angle=False,beam_angle=False,offset=False):
     check=False
-    if tele_angle==False and beam_angle==False:
-        try:
-            if side=='l':
-                ret = aim.beam_l_coor(i,t)
-            elif side=='r':
-                ret = aim.beam_r_coor(i,t)
-            check=True
-        except AttributeError:
-            check=False
-            pass
     
+    #print('Test 2: '+str(beam_angle))
     if check==False:
-        if tele_angle==False:
+        if tele_angle is False:
             if side == 'l':
                 tele_angle = aim.tele_l_ang(i,t)
+                #tele_angle = np.radians(-30.0)
             elif side =='r':
                 tele_angle = aim.tele_r_ang(i,t)
-        if beam_angle==False:
+                #tele_angle = np.radians(30.0)
+        elif tele_angle ==None:
+            if side == 'l':
+                tele_angle = np.radians(-30.0)
+            elif side =='r':
+                tele_angle = np.radians(30.0)
+
+        if beam_angle is False:
+            #print('Test 3: '+str(beam_angle))
             if side == 'l':
                 beam_angle = aim.beam_l_ang(i,t)
             elif side =='r':
                 beam_angle = aim.beam_r_ang(i,t)
+        elif beam_angle==None:
+            if side == 'l':
+                beam_angle = 0.0
+            elif side =='r':
+                beam_angle = 0.0
+        
+        if offset is False:
+            #offset = get_offset_tele(aim,i,t,side)
+            raise ValueError
 
-        if side=='l':
-            ret = methods.beam_coor_out(aim.data,i,t,tele_angle,beam_angle,aim.offset_tele['l'])
-        elif side=='r':
-            ret = methods.beam_coor_out(aim.data,i,t,tele_angle,beam_angle,aim.offset_tele['r'])
+        ret = methods.beam_coor_out(aim.data,i,t,tele_angle,beam_angle,offset)
 
+    return ret
+
+def get_offset_tele(aim,i,t,side):
+    try:
+        ret = aim.offset[side][i](t)
+    except TypeError:
+        #print(type(side))
+        #print(type(i))
+        try:
+            ret = aim.offset[side][i] 
+        except TypeError:
+            print(i,t,side)
+            raise TypeError
     return ret
 
 def get_start_calc(aim,i,t,side,tele_angle):
@@ -1391,7 +1455,7 @@ def get_start_calc(aim,i,t,side,tele_angle):
 
     return ret
 
-def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=False,beam_angle_l=False,beam_angle_r=False,ret=[]):
+def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=False,beam_angle_l=False,beam_angle_r=False,offset_l=False,offset_r=False,ret=[]):
     [i_self,i_left,i_right] = utils.i_slr(i)
     
 
@@ -1412,8 +1476,19 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
                 tdel0=tdel
             elif aim.data.calc_method=='Abram':
                 tdel0=0
+            
+            if offset_l is False:
+                offset_l = get_offset_tele(aim,i_self,t+tdel0,'l')
+            elif offset_l == None:
+                offset_l = 0.0
+            if offset_r is False:
+                offset_r = get_offset_tele(aim,i_left,t+tdel,'r')
+            elif offset_r == None:
+                offiset_r = 0.0
+
             coor_starttele=get_coor_tele(aim,i_self,t,'l',tele_angle=tele_angle_l)
-            coor_startbeam=get_coor_beam_out(aim,i_self,t,'l',tele_angle=tele_angle_l,beam_angle=beam_angle_l)
+            #print('Test: '+str(beam_angle_l))
+            coor_startbeam=get_coor_beam_out(aim,i_self,t,'l',tele_angle=tele_angle_l,beam_angle=beam_angle_l,offset=offset_l)
             [vec_endbeam,vec_endbeam_na,vec_endbeam_ab]=get_coor_beam_in(aim,i_left,t+tdel,tdel,'r',tele_angle_send=tele_angle_l,beam_angle_send=beam_angle_l,tele_angle_rec=tele_angle_r)
 
             coor_end=get_coor_tele(aim,i_left,t+tdel,'r',tele_angle=tele_angle_r)
@@ -1427,8 +1502,18 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
                 tdel0=tdel
             elif aim.data.calc_method=='Abram':
                 tdel0=0
+            if offset_l is False:
+                offset_l = get_offset_tele(aim,i_right,t+tdel,'l')
+            elif offset_l == None:
+                offset_l = 0.0
+            if offset_r is False:
+                offset_r = get_offset_tele(aim,i_self,t+tdel0,'r')
+            elif offset_r == None:
+                offset_r = 0.0
+
+
             coor_starttele=get_coor_tele(aim,i_self,t,'r',tele_angle=tele_angle_r)
-            coor_startbeam=get_coor_beam_out(aim,i_self,t,'r',tele_angle=tele_angle_r,beam_angle=beam_angle_r)       
+            coor_startbeam=get_coor_beam_out(aim,i_self,t,'r',tele_angle=tele_angle_r,beam_angle=beam_angle_r,offset=offset_r)       
 
             [vec_endbeam,vec_endbeam_na,vec_endbeam_ab]=get_coor_beam_in(aim,i_right,t+tdel,tdel,'l',tele_angle_send=tele_angle_r,beam_angle_send=beam_angle_r,tele_angle_rec=tele_angle_l)
             coor_end=get_coor_tele(aim,i_right,t+tdel,'l',tele_angle=tele_angle_l)
@@ -1444,9 +1529,13 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
                 tdel0=tdel
             elif aim.data.calc_method=='Abram':
                 tdel0=0
-            tele_ang=aim.tele_r_ang(i_left,t-tdel)
+            if offset_l is False:
+                offset_l = get_offset_tele(aim,i_self,t-tdel0,'l')
+            if offset_r is False:
+                offset_r = get_offset_tele(aim,i_left,t-tdel,'r')
+
             coor_starttele=get_coor_tele(aim,i_left,t-tdel,'r',tele_angle=tele_angle_r)
-            coor_startbeam=get_coor_beam_out(aim,i_left,t-tdel,'r',tele_angle=tele_angle_r,beam_angle=beam_angle_r)
+            coor_startbeam=get_coor_beam_out(aim,i_left,t-tdel,'r',tele_angle=tele_angle_r,beam_angle=beam_angle_r,offset=offset_r)
             [vec_endbeam,vec_endbeam_na,vec_endbeam_ab]=get_coor_beam_in(aim,i_self,t,tdel,'l',tele_angle_send=tele_angle_r,beam_angle_send=beam_angle_r,tele_angle_rec=tele_angle_l)
             coor_end=get_coor_tele(aim,i_self,t,'l',tele_angle=tele_angle_l)
             
@@ -1460,9 +1549,13 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
                 tdel0=tdel
             elif aim.data.calc_method=='Abram':
                 tdel0=0
-            tele_ang=aim.tele_l_ang(i_right,t-tdel)
+            if offset_l is False:
+                offset_l = get_offset_tele(aim,i_right,t-tdel,'l')
+            if offset_r is False:
+                offset_r = get_offset_tele(aim,i_self,t-tdel0,'r')
+            
             coor_starttele=get_coor_tele(aim,i_right,t-tdel,'l',tele_angle=tele_angle_l)
-            coor_startbeam=get_coor_beam_out(aim,i_right,t-tdel,'l',tele_angle=tele_angle_l,beam_angle=beam_angle_l)
+            coor_startbeam=get_coor_beam_out(aim,i_right,t-tdel,'l',tele_angle=tele_angle_l,beam_angle=beam_angle_l,offset=offset_l)
 
             [vec_endbeam,vec_endbeam_na,vec_endbeam_ab]=get_coor_beam_in(aim,i_self,t,tdel,'r',tele_angle_send=tele_angle_l,beam_angle_send=beam_angle_l,tele_angle_rec=tele_angle_r)
             coor_end=get_coor_tele(aim,i_self,t,'r',tele_angle=tele_angle_r)
@@ -1485,6 +1578,8 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
     positions.beam_angle_l = beam_angle_l
     positions.beam_angle_r = beam_angle_r
     positions.aim=aim
+    positions.offset_l = offset_l
+    positions.offset_r = offset_r
     
     param = ['start','end','coor_starttele','coor_startbeam','vec_endbeam','vec_endbeam_na','vec_endbeam_ab','coor_end','direction','tdel','tdel0','ksi']
     for p in param:
@@ -1506,23 +1601,39 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
     
     return positions
 
-def tele_center_calc(aim,i,t,scale=1,lim=1e-12,max_count=5,print_on=False,value=0):
+def tele_center_calc(aim,i,t,scale=1,lim=1e-12,max_count=5,print_on=False,value=0,tele_l=False,tele_r=False,beam_l=False,beam_r=False,offset_l=False,offset_r=False):
     [i_self,i_left,i_right] = utils.i_slr(i)
     #print(aim.tele_l_ang,t)
-    tele_l=aim.tele_l_ang(i_self,t)
-    tele_r=aim.tele_r_ang(i_left,t)
+    
+    if tele_l is False:
+        tele_l=aim.tele_l_ang(i_self,t)
+    elif tele_l==None:
+        tele_l=np.radians(np.float64(-30.0))
+    if tele_r is False:
+        tele_r=aim.tele_r_ang(i_left,t)
+    elif tele_r==None:
+        tele_r=np.radians(np.float64(30.0))
+    if beam_l is False:
+        beam_l=aim.beam_l_ang(i_self,t)
+    elif beam_l==None:
+        beam_l=np.float64(0.0)
+    if beam_r is False:
+        beam_r=aim.beam_r_ang(i_self,t)
+    elif beam_r==None:
+        beam_r=np.float64(0.0)
     
     count=0
     check=False
     while check==False:
         tele_l_old = tele_l
         tele_r_old = tele_r
-        pos_send = values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_r,ret=['off'])
+        pos_send = values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['off'])
         angx_send = np.sign(pos_send.xoff-value)*abs(np.arctan((pos_send.xoff-value)/pos_send.zoff))
         tele_l = tele_l+angx_send
 
-        pos_rec = values(aim,i_left,t,'r',tele_angle_l=tele_l,tele_angle_r=tele_r,ret=['off'])
+        pos_rec = values(aim,i_left,t,'r',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['off'])
         angx_rec = np.sign(pos_rec.xoff-value)*abs(np.arctan((pos_rec.xoff-value)/pos_rec.zoff))
+        #print('Check 1: '+ str(pos_send.xoff)+ ', '+str(pos_rec.xoff))
         tele_r = tele_r+angx_rec
 
         count=count+1
@@ -1539,18 +1650,29 @@ def tele_center_calc(aim,i,t,scale=1,lim=1e-12,max_count=5,print_on=False,value=
             mode='Converged'
         if print_on:
             print(tele_l,tele_r)
+    #print(pos_rec.xoff)
 
     return [[tele_l,tele_r], mode]
 
-def PAAM_center_calc(aim,i,t,para='yoff',scale=1,lim=1e-12,max_count=5,print_on=False,tele_l=False,tele_r=False,value=0,method='iter',margin=0.01):
+def PAAM_center_calc(aim,i,t,para='yoff',scale=1,lim=1e-12,max_count=5,print_on=False,tele_l=None,tele_r=None,beam_l=None,beam_r=None,offset_l=None,offset_r=None,value=0,method='iter',margin=0.01):
     [i_self,i_left,i_right] = utils.i_slr(i)
-
-    beam_l=aim.beam_l_ang(i_self,t)
-    beam_r=aim.beam_r_ang(i_left,t)
-    if tele_l==False:
+    
+    if tele_l is False:
+        tele_l = aim.tele_l_ang(i,t)
+    elif tele_l==None:
         tele_l = np.radians(np.float64(-30.0))
-    if tele_r==False:
+    if tele_r is False:
+        tele_r = aim.tele_r_ang(i,t)
+    elif tele_r == None:
         tele_r = np.radians(np.float64(30.0))
+    if beam_l is False:
+        beam_l=aim.beam_l_ang(i,t)
+    elif beam_l==None:
+        beam_l = np.float64(0.0)
+    if beam_r is False:
+        beam_r=aim.beam_r_ang(i,t)
+    elif beam_r==None:
+        beam_r=np.float64(0.0)
     
     if method=='iter': 
         count=0
@@ -1558,11 +1680,11 @@ def PAAM_center_calc(aim,i,t,para='yoff',scale=1,lim=1e-12,max_count=5,print_on=
         while check==False:
             beam_l_old = beam_l
             beam_r_old = beam_r
-            pos_send = values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_l,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=['off'])
+            pos_send = values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_l,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['off'])
             angy_send = np.sign(pos_send.yoff)*abs(np.arctan(pos_send.yoff/pos_send.zoff))
             beam_l = beam_l-angy_send
 
-            pos_rec = values(aim,i_left,t,'r',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=['off'])
+            pos_rec = values(aim,i_left,t,'r',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['off'])
             angy_rec = np.sign(pos_rec.yoff)*abs(np.arctan(pos_rec.yoff/pos_rec.zoff))
             beam_r = beam_r-angy_rec
 
@@ -1579,6 +1701,7 @@ def PAAM_center_calc(aim,i,t,para='yoff',scale=1,lim=1e-12,max_count=5,print_on=
                 mode='Converged'
             if print_on:
                 print(beam_l,beam_r)
+        #print(pos_rec.yoff)
 
     elif method=='solve':
         solve_l = lambda beam_l_solve: getattr(values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_l,beam_angle_l=beam_l_solve,beam_angle_r=beam_r,ret=[para]),para) - value
@@ -1604,7 +1727,7 @@ def PAAM_wavefront_calc(aim,i,t,side,lim=1e-12):
             ret=np.nan
     return ret
 
-def tele_wavefront_calc(aim,i_l,t,method,scale=1,lim=1e-12,max_count=20,print_on=False): #The sending is always the left telescope and the receiving the right one
+def tele_wavefront_calc(aim,i_l,t,method,scale=1,lim=1e-12,max_count=20,tele_angle_l=None,tele_angle_r=None,beam_l=None,beam_r=None,offset_l=False,offset_r=False,print_on=False): #The sending is always the left telescope and the receiving the right one
     i_r = utils.i_slr(i_l)[1]
     
     tdel = aim.data.L_sl_func_tot(i_l,t)
@@ -1613,8 +1736,14 @@ def tele_wavefront_calc(aim,i_l,t,method,scale=1,lim=1e-12,max_count=20,print_on
     #t_l=t
     #t_r=t #...because considering traveling time makes it more complex (solve for functions)
 
-    tele_angle_l=aim.tele_l_ang(i_l,t_l)
-    tele_angle_r=aim.tele_r_ang(i_r,t_r)
+    if tele_angle_l is False:
+        tele_angle_l=aim.tele_l_ang(i_l,t_l)
+    elif tele_angle_l == None:
+        tele_angle_l=np.radians(-30.0)
+    if tele_angle_r is False:
+        tele_angle_r=aim.tele_r_ang(i_r,t_r)
+    elif tele_angle_r ==None:
+        tele_angle_r = np.radians(30.0)
 
     calc_l=100
     calc_r=100
@@ -1634,11 +1763,11 @@ def tele_wavefront_calc(aim,i_l,t,method,scale=1,lim=1e-12,max_count=20,print_on
             calc_r_old = calc_r
             tele_angle_l_old = tele_angle_l
             tele_angle_r_old = tele_angle_r
-            pos_l = values(aim,i_l,t_l,'l',mode='send',tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r)
+            pos_l = values(aim,i_l,t_l,'l',mode='send',tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r)
             calc_l = getattr(getattr(OUTPUT(aim),'get_'+para)(pos_l),para)
             tele_angle_r = tele_angle_r-scale*calc_l
 
-            pos_r = values(aim,i_r,t_r+tdel,'r',mode='send',tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r)
+            pos_r = values(aim,i_r,t_r+tdel,'r',mode='send',tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r)
             calc_r = getattr(getattr(OUTPUT(aim),'get_'+para)(pos_r),para)
             tele_angle_l = tele_angle_l-scale*calc_r
 
@@ -1665,7 +1794,7 @@ def tele_wavefront_calc(aim,i_l,t,method,scale=1,lim=1e-12,max_count=20,print_on
                 break
     return [[tele_angle_l,tele_angle_r],mode]
 
-def get_tele_wavefront(aim,i,t,side,method,scale=1,lim=1e-12,max_count=20,print_on=False,value=0.0): 
+def get_tele_wavefront(aim,i,t,side,method,scale=1,lim=1e-12,max_count=20,print_on=False,value=0.0,tele_angle_l=None,tele_angle_r=None,beam_l=None,beam_r=None,offset_l=False,offset_r=False): 
     if side=='l':
         i_l = i
         tdel=0
@@ -1675,18 +1804,18 @@ def get_tele_wavefront(aim,i,t,side,method,scale=1,lim=1e-12,max_count=20,print_
         tdel = aim.data.L_rr_func_tot(i_r,t)
     
     try:
-        ang = tele_wavefront_calc(aim.aim0,i_l,t-tdel,aim.aimset.tele_method_solve,lim=aim.aimset.limit_angx,scale=scale,max_count=max_count,print_on=print_on)
+        ang = tele_wavefront_calc(aim.aim0,i_l,t-tdel,aim.aimset.tele_method_solve,lim=aim.aimset.limit_angx,scale=scale,max_count=max_count,print_on=print_on,tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r,beam_l=beam_l,beam_r=beam_r,offset_l=offset_l,offset_r=offset_r)
         aim_sel = aim.aim0
     except AttributeError:
-        ang = tele_wavefront_calc(aim,i_l,t-tdel,aim.aimset.tele_method_solve,lim=aim.aimset.limit_angx,scale=scale,max_count=max_count,print_on=print_on)
+        ang = tele_wavefront_calc(aim,i_l,t-tdel,aim.aimset.tele_method_solve,lim=aim.aimset.limit_angx,scale=scale,max_count=max_count,print_on=print_on,tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r,beam_l=beam_l,beam_r=beam_r,offset_l=offset_l,offset_r=offset_r)
         aim_sel=aim
 
 
     if side=='l':
-        pos = values(aim_sel,i_l,t,'l',ksi=[0,0],mode='send',tele_angle_l=ang[0][0],tele_angle_r=ang[0][1],ret=['angx_wf_send']).angx_wf_send
+        pos = values(aim_sel,i_l,t,'l',ksi=[0,0],mode='send',tele_angle_l=ang[0][0],tele_angle_r=ang[0][1],beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['angx_wf_send']).angx_wf_send
         ret=ang[0][0]
     elif side=='r':
-        pos = values(aim_sel,i_r,t,'r',ksi=[0,0],mode='send',tele_angle_l=ang[0][0],tele_angle_r=ang[0][1],ret=['angx_wf_send']).angx_wf_send
+        pos = values(aim_sel,i_r,t,'r',ksi=[0,0],mode='send',tele_angle_l=ang[0][0],tele_angle_r=ang[0][1],beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['angx_wf_send']).angx_wf_send
         ret=ang[0][1]
     
     if print_on:

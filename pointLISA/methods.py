@@ -751,7 +751,7 @@ def pos_tele(wfe,i,t,side,ang_tele):
 
 def beam_coor_out(data,i,t,ang_tele,ang_paam,ang_tele_offset):
     # Retunrs the coordinate system of the transmitted beam (same as SC but rotated over ang_tele inplane and ang_tele outplane)
-    [r,n,x] = coor_tele(data,i,t,ang_tele+ang_tele_offset[i]) #Telescope coordinate system
+    [r,n,x] = coor_tele(data,i,t,ang_tele+ang_tele_offset) #Telescope coordinate system
 
     r = LA.unit(LA.rotate(r,x,ang_paam)) # Rotate r in out of plane over ang_paam
     n = np.cross(r,x)
@@ -1074,14 +1074,14 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,o
     return t_adjust,[tele_adjust_l,tele_adjust_r],i_left,i_right
 
 
-def tele_point_calc(aim,i,t,side,option,lim=False,method=False,value=0,scale=1,max_count=20,**kwargs): # Recommended to use aim0
+def tele_point_calc(aim,i,t,side,option,lim=False,method=False,value=0,scale=1,max_count=20,tele_l0=None,tele_r0=None,beam_l0=None,beam_r0=None,offset_l0=None,offset_r0=None,**kwargs): # Recommended to use aim0
     if option=='center':
         if lim==False:
             lim = aim.aimset.limit_xoff
         if side=='l':
-            ang = output.tele_center_calc(aim,i,t,lim=lim,value=value)[0][0]
+            ang = output.tele_center_calc(aim,i,t,lim=lim,value=value,tele_l=tele_l0,tele_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)[0][0]
         elif side=='r':
-            ang = output.tele_center_calc(aim,utils.i_slr(i)[2],t,lim=lim,value=value)[0][1]
+            ang = output.tele_center_calc(aim,utils.i_slr(i)[2],t,lim=lim,value=value,tele_l=tele_l0,tele_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)[0][1]
 
     elif option=='wavefront':
         try:
@@ -1096,9 +1096,9 @@ def tele_point_calc(aim,i,t,side,option,lim=False,method=False,value=0,scale=1,m
             lim=aim.aimset.limit_angx
 
         if side=='l':
-            ang = output.get_tele_wavefront(aim,i,t,'l',method,scale=scale,lim=lim,max_count=max_count,value=value)
+            ang = output.get_tele_wavefront(aim,i,t,'l',method,scale=scale,lim=lim,max_count=max_count,value=value,tele_angle_l=tele_l0,tele_angle_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)
         elif side=='r':
-            ang = output.get_tele_wavefront(aim,i,t,'r',method,scale=scale,lim=lim,max_count=max_count,value=value)
+            ang = output.get_tele_wavefront(aim,i,t,'r',method,scale=scale,lim=lim,max_count=max_count,value=value,tele_angle_l=tele_l0,tele_angle_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)
 
     return ang
 
