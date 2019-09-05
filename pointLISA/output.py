@@ -1334,10 +1334,10 @@ def get_coor_beam_in(aim,i,t,tdel,side,tele_angle_send=False,beam_angle_send=Fal
                 beam_angle_send = 0.0
 
         if side=='l':
-            offset = get_offset_tele(aim,i_left,t-tdel,'r')
+            offset = get_offset(aim,i_left,t-tdel,'r')
             u_not_ab = methods.beam_coor_out(aim.data,i_left,t-tdel,tele_angle_send,beam_angle_send,offset)[0]
         elif side=='r':
-            offset = get_offset_tele(aim,i_right,t-tdel,'l')
+            offset = get_offset(aim,i_right,t-tdel,'l')
             u_not_ab = methods.beam_coor_out(aim.data,i_right,t-tdel,tele_angle_send,beam_angle_send,offset)[0]
 
     if aim.data.aberration==False:
@@ -1431,7 +1431,7 @@ def get_coor_beam_out(aim,i,t,side,tele_angle=False,beam_angle=False,offset=Fals
 
     return ret
 
-def get_offset_tele(aim,i,t,side):
+def get_offset(aim,i,t,side):
     try:
         ret = aim.offset[side][i](t)
     except TypeError:
@@ -1478,11 +1478,11 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
                 tdel0=0
             
             if offset_l is False:
-                offset_l = get_offset_tele(aim,i_self,t+tdel0,'l')
+                offset_l = get_offset(aim,i_self,t+tdel0,'l')
             elif offset_l == None:
                 offset_l = 0.0
             if offset_r is False:
-                offset_r = get_offset_tele(aim,i_left,t+tdel,'r')
+                offset_r = get_offset(aim,i_left,t+tdel,'r')
             elif offset_r == None:
                 offiset_r = 0.0
 
@@ -1503,11 +1503,11 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
             elif aim.data.calc_method=='Abram':
                 tdel0=0
             if offset_l is False:
-                offset_l = get_offset_tele(aim,i_right,t+tdel,'l')
+                offset_l = get_offset(aim,i_right,t+tdel,'l')
             elif offset_l == None:
                 offset_l = 0.0
             if offset_r is False:
-                offset_r = get_offset_tele(aim,i_self,t+tdel0,'r')
+                offset_r = get_offset(aim,i_self,t+tdel0,'r')
             elif offset_r == None:
                 offset_r = 0.0
 
@@ -1530,9 +1530,9 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
             elif aim.data.calc_method=='Abram':
                 tdel0=0
             if offset_l is False:
-                offset_l = get_offset_tele(aim,i_self,t-tdel0,'l')
+                offset_l = get_offset(aim,i_self,t-tdel0,'l')
             if offset_r is False:
-                offset_r = get_offset_tele(aim,i_left,t-tdel,'r')
+                offset_r = get_offset(aim,i_left,t-tdel,'r')
 
             coor_starttele=get_coor_tele(aim,i_left,t-tdel,'r',tele_angle=tele_angle_r)
             coor_startbeam=get_coor_beam_out(aim,i_left,t-tdel,'r',tele_angle=tele_angle_r,beam_angle=beam_angle_r,offset=offset_r)
@@ -1550,9 +1550,9 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
             elif aim.data.calc_method=='Abram':
                 tdel0=0
             if offset_l is False:
-                offset_l = get_offset_tele(aim,i_right,t-tdel,'l')
+                offset_l = get_offset(aim,i_right,t-tdel,'l')
             if offset_r is False:
-                offset_r = get_offset_tele(aim,i_self,t-tdel0,'r')
+                offset_r = get_offset(aim,i_self,t-tdel0,'r')
             
             coor_starttele=get_coor_tele(aim,i_right,t-tdel,'l',tele_angle=tele_angle_l)
             coor_startbeam=get_coor_beam_out(aim,i_right,t-tdel,'l',tele_angle=tele_angle_l,beam_angle=beam_angle_l,offset=offset_l)

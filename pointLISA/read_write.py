@@ -48,6 +48,11 @@ def write(inp,aim,title='',direct='',extr='',opt_date=True,opt_time=True,time=''
         title=extra_title+'_'+time+'_'+title+'.txt'
     elif opt_time==False:
         title=extra_title+'_'+title+'.txt'
+    
+    if title[-4:len(title)]!='.txt':
+        title=title+'.txt'
+
+
 
     name=direct+'/'+title
     check=name.split('.')
