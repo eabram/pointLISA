@@ -560,8 +560,8 @@ class AIM():
             offset = self.offset_tele
 
         # Calculating new pointing vectors and coordinate system
-        beam_l_coor = methods.beam_coor_out(self.data,i,t,tele_l_ang(i,t),beam_l_ang(i,t),self.offset_tele['l'][i](t))
-        beam_r_coor = methods.beam_coor_out(self.data,i,t,tele_r_ang(i,t),beam_r_ang(i,t),self.offset_tele['r'][i](t))
+        beam_l_coor = methods.beam_coor_out(self.data,i,t,tele_l_ang(i,t),beam_l_ang(i,t),self.offset['l'][i](t))
+        beam_r_coor = methods.beam_coor_out(self.data,i,t,tele_r_ang(i,t),beam_r_ang(i,t),self.offset['r'][i](t))
 
         # Calculating the Transmitted beam direction and position of the telescope aperture
         beam_l_direction = beam_l_coor[0]
