@@ -177,6 +177,20 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
+    def get_offset(self,pos):
+        check=False
+        while check==False:
+            try:
+                if pos.side=='l':
+                    ret = pos.offset_l
+                elif pos.side=='r':
+                    ret = pos.offset_r
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError, e:
+                self.add_attribute(e,pos)
+        return pos
+
     def get_off(self,pos):
         check=False
         while check==False:
