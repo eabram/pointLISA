@@ -696,8 +696,8 @@ class AIM():
         out=output.OUTPUT(aim=self)
                
         if (self.sampled == True and sampled==None) or sampled==True:
-            t_sample = self.data.t_all[5:15]
-            #t_sample = self.data.t_all
+            #t_sample = self.data.t_all[5:15]
+            t_sample = self.data.t_all
             tele_func_dict = {}
             beam_func_dict = {}
             t_func_dict={}
