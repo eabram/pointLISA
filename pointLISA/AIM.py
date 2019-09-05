@@ -694,7 +694,8 @@ class AIM():
 
     def twoPAAM_angles(self,sampled=None):
         out=output.OUTPUT(aim=self)
-               
+        
+
         if (self.sampled == True and sampled==None) or sampled==True:
             #t_sample = self.data.t_all[5:15]
             t_sample = self.data.t_all
