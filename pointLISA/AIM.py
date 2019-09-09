@@ -43,45 +43,10 @@ class AIM():
             
 
             if data!=False:
-                print('Start calculating telescope and PAAM aim')
-                self.get_offset_inplane(self.aimset.offset_tele)
+                if self.data.input_file==None:
+                    print('Start calculating telescope and PAAM aim')
+                    self.get_offset_inplane(self.aimset.offset_tele)
                 
-                #if self.init!=True:
-                #    try:
-                #        self.aim0 = kwargs['aim0']
-                #    except KeyError:
-                #        self.aim0=AIM.AIM(data=None)
-                #    self.angles0=kwargs.pop('angles0',False)
-                #    self.aim0.data=data
-                #    try:
-                #        self.PAAM_deg
-                #    except AttributeError:
-                #        self.PAAM_deg = 1
-
-                #    if self.PAAM_deg==1:
-                #        self.aim0.tele_l_ang = self.angles0[0]
-                #        self.aim0.tele_r_ang = self.angles0[2]
-                #        self.aim0.beam_l_ang = self.angles0[1]
-                #        self.aim0.beam_r_ang = self.angles0[3]
-                #        #self.aim0.get_coordinate_systems(option='self')
-                #    else:
-                #        pass
-                #    self.aim0.offset_tele = self.offset_tele
-                #    for key in settings.__dict__.keys():
-                #        setattr(self.aim0,key,settings.__dict__[key])
-                #    self.aim0.get_offset_inplane(self.aim0.offset_tele)
-                #    setattr(self.aim0,'aimset',self.aimset)
-                #    
-
-                #    #self.angles_old=kwargs.pop('angles_old',False)
-                #    #self.aim_old=AIM(False)
-                #    #self.aim_old.data=data
-                #    #self.aim_old.tele_l_ang = self.angles_old[0]
-                #    #self.aim_old.tele_r_ang = self.angles_old[2]
-                #    #self.aim_old.beam_l_ang = self.angles_old[1]
-                #    #self.aim_old.beam_r_ang = self.angles_old[3]
-                #    #self.aim_old.offset_tele = self.offset_tele
-                #    #self.aim_old.get_coordinate_systems(option='self')
 
     def get_offset_inplane(self,option,**kwargs):
         print('Getting initial offset angles')
@@ -320,7 +285,7 @@ class AIM():
             tele_r_ang=[]
             #beam_l_ang=[]
             #beam_r_ang=[]
-            if self.tele_method=='SS':
+            if method=='SS':
                 self.tele_l_ang = lambda i,t: methods.get_tele_SS(False,False,i,t,'l',x=ret['SC'+str(i)+', left']['x'],y=ret['SC'+str(i)+', left']['y'])
                 self.tele_r_ang = lambda i,t: methods.get_tele_SS(False,False,i,t,'r',x=ret['SC'+str(i)+', right']['x'],y=ret['SC'+str(i)+', right']['y'])
 
@@ -340,14 +305,33 @@ class AIM():
                 self.tele_ang_adjust = tele_ang_adjust
             
             else:
+                if self.PAAM_deg==2:
+                    try:
+                        delattr(self,'offset')
+                    except AttributeError:
+                        pass
+                    offset={}
+                    offset['l']={}
+                    offset['r']={}
+
                 for i in range(1,4):
                     t_l =  getattr(getattr(ret[0],'l'),'i'+str(i)).tele_ang
                     t_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).tele_ang
                     tele_l_ang.append(methods.interpolate(t_l[0][0],t_l[0][1]))
                     tele_r_ang.append(methods.interpolate(t_r[0][0],t_r[0][1]))
+                    if self.PAAM_deg==2:
+                        offset_l =  getattr(getattr(ret[0],'l'),'i'+str(i)).offset
+                        offset_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).offset
+                        offset['l'][i] = methods.interpolate(offset_l[0][0],offset_l[0][1])
+                        offset['r'][i] = methods.interpolate(offset_r[0][0],offset_r[0][1])
+                    else:
+                        self.get_offset_inplane(self.aimset.offset_tele)
 
                 self.tele_l_ang = lambda i,t: tele_l_ang[i-1](t)
                 self.tele_r_ang = lambda i,t: tele_r_ang[i-1](t)
+                if self.PAAM_deg==2:
+                    self.offset={}
+                    self.offset = offset
         
         try:
             self.tele_l_ang
@@ -360,7 +344,7 @@ class AIM():
                 
                 tele_l_ang=[]
                 tele_r_ang=[]
-                print("Sampling and fitting telescope angles")
+                print("Sampling and fitting telescope angles") #...add offset voor PAAM_deg==2
                 for i in range(1,4):
                     tele_l_ang.append(methods.interpolate(self.t_sample['l'][i-1],np.array([self.tele_l_ang_func(i,t) for t in self.t_sample['l'][i-1]])))
                     tele_r_ang.append(methods.interpolate(self.t_sample['r'][i-1],np.array([self.tele_r_ang_func(i,t) for t in self.t_sample['r'][i-1]])))
@@ -560,8 +544,11 @@ class AIM():
             offset = self.offset_tele
 
         # Calculating new pointing vectors and coordinate system
-        beam_l_coor = methods.beam_coor_out(self.data,i,t,tele_l_ang(i,t),beam_l_ang(i,t),self.offset['l'][i](t))
-        beam_r_coor = methods.beam_coor_out(self.data,i,t,tele_r_ang(i,t),beam_r_ang(i,t),self.offset['r'][i](t))
+        offset_l = methods.get_offset(self,i,t,'l')
+        offset_r = methods.get_offset(self,i,t,'r')
+
+        beam_l_coor = methods.beam_coor_out(self.data,i,t,tele_l_ang(i,t),beam_l_ang(i,t),offset_l)
+        beam_r_coor = methods.beam_coor_out(self.data,i,t,tele_r_ang(i,t),beam_r_ang(i,t),offset_r)
 
         # Calculating the Transmitted beam direction and position of the telescope aperture
         beam_l_direction = beam_l_coor[0]
@@ -725,8 +712,8 @@ class AIM():
                 for t in t_sample:
                     A = self.twoPAAM_pointing(i,t,'l',out,'rec')
                     B = self.twoPAAM_pointing(A[7],t,'r',out,'rec')
-                    #C = self.twoPAAM_pointing(i,t,'l',out,'send')
-                    #D = self.twoPAAM_pointing(A[7],t,'r',out,'send')
+                    C = self.twoPAAM_pointing(i,t,'l',out,'send')
+                    D = self.twoPAAM_pointing(A[7],t,'r',out,'send')
                     
                     tele_l_calc.append(A[0])
                     beam_l_calc.append(A[1])
@@ -742,33 +729,34 @@ class AIM():
                     beam_l_calc.append(B[3])
                     t_l_calc.append(B[4]-B[5])
                     
-                    #tele_r_calc.append(C[0])
-                    #beam_r_calc.append(C[1])
-                    #t_r_calc.append(C[4])
-                    #tele_l_calc.append(C[2])
-                    #beam_l_calc.append(C[3])
-                    #t_l_calc.append(C[4]+C[5])
-                    #
-                    #tele_l_calc.append(D[0])
-                    #beam_l_calc.append(D[1])
-                    #t_l_calc.append(D[4])
-                    #tele_r_calc.append(D[2])
-                    #beam_r_calc.append(D[3])
-                    #t_r_calc.append(D[4]+D[5])
-
                     offset_l_calc.append(A[-1])
                     offset_l_t_calc.append(A[4])
-                    #offset_l_calc.append(D[-1])
-                    #offset_l_t_calc.append(D[4]+D[5])
-
                     offset_r_calc.append(B[-1])
                     offset_r_t_calc.append(B[4])
-                    #offset_r_calc.append(C[-1])
-                    #offset_r_t_calc.append(C[4]+C[5])
                     
-                    #offset_l_calc.append(0.0)
-                    #offset_r_calc.append(0.0)
- 
+                    C = self.twoPAAM_pointing(i,t,'l',out,'send')
+                    D = self.twoPAAM_pointing(A[7],t,'r',out,'send')
+                    
+                    tele_r_calc.append(C[0])
+                    beam_r_calc.append(C[1])
+                    t_r_calc.append(C[4])
+                    tele_l_calc.append(C[2])
+                    beam_l_calc.append(C[3])
+                    t_l_calc.append(C[4]+C[5])
+
+                    tele_l_calc.append(D[0])
+                    beam_l_calc.append(D[1])
+                    t_l_calc.append(D[4])
+                    tele_r_calc.append(D[2])
+                    beam_r_calc.append(D[3])
+                    t_r_calc.append(D[4]+D[5])
+
+                    offset_l_calc.append(D[-1])
+                    offset_l_t_calc.append(D[4]+D[5])
+
+                    offset_r_calc.append(C[-1])
+                    offset_r_t_calc.append(C[4]+C[5])
+                     
                     print(t/t_sample[-1])
 
                 tele_func_dict['l'][A[6]] = methods.interpolate(np.array(t_l_calc),np.array(tele_l_calc))
@@ -814,21 +802,10 @@ class AIM():
         self.tele_l_ang_old = tele_l_ang
         self.tele_r_ang_old = tele_r_ang
 
-            
-        #    offset={}
-        #    for s in ['l','r']:
-        #        offset[s]={}
-        #        for i in range(1,4):
-        #            offset[s][i] = lambda t: self.twoPAAM_offset(i,t,s,out)[2]
-        #raise TypeError("Have not finished this part")
-
         delattr(self,'offset')
         print('Removed old offset')
         self.offset = offset
         self.offset_init=False
-        #self.tele_func_dict = tele_func_dict
-        #self.beam_func_dict = beam_func_dict
-        #self.t_func_dict = t_func_dict
 
 
         return 0

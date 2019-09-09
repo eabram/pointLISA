@@ -42,16 +42,12 @@ def get_pointing(data,import_file=None,filename=False,set_din=utils.Object(),aim
     print('check')
     if data.input_file==None:
         if PAAM_deg==1:
-            #aim = AIM.AIM(data=data,setting = set_din,init=aimset.init,sampled=aimset.sampled,angles0=angles0,angles_old=angles_old,offset_tele=aimset.offset_tele,settings=aimset,filename=filename,inp=False)
             aim = AIM.AIM(data=data,setting = set_din,filename=filename,inp=False,aim0=aim0,aim_old=aim0)
             aim.tele_aim(method=aim.aimset.tele_control,tele_ang_extra=aim.aimset.tele_ang_extra,option=aim.aimset.option_tele)
             out = aim.PAAM_aim(method=aim.aimset.PAAM_control,PAAM_ang_extra=aim.aimset.PAAM_ang_extra,option=aim.aimset.option_PAAM)
         
-        elif PAAM_deg==2:
-            #aim0 = AIM.AIM(data=data,tele_control='no_control',PAAM_control='no_control',sampled=True,setting=set_din,init=True,offset=False,PAAM_deg=1)
-            
+        elif PAAM_deg==2: 
             aim = AIM.AIM(data=data,tele_control='full_control',PAAM_control='full_control',aim0=aim0,aim_old=aim0,option_tele='center',option_PAAM='center',setting=set_din,init=False,PAAM_deg=2)
-            #aim.aim0 = aim0
             aim.twoPAAM_angles(sampled=aim.aimset.sampled)
             print('Under construction')
             
@@ -63,13 +59,9 @@ def get_pointing(data,import_file=None,filename=False,set_din=utils.Object(),aim
         print('PAAM:')
         print(aimset_new.PAAM_control)
 
-        aim = AIM.AIM(data=data,setting=aimset_new,angles0=angles0,angles_old=angles_old,filename=filename,inp=False)
+        aim = AIM.AIM(data=data,setting=set_din,filename=filename,inp=False)
         aim.tele_aim(method=aim.aimset.tele_control,tele_ang_extra=aim.aimset.tele_ang_extra,option=aim.aimset.option_tele)
-
         out = aim.PAAM_aim(method=aim.aimset.PAAM_control,PAAM_ang_extra=aim.aimset.PAAM_ang_extra,option=aim.aimset.option_PAAM)
-
-    
-    #return out
 
     return aim
 
