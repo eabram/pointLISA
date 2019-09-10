@@ -712,8 +712,6 @@ class AIM():
                 for t in t_sample:
                     A = self.twoPAAM_pointing(i,t,'l',out,'rec')
                     B = self.twoPAAM_pointing(A[7],t,'r',out,'rec')
-                    C = self.twoPAAM_pointing(i,t,'l',out,'send')
-                    D = self.twoPAAM_pointing(A[7],t,'r',out,'send')
                     
                     tele_l_calc.append(A[0])
                     beam_l_calc.append(A[1])
