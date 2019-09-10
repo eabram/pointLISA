@@ -10,7 +10,7 @@ rets=[['xoff','yoff','zoff','r'],['angx_ab_rec','angy_ab_rec','angx_ab_send','an
 #rets=[['angx_wf_rec','angy_wf_rec']]
 #rets=[['offset']]
 #rets=[['xoff','yoff','offset'],['angx_wf_rec','angy_wf_rec'],['angx_wf_send','angy_wf_send']]
-i#rets=[['angx_wf_rec','angy_wf_rec']]
+#rets=[['angx_wf_rec','angy_wf_rec']]
 #rets=[['PAAM_ang','tele_ang']]
 
 SC=[1,2,3]
@@ -61,7 +61,7 @@ def get_all(input_file=None,set_stat=utils.Object(),set_din=utils.Object()):
 #folder_sel = '20190626/_01/'
 #folder_sel='20190810/_01/full_control__400_days/'#read_offset_ab_rel/'
 #folder_sel='Data_for_Graphs/SSFCread/SS_full_control__400_days/read_offset_ab_rel/_option_tele_center_option_PAAM_center/'
-folder_sel='/20190910/_04/'
+folder_sel='/20190910/_05/'
 folder_0='/home/ester/git/Results/'
 source_folder = folder_0+folder_sel
 folder=folder_0+'test/'+folder_sel

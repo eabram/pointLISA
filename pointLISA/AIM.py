@@ -600,11 +600,11 @@ class AIM():
         [i_self,i_left,i_right] = utils.i_slr(i)
         if side=='l':
             Dt = self.data.L_sl_func_tot(i_self,t)
-            ang_in_l = methods.tele_point_calc(self,i,t,'l','center',max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0)
+            ang_in_l = methods.tele_point_calc(self,i,t,'l','center',max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0,offset_l0=0.0,offset_r0=0.0)
             #ang_in_l = methods.tele_point_calc(self,i,t,'l','center',max_count=max_count,scale=scale,value=value)
-            ang_in_r = methods.tele_point_calc(self,utils.i_slr(i)[1],t+Dt,'r','center',max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0)
+            ang_in_r = methods.tele_point_calc(self,utils.i_slr(i)[1],t+Dt,'r','center',max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0,offset_l0=0.0,offset_r0=0.0)
             #ang_in_r = methods.tele_point_calc(self,utils.i_slr(i)[1],t,'r','center',max_count=max_count,scale=scale,value=value)
-            ang_out = output.PAAM_center_calc(self,i,t,tele_l=ang_in_l,tele_r=ang_in_r,lim=self.aimset.limit_yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.aimset.optimize_PAAM_margin,beam_l=0.0,beam_r=0.0)[0][0]
+            ang_out = output.PAAM_center_calc(self,i,t,tele_l=ang_in_l,tele_r=ang_in_r,lim=self.aimset.limit_yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.aimset.optimize_PAAM_margin,beam_l=0.0,beam_r=0.0,offset_l=0.0,offset_r=0.0)[0][0]
 
             return [ang_in_l,ang_out]
 
@@ -623,10 +623,10 @@ class AIM():
 #            self.offset_init=True
 
     def twoPAAM_pointing(self,i,t,side,out,mode,short=False):
-        if self.offset_init==False:
-            delattr(self,'offset')
-            self.get_offset_inplane('0')
-            self.offset_init=True
+        #if self.offset_init==False:
+        #    delattr(self,'offset')
+        #    self.get_offset_inplane('0')
+        #    self.offset_init=True
 
         [i_self,i_left,i_right] = utils.i_slr(i)
         if mode=='rec':
@@ -736,28 +736,28 @@ class AIM():
                     offset_r_calc.append(B[-1])
                     offset_r_t_calc.append(B[4])
                     
-                    C = self.twoPAAM_pointing(i,t,'l',out,'send')
-                    D = self.twoPAAM_pointing(A[7],t,'r',out,'send')
-                    
-                    tele_r_calc.append(C[0])
-                    beam_r_calc.append(C[1])
-                    t_r_calc.append(C[4])
-                    tele_l_calc.append(C[2])
-                    beam_l_calc.append(C[3])
-                    t_l_calc.append(C[4]+C[5])
+                    #C = self.twoPAAM_pointing(i,t,'l',out,'send')
+                    #D = self.twoPAAM_pointing(A[7],t,'r',out,'send')
+                    #
+                    #tele_r_calc.append(C[0])
+                    #beam_r_calc.append(C[1])
+                    #t_r_calc.append(C[4])
+                    #tele_l_calc.append(C[2])
+                    #beam_l_calc.append(C[3])
+                    #t_l_calc.append(C[4]+C[5])
 
-                    tele_l_calc.append(D[0])
-                    beam_l_calc.append(D[1])
-                    t_l_calc.append(D[4])
-                    tele_r_calc.append(D[2])
-                    beam_r_calc.append(D[3])
-                    t_r_calc.append(D[4]+D[5])
+                    #tele_l_calc.append(D[0])
+                    #beam_l_calc.append(D[1])
+                    #t_l_calc.append(D[4])
+                    #tele_r_calc.append(D[2])
+                    #beam_r_calc.append(D[3])
+                    #t_r_calc.append(D[4]+D[5])
 
-                    offset_l_calc.append(D[-1])
-                    offset_l_t_calc.append(D[4]+D[5])
+                    #offset_l_calc.append(D[-1])
+                    #offset_l_t_calc.append(D[4]+D[5])
 
-                    offset_r_calc.append(C[-1])
-                    offset_r_t_calc.append(C[4]+C[5])
+                    #offset_r_calc.append(C[-1])
+                    #offset_r_t_calc.append(C[4]+C[5])
                      
                     print(t/t_sample[-1])
 
@@ -776,33 +776,68 @@ class AIM():
             beam_l_ang = lambda i,t: beam_func_dict['l'][i](t)
             tele_r_ang = lambda i,t: tele_func_dict['r'][i](t)
             beam_r_ang = lambda i,t: beam_func_dict['r'][i](t)
-            
+            del_list=['tele_l_ang','tele_r_ang','beam_l_ang','beam_r_ang']
+            for l in del_list:
+                try:
+                    delattr(self,l)
+                except AttributeError:
+                    pass
+
+            self.beam_l_ang = beam_l_ang
+            self.beam_r_ang = beam_r_ang
+            self.tele_l_ang = lambda i,t: tele_l_ang(i,t) - offset['l'][i](t)
+            self.tele_r_ang = lambda i,t: tele_r_ang(i,t) - offset['r'][i](t)
+            self.tele_l_ang_old = tele_l_ang
+            self.tele_r_ang_old = tele_r_ang
+
+           
         else:
-            tele_l_ang = lambda i,t: self.twoPAAM_pointing(i,t,'l',out,'rec')[0]
-            beam_l_ang = lambda i,t: self.twoPAAM_pointing(i,t,'l',out,'rec')[1]
-            tele_r_ang = lambda i,t: self.twoPAAM_pointing(i,t,'r',out,'rec')[0]
-            beam_r_ang = lambda i,t: self.twoPAAM_pointing(i,t,'r',out,'rec')[1]
-            offset={}
-            offset['l']={}
-            offset['r']={}
-            for i in range(1,4):
-                offset['l'][i] = lambda t: self.twoPAAM_pointing(i,t,'l',out,'rec')[-1]
-                offset['r'][i] = lambda t: self.twoPAAM_pointing(i,t,'r',out,'rec')[-1]
+            tele_l_ang = lambda i,t: self.twoPAAM_get_tele(i,t,'l',out)
+            tele_r_ang = lambda i,t: self.twoPAAM_get_tele(i,t,'r',out)
+            beam_l_ang = lambda i,t: self.twoPAAM_get_beam(i,t,'l',out,short=True)
+            beam_r_ang = lambda i,t: self.twoPAAM_get_beam(i,t,'r',out,short=True)
+            offset = lambda i,t, side: self.twoPAAM_get_offset(i,t,side,out)
+            del_list=['tele_l_ang','tele_r_ang','beam_l_ang','beam_r_ang']
+            for l in del_list:
+                try:
+                    delattr(self,l)
+                except AttributeError:
+                    pass
+
+            self.beam_l_ang = beam_l_ang
+            self.beam_r_ang = beam_r_ang
+            self.tele_l_ang = tele_l_ang
+            self.tele_r_ang = tele_r_ang
+            #self.tele_l_ang_old = tele_l_ang
+            #self.tele_r_ang_old = tele_r_ang
+
+
+            
+            #tele_l_ang = lambda i,t: self.twoPAAM_pointing(i,t,'l',out,'rec')[0]
+            #beam_l_ang = lambda i,t: self.twoPAAM_pointing(i,t,'l',out,'rec')[1]
+            #tele_r_ang = lambda i,t: self.twoPAAM_pointing(i,t,'r',out,'rec')[0]
+            #beam_r_ang = lambda i,t: self.twoPAAM_pointing(i,t,'r',out,'rec')[1]
+            #offset={}
+            #offset['l']={}
+            #offset['r']={}
+            #for i in range(1,4):
+            #    offset['l'][i] = lambda t: self.twoPAAM_pointing(i,t,'l',out,'rec')[-1]
+            #    offset['r'][i] = lambda t: self.twoPAAM_pointing(i,t,'r',out,'rec')[-1]
 
  
-        del_list=['tele_l_ang','tele_r_ang','beam_l_ang','beam_r_ang']
-        for l in del_list:
-            try:
-                delattr(self,l)
-            except AttributeError:
-                pass
+        #del_list=['tele_l_ang','tele_r_ang','beam_l_ang','beam_r_ang']
+        #for l in del_list:
+        #    try:
+        #        delattr(self,l)
+        #    except AttributeError:
+        #        pass
  
-        self.beam_l_ang = beam_l_ang
-        self.beam_r_ang = beam_r_ang
-        self.tele_l_ang = lambda i,t: tele_l_ang(i,t) - offset['l'][i](t)
-        self.tele_r_ang = lambda i,t: tele_r_ang(i,t) - offset['r'][i](t)
-        self.tele_l_ang_old = tele_l_ang
-        self.tele_r_ang_old = tele_r_ang
+        #self.beam_l_ang = beam_l_ang
+        #self.beam_r_ang = beam_r_ang
+        #self.tele_l_ang = lambda i,t: tele_l_ang(i,t) - offset['l'][i](t)
+        #self.tele_r_ang = lambda i,t: tele_r_ang(i,t) - offset['r'][i](t)
+        #self.tele_l_ang_old = tele_l_ang
+        #self.tele_r_ang_old = tele_r_ang
 
         delattr(self,'offset')
         print('Removed old offset')
@@ -811,6 +846,20 @@ class AIM():
 
 
         return 0
+
+
+    def twoPAAM_get_tele(self,i,t,side,out,short=False):
+        A = self.twoPAAM_pointing(i,t,side,out,'rec',short=short)
+        return A[0] - A[-1]
+    
+    def twoPAAM_get_beam(self,i,t,side,out,short=False):
+        A = self.twoPAAM_pointing(i,t,side,out,'rec',short=short)
+        return A[1]
+
+    def twoPAAM_get_offset(self,i,t,side,out,short=False):
+        A = self.twoPAAM_pointing(i,t,side,out,'rec',short=short)
+        return A[-1]
+
 
 
 
