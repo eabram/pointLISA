@@ -615,8 +615,14 @@ class AIM():
             ang_out = output.PAAM_center_calc(self,utils.i_slr(i)[2],t,tele_l=ang_in_l,tele_r=ang_in_r,lim=self.aimset.limit_yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.aimset.optimize_PAAM_margin,beam_l=0.0,beam_r=0.0,offset_l=0.0,offset_r=0.0)[0][1]
             
             return [ang_in_r,ang_out]
+    
+#    def twoPAAM_pointing_init(self):
+#        if self.offset_init==False:
+#            delattr(self,'offset')
+#            self.get_offset_inplane('0')
+#            self.offset_init=True
 
-    def twoPAAM_pointing(self,i,t,side,out,mode):
+    def twoPAAM_pointing(self,i,t,side,out,mode,short=False):
         if self.offset_init==False:
             delattr(self,'offset')
             self.get_offset_inplane('0')
@@ -636,11 +642,12 @@ class AIM():
                 [ang_in_end,ang_out_end] = self.twoPAAM_calc(i_self,t,'r')
                 i_rec = i_self
                 i_send = i_right
-            coor_tele_rec = methods.coor_tele(self.data,i_rec,t,ang_in_end)
-            coor_tele_send = methods.coor_tele(self.data,i_send,t-Dt,ang_in_start)
-            pos_tele_rec = LA.unit(coor_tele_rec[0])*self.data.L_tele+np.array(self.data.putp(i_rec,t))
-            coor_beam_send = methods.beam_coor_out(self.data,i_send,t-Dt,ang_in_start,ang_out_start,0.0)
-            pos_tele_send = LA.unit(coor_tele_send[0])*self.data.L_tele+np.array(self.data.putp(i_send,t-Dt))
+            if short==False:
+                coor_tele_rec = methods.coor_tele(self.data,i_rec,t,ang_in_end)
+                coor_tele_send = methods.coor_tele(self.data,i_send,t-Dt,ang_in_start)
+                pos_tele_rec = LA.unit(coor_tele_rec[0])*self.data.L_tele+np.array(self.data.putp(i_rec,t))
+                coor_beam_send = methods.beam_coor_out(self.data,i_send,t-Dt,ang_in_start,ang_out_start,0.0)
+                pos_tele_send = LA.unit(coor_tele_send[0])*self.data.L_tele+np.array(self.data.putp(i_send,t-Dt))
 
         elif mode=='send':
             if side=='l':
@@ -655,20 +662,25 @@ class AIM():
                 [ang_in_end,ang_out_end] = self.twoPAAM_calc(i_right,t+Dt,'l')
                 i_rec = i_right
                 i_send = i_self
-            coor_tele_rec = methods.coor_tele(self.data,i_rec,t+Dt,ang_in_end)
-            coor_tele_send = methods.coor_tele(self.data,i_send,t,ang_in_start)
-            pos_tele_rec = LA.unit(coor_tele_rec[0])*self.data.L_tele+np.array(self.data.putp(i_rec,t+Dt))
-            coor_beam_send = methods.beam_coor_out(self.data,i_send,t,ang_in_start,ang_out_start,0.0)
-            pos_tele_send = LA.unit(coor_tele_send[0])*self.data.L_tele+np.array(self.data.putp(i_send,t))
-
-        z = np.linalg.norm(LA.matmul(coor_beam_send,pos_tele_rec - pos_tele_send))
-
-        R = out.R(z)
-        R_vec = -R*coor_beam_send[0]
-        R_vec_tele_rec = LA.unit(LA.matmul(coor_tele_rec,-R_vec))
-        offset =  np.sign(R_vec_tele_rec[2])*np.arctan(abs(R_vec_tele_rec[2]/R_vec_tele_rec[0]))
-        [z_off,y_off,x_off] = LA.matmul(coor_beam_send,pos_tele_rec - pos_tele_send) #are correct
+            if short==False:
+                coor_tele_rec = methods.coor_tele(self.data,i_rec,t+Dt,ang_in_end)
+                coor_tele_send = methods.coor_tele(self.data,i_send,t,ang_in_start)
+                pos_tele_rec = LA.unit(coor_tele_rec[0])*self.data.L_tele+np.array(self.data.putp(i_rec,t+Dt))
+                coor_beam_send = methods.beam_coor_out(self.data,i_send,t,ang_in_start,ang_out_start,0.0)
+                pos_tele_send = LA.unit(coor_tele_send[0])*self.data.L_tele+np.array(self.data.putp(i_send,t))
         
+        if short==False:
+            z = np.linalg.norm(LA.matmul(coor_beam_send,pos_tele_rec - pos_tele_send))
+
+            R = out.R(z)
+            R_vec = -R*coor_beam_send[0]
+            R_vec_tele_rec = LA.unit(LA.matmul(coor_tele_rec,-R_vec))
+            offset =  np.sign(R_vec_tele_rec[2])*np.arctan(abs(R_vec_tele_rec[2]/R_vec_tele_rec[0]))
+            [z_off,y_off,x_off] = LA.matmul(coor_beam_send,pos_tele_rec - pos_tele_send) #are correct
+
+        elif short==True:
+            offset=np.nan
+            
         return [ang_in_end,ang_out_end,ang_in_start,ang_out_start,t,Dt,i_rec,i_send,offset]
 
     def twoPAAM_angles(self,sampled=None):
@@ -724,28 +736,28 @@ class AIM():
                     offset_r_calc.append(B[-1])
                     offset_r_t_calc.append(B[4])
                     
-                    #C = self.twoPAAM_pointing(i,t,'l',out,'send')
-                    #D = self.twoPAAM_pointing(A[7],t,'r',out,'send')
-                    #
-                    #tele_r_calc.append(C[0])
-                    #beam_r_calc.append(C[1])
-                    #t_r_calc.append(C[4])
-                    #tele_l_calc.append(C[2])
-                    #beam_l_calc.append(C[3])
-                    #t_l_calc.append(C[4]+C[5])
+                    C = self.twoPAAM_pointing(i,t,'l',out,'send')
+                    D = self.twoPAAM_pointing(A[7],t,'r',out,'send')
+                    
+                    tele_r_calc.append(C[0])
+                    beam_r_calc.append(C[1])
+                    t_r_calc.append(C[4])
+                    tele_l_calc.append(C[2])
+                    beam_l_calc.append(C[3])
+                    t_l_calc.append(C[4]+C[5])
 
-                    #tele_l_calc.append(D[0])
-                    #beam_l_calc.append(D[1])
-                    #t_l_calc.append(D[4])
-                    #tele_r_calc.append(D[2])
-                    #beam_r_calc.append(D[3])
-                    #t_r_calc.append(D[4]+D[5])
+                    tele_l_calc.append(D[0])
+                    beam_l_calc.append(D[1])
+                    t_l_calc.append(D[4])
+                    tele_r_calc.append(D[2])
+                    beam_r_calc.append(D[3])
+                    t_r_calc.append(D[4]+D[5])
 
-                    #offset_l_calc.append(D[-1])
-                    #offset_l_t_calc.append(D[4]+D[5])
+                    offset_l_calc.append(D[-1])
+                    offset_l_t_calc.append(D[4]+D[5])
 
-                    #offset_r_calc.append(C[-1])
-                    #offset_r_t_calc.append(C[4]+C[5])
+                    offset_r_calc.append(C[-1])
+                    offset_r_t_calc.append(C[4]+C[5])
                      
                     print(t/t_sample[-1])
 
@@ -795,7 +807,7 @@ class AIM():
         delattr(self,'offset')
         print('Removed old offset')
         self.offset = offset
-        self.offset_init=False
+        self.offset_init=True
 
 
         return 0

@@ -997,19 +997,26 @@ def get_SS(wfe,aim,link,lim,ret={},t_all={},ang_output={},m='tilt',component='te
 
     return ret,t_all,ang_output
 
-def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,option=False,print_on=False,value=0):
+def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,option=False,print_on=False,value=0,offset_l=False,offset_r=False,dt=3600*24):
     if option==False:
         option = aim.aimset.option_tele
 
     t_adjust=[]
     tele_adjust_l = [] 
     tele_adjust_r = [] 
+    offset_adjust_l = []
+    offset_adjust_r = []
+
     i = (link-2)%3
     [i_left,i_right,link] = utils.i_slr(i)
     if tele_l ==False:
         tele_l = aim.tele_l_ang(i_left,t0)
     if tele_r==False:
         tele_r = aim.tele_r_ang(i_right,t0)
+    #if offset_l==False:
+    #    offset_l=aim.offset['l'][i_left](t0)
+    #if offset_r==False:
+    #    offset_r=aim.offset['r'][i_right](t0)
     
     t_adjust.append(t0)
     t_val  = t0
@@ -1025,21 +1032,42 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,o
                 t_adjust.append(t_val-step)
                 tele_l = aim.tele_l_ang(i_left,t_val-step)
                 tele_r = aim.tele_r_ang(i_right,t_val-step)
-                tele_adjust.append([tele_l,tele_r])
+                offset_l = aim.offset['l'][i_left](t_val-step)
+                offset_r = aim.offset['r'][i_right](t_val-step)
+                tele_adjust_l.append(tele_l)
+                tele_adjust_r.append(tele_r)
+                offset_adjust_l.append(offset_l)
+                offset_adjust_r.append(offset_r)
 
     elif method=='solve':
+        out=output.OUTPUT(aim=aim)
         t_val = t_adjust[-1]
-        tele_l = tele_point_calc(aim,i_left,t_val,'l',option,max_count=5,scale=1,value=value) 
-        tele_r = tele_point_calc(aim,i_right,t_val,'r',option,max_count=5,scale=1,value=value) 
+
+        if aim.PAAM_deg==1:
+            tele_l = tele_point_calc(aim,i_left,t_val,'l',option,max_count=5,scale=1,value=value) 
+            tele_r = tele_point_calc(aim,i_right,t_val,'r',option,max_count=5,scale=1,value=value) 
+            #offset_l = aim.offset['l'][i_left]
+            #offset_r = aim.offset['l'][i_right]
+        elif aim.PAAM_deg==2:
+            #A = aim.twoPAAM_pointing(i_left,t_val,'l',out,'rec')
+            #B = aim.twoPAAM_pointing(i_right,t_val,'r',out,'rec')
+            #tele_l = A[0]
+            #tele_r = B[0]
+            tele_l = aim.tele_l_ang(i_left,t_val)
+            tele_r = aim.tele_r_ang(i_right,t_val)
+            #offset_l = A[-1]
+            #offset_r = B[-1]
+
         tele_adjust_l.append(tele_l)
         tele_adjust_r.append(tele_r)
+        #offset_adjust_l.append(offset_l)
+        #offset_adjust_r.append(offset_r)
         
         while t_val<t_end:
             f_l = lambda t: abs(getattr(output.values(aim,i_left,t,'l',ksi=[0,0],mode='send',tele_angle_l=tele_l,tele_angle_r=tele_r,ret=[ret]),ret))-lim
             f_r = lambda t: abs(getattr(output.values(aim,i_right,t,'r',ksi=[0,0],mode='send',tele_angle_l=tele_l,tele_angle_r=tele_r,ret=[ret]),ret))-lim
             
             k=1
-            dt = 3600.0*24
             found=False
             while found==False:
                 if t_val+dt*(k-1)>=t_end:
@@ -1050,8 +1078,8 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,o
                         under = t_val+dt*(k-1)+100.0
                         upper = t_val+dt*k
 
-                        t_l = scipy.optimize.brentq(f_l,under,upper,xtol=60.0)
-                        t_r = scipy.optimize.brentq(f_r,under,upper,xtol=60.0)
+                        t_l = scipy.optimize.brentq(f_l,under,upper,xtol=1.0e-7)
+                        t_r = scipy.optimize.brentq(f_r,under,upper,xtol=1.0e-7)
                         #print(t_l,under,upper)
                         found=True
                     except ValueError,e:
@@ -1064,8 +1092,17 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,o
                 t_adjust.append(min(t_l,t_r))
                 t_val = t_adjust[-1]
                 
-                tele_l = tele_point_calc(aim,i_left,t_val,'l',option,max_count=5,scale=1,value=value) 
-                tele_r = tele_point_calc(aim,i_right,t_val,'r',option,max_count=5,scale=1,value=value) 
+                if aim.PAAM_deg==1:
+                    tele_l = tele_point_calc(aim,i_left,t_val,'l',option,max_count=5,scale=1,value=value) 
+                    tele_r = tele_point_calc(aim,i_right,t_val,'r',option,max_count=5,scale=1,value=value) 
+                elif aim.PAAM_deg==2:
+                    #A = aim.twoPAAM_pointing(i_left,t_val,'l',out,'rec')
+                    #B = aim.twoPAAM_pointing(i_right,t_val,'r',out,'rec')
+                    tele_l = aim.tele_l_ang(i_left,t_val)
+                    tele_r = aim.tele_r_ang(i_right,t_val)
+                    #tele_l = A[0]
+                    #tele_r = B[0]
+
                 tele_adjust_l.append(tele_l)
                 tele_adjust_r.append(tele_r)
                 if print_on==True:
