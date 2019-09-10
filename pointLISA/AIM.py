@@ -642,7 +642,6 @@ class AIM():
             coor_beam_send = methods.beam_coor_out(self.data,i_send,t-Dt,ang_in_start,ang_out_start,0.0)
             pos_tele_send = LA.unit(coor_tele_send[0])*self.data.L_tele+np.array(self.data.putp(i_send,t-Dt))
 
-
         elif mode=='send':
             if side=='l':
                 Dt = self.data.L_sl_func_tot(i_self,t)
@@ -662,21 +661,14 @@ class AIM():
             coor_beam_send = methods.beam_coor_out(self.data,i_send,t,ang_in_start,ang_out_start,0.0)
             pos_tele_send = LA.unit(coor_tele_send[0])*self.data.L_tele+np.array(self.data.putp(i_send,t))
 
-        #z = np.linalg.norm(pos_tele_rec - pos_tele_send)
         z = np.linalg.norm(LA.matmul(coor_beam_send,pos_tele_rec - pos_tele_send))
 
         R = out.R(z)
         R_vec = -R*coor_beam_send[0]
         R_vec_tele_rec = LA.unit(LA.matmul(coor_tele_rec,-R_vec))
         offset =  np.sign(R_vec_tele_rec[2])*np.arctan(abs(R_vec_tele_rec[2]/R_vec_tele_rec[0]))
-        #print(offset)
-        #print('Check 1: '+ str(np.dot(LA.unit(coor_tele_rec[0]),LA.unit(coor_tele_send[0]))))
-        #print('Check 2: '+ str(np.dot(LA.unit(coor_tele_rec[1]),LA.unit(coor_tele_send[1]))))
-        #print('Check 3: '+ str(Dt))
-        #print(i_rec,i_send,ang_in_start,ang_in_end)
         [z_off,y_off,x_off] = LA.matmul(coor_beam_send,pos_tele_rec - pos_tele_send) #are correct
-        #print('Check 1: '+str(x_off)+' :: ' + str(y_off) + '  ::  ' +str(z_off)) 
-#        return [ang_in_end-offset,ang_out_end,offset] 
+        
         return [ang_in_end,ang_out_end,ang_in_start,ang_out_start,t,Dt,i_rec,i_send,offset]
 
     def twoPAAM_angles(self,sampled=None):
@@ -732,28 +724,28 @@ class AIM():
                     offset_r_calc.append(B[-1])
                     offset_r_t_calc.append(B[4])
                     
-                    C = self.twoPAAM_pointing(i,t,'l',out,'send')
-                    D = self.twoPAAM_pointing(A[7],t,'r',out,'send')
-                    
-                    tele_r_calc.append(C[0])
-                    beam_r_calc.append(C[1])
-                    t_r_calc.append(C[4])
-                    tele_l_calc.append(C[2])
-                    beam_l_calc.append(C[3])
-                    t_l_calc.append(C[4]+C[5])
+                    #C = self.twoPAAM_pointing(i,t,'l',out,'send')
+                    #D = self.twoPAAM_pointing(A[7],t,'r',out,'send')
+                    #
+                    #tele_r_calc.append(C[0])
+                    #beam_r_calc.append(C[1])
+                    #t_r_calc.append(C[4])
+                    #tele_l_calc.append(C[2])
+                    #beam_l_calc.append(C[3])
+                    #t_l_calc.append(C[4]+C[5])
 
-                    tele_l_calc.append(D[0])
-                    beam_l_calc.append(D[1])
-                    t_l_calc.append(D[4])
-                    tele_r_calc.append(D[2])
-                    beam_r_calc.append(D[3])
-                    t_r_calc.append(D[4]+D[5])
+                    #tele_l_calc.append(D[0])
+                    #beam_l_calc.append(D[1])
+                    #t_l_calc.append(D[4])
+                    #tele_r_calc.append(D[2])
+                    #beam_r_calc.append(D[3])
+                    #t_r_calc.append(D[4]+D[5])
 
-                    offset_l_calc.append(D[-1])
-                    offset_l_t_calc.append(D[4]+D[5])
+                    #offset_l_calc.append(D[-1])
+                    #offset_l_t_calc.append(D[4]+D[5])
 
-                    offset_r_calc.append(C[-1])
-                    offset_r_t_calc.append(C[4]+C[5])
+                    #offset_r_calc.append(C[-1])
+                    #offset_r_t_calc.append(C[4]+C[5])
                      
                     print(t/t_sample[-1])
 
