@@ -48,7 +48,7 @@ def get_pointing(data,import_file=None,filename=False,set_din=utils.Object(),aim
         
         elif PAAM_deg==2: 
             aim = AIM.AIM(data=data,option_tele='center',option_PAAM='center',setting=set_din,init=False,PAAM_deg=2)
-            #aim.twoPAAM_angles(sampled=aim.aimset.sampled)
+            aim.twoPAAM_angles()
             print('Under construction')
             
 
