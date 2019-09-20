@@ -309,7 +309,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = pos.get_vecs_endbeam[0]
+                ret = pos.vecs_endbeam[0]
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError, e:
@@ -320,7 +320,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = pos.get_vecs_endbeam[1]
+                ret = pos.vecs_endbeam[1]
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError, e:
@@ -331,7 +331,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = pos.get_vecs_endbeam[2]
+                ret = pos.vecs_endbeam[2]
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError, e:
