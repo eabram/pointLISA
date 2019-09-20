@@ -1085,7 +1085,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = pos.pisotnandz[1]
+                ret = pos.pistonandz[1]
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
