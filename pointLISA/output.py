@@ -295,10 +295,10 @@ class OUTPUT():
         while check==False:
             try:
                 if pos.mode=='send':
-                    ret=get_coor_beam_in(pos.aim,pos.i_opp,pos.t+pos.tdel,pos.tdel,pos.invside,tele_angle_send=tele_angle_start,beam_angle_send=beam_angle_start,tele_angle_rec=tele_angle_end,offset=offset_start)
+                    ret=get_coor_beam_in(pos.aim,pos.i_opp,pos.t+pos.tdel,pos.tdel,pos.invside,tele_angle_send=pos.tele_angle_start,beam_angle_send=po.beam_angle_start,tele_angle_rec=pos.tele_angle_end,offset=pos.offset_start)
 
                 elif pos.mode=='rec':
-                    ret=get_coor_beam_in(pos.aim,pos.i_self,pos.t,pos.tdel,pos.side,tele_angle_send=tele_angle_start,beam_angle_send=beam_angle_start,tele_angle_rec=tele_angle_end,offset=offset_start)
+                    ret=get_coor_beam_in(pos.aim,pos.i_self,pos.t,pos.tdel,pos.side,tele_angle_send=pos.tele_angle_start,beam_angle_send=pos.beam_angle_start,tele_angle_rec=pos.tele_angle_end,offset=pos.offset_start)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError, e:
