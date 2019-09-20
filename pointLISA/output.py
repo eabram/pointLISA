@@ -290,7 +290,7 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
-    def get_vecs_enbeam(self,pos):
+    def get_vecs_endbeam(self,pos):
         check=False
         while check==False:
             try:
