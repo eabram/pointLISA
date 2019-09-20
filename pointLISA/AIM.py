@@ -722,56 +722,42 @@ class AIM():
         self.twoPAAM_tele_aim()
         self.twoPAAM_PAAMout_aim()
         self.twoPAAM_PAAMin_aim()
-#
-#        if (self.sampled == True and sampled==None) or sampled==True:
-#            #t_sample = self.data.t_all[5:15]
-#            t_sample = self.data.t_all
-#            tele_func_dict = {}
-#            beam_func_dict = {}
-#            t_func_dict={}
-#
-#            offset = {}
-#           
-#            for s in ['l','r']:
-#                tele_func_dict[s]={}
-#                beam_func_dict[s]={}
-#                t_func_dict[s]={}
-#                offset[s]={}
-#
-#            for i in range(1,4):
-#                tele_l_calc = []
-#                tele_r_calc = []
-#                beam_l_calc = []
-#                beam_r_calc = []
-#                t_l_calc = []
-#                t_r_calc = []
-#                offset_l_calc=[]
-#                offset_r_calc=[]
-#                offset_l_t_calc=[]
-#                offset_r_t_calc=[]
-#                for t in t_sample:
-#                    A = self.twoPAAM_pointing(i,t,'l',out,'rec')
-#                    B = self.twoPAAM_pointing(A[7],t,'r',out,'rec')
-#                    
-#                    tele_l_calc.append(A[0])
-#                    beam_l_calc.append(A[1])
-#                    t_l_calc.append(A[4])
-#                    tele_r_calc.append(A[2])
-#                    beam_r_calc.append(A[3])
-#                    t_r_calc.append(A[4]-A[5])
-#                    
-#                    tele_r_calc.append(B[0])
-#                    beam_r_calc.append(B[1])
-#                    t_r_calc.append(B[4])
-#                    tele_l_calc.append(B[2])
-#                    beam_l_calc.append(B[3])
-#                    t_l_calc.append(B[4]-B[5])
-#                    
-#                    offset_l_calc.append(A[-1])
-#                    offset_l_t_calc.append(A[4])
-#                    offset_r_calc.append(B[-1])
-#                    offset_r_t_calc.append(B[4])
-#                    
+
+        if (self.sampled == True and sampled==None) or sampled==True:
+            t_sample = self.data.t_all
+            tele_func_dict = {}
+            beam_func_dict = {}
+            t_func_dict={}
+
+            offset = {}
+           
+            for s in ['l','r']:
+                tele_func_dict[s]={}
+                beam_func_dict[s]={}
+                t_func_dict[s]={}
+                offset[s]={}
+
+            for i in range(1,4):
+                tele_l_calc = []
+                tele_r_calc = []
+                beam_l_calc = []
+                beam_r_calc = []
+                t_l_calc = []
+                t_r_calc = []
+                offset_l_calc=[]
+                offset_r_calc=[]
+                for t in t_sample:
+                    
+                    tele_l_calc.append(self.tele_l_ang(i,t))
+                    tele_r_calc.append(self.tele_r_ang(i,t))
+                    beam_l_calc.append(self.beam_l_ang(i,t))
+                    beam_r_calc.append(self.beam_l_ang(i,t))
+                    t_l_calc.append(t)
+                    t_r_calc.append(t)
+                    
+                    offset_l_calc.append(self.offset(i,t,'l'))
+                    offset_r_calc.append(self.offset(i,t,'r'))
+                    
 #                    #C = self.twoPAAM_pointing(i,t,'l',out,'send')
 #                    #D = self.twoPAAM_pointing(A[7],t,'r',out,'send')
 #                    #
@@ -795,37 +781,35 @@ class AIM():
 #                    #offset_r_calc.append(C[-1])
 #                    #offset_r_t_calc.append(C[4]+C[5])
 #                     
-#                    print(t/t_sample[-1])
+                    print(t/t_sample[-1])
 #
-#                tele_func_dict['l'][A[6]] = methods.interpolate(np.array(t_l_calc),np.array(tele_l_calc))
-#                beam_func_dict['l'][A[6]] = methods.interpolate(np.array(t_l_calc),np.array(beam_l_calc))
-#                tele_func_dict['r'][A[7]] = methods.interpolate(np.array(t_r_calc),np.array(tele_r_calc))
-#                beam_func_dict['r'][A[7]] = methods.interpolate(np.array(t_r_calc),np.array(beam_r_calc))
+                tele_func_dict['l'][i] = methods.interpolate(np.array(t_l_calc),np.array(tele_l_calc))
+                beam_func_dict['l'][i] = methods.interpolate(np.array(t_l_calc),np.array(beam_l_calc))
+                tele_func_dict['r'][i] = methods.interpolate(np.array(t_r_calc),np.array(tele_r_calc))
+                beam_func_dict['r'][i] = methods.interpolate(np.array(t_r_calc),np.array(beam_r_calc))
 #
-#                offset['l'][A[6]] = methods.interpolate(np.array(offset_l_t_calc),np.array(offset_l_calc))
-#                offset['r'][A[7]] = methods.interpolate(np.array(offset_r_t_calc),np.array(offset_r_calc))
+                offset['l'][i] = methods.interpolate(np.array(t_l_calc),np.array(offset_l_calc))
+                offset['r'][i] = methods.interpolate(np.array(t_r_calc),np.array(offset_r_calc))
 #                t_func_dict['l'][A[6]]=t_l_calc
 #                t_func_dict['r'][A[7]]=t_r_calc
 #
 #
-#            tele_l_ang = lambda i,t: tele_func_dict['l'][i](t)
-#            beam_l_ang = lambda i,t: beam_func_dict['l'][i](t)
-#            tele_r_ang = lambda i,t: tele_func_dict['r'][i](t)
-#            beam_r_ang = lambda i,t: beam_func_dict['r'][i](t)
-#            del_list=['tele_l_ang','tele_r_ang','beam_l_ang','beam_r_ang']
-#            for l in del_list:
-#                try:
-#                    delattr(self,l)
-#                except AttributeError:
-#                    pass
-#
-#            self.beam_l_ang = beam_l_ang
-#            self.beam_r_ang = beam_r_ang
-#            self.tele_l_ang = lambda i,t: tele_l_ang(i,t) - offset['l'][i](t)
-#            self.tele_r_ang = lambda i,t: tele_r_ang(i,t) - offset['r'][i](t)
-#            self.tele_l_ang_old = tele_l_ang
-#            self.tele_r_ang_old = tele_r_ang
-#
+            tele_l_ang = lambda i,t: tele_func_dict['l'][i](t)
+            beam_l_ang = lambda i,t: beam_func_dict['l'][i](t)
+            tele_r_ang = lambda i,t: tele_func_dict['r'][i](t)
+            beam_r_ang = lambda i,t: beam_func_dict['r'][i](t)
+            del_list=['tele_l_ang','tele_r_ang','beam_l_ang','beam_r_ang','offset']
+            for l in del_list:
+                try:
+                    delattr(self,l)
+                except AttributeError:
+                    pass
+
+            self.beam_l_ang = beam_l_ang
+            self.beam_r_ang = beam_r_ang
+            self.tele_l_ang = tele_l_ang
+            self.tele_r_ang = tele_r_ang
+            self.offset = lambda i,t,s: offset[s][i](t)
 #           
 #        else:
 #            if self.tele_control=='no_control' and self.PAAM_control=='no_control':
