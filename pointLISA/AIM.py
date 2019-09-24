@@ -946,6 +946,7 @@ class AIM():
             SS=[]
 
             for link in range(1,4):
+                print('Link is '+str(link))
                 SS.append(methods.SS_value(self,link,t0,t_end,method,lim,ret=ret,print_on=True,dt=dt))
 
             tele_l_adjust={}
@@ -957,7 +958,7 @@ class AIM():
                 tele_r_adjust[SS[j][3]] = SS[j][1][1]
                 t_l_adjust[SS[j][2]] = SS[j][0]
                 t_r_adjust[SS[j][3]] = SS[j][0]
- 
+             
             tele_l_ang = lambda i,t: methods.get_SS_func(t_l_adjust[i],tele_l_adjust[i],t)
             tele_r_ang = lambda i,t: methods.get_SS_func(t_r_adjust[i],tele_r_adjust[i],t)
         

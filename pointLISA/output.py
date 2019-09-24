@@ -151,9 +151,6 @@ class OUTPUT():
             self.aim.aim_sampled.get_coordinate_systems()
         except:
             self.aim.get_coordinate_systems()
-
-        
-
         return self.aim
 
     def add_attribute(self,e,pos):
@@ -386,14 +383,6 @@ class OUTPUT():
 
 
 ### end 16 september
-
-
-
-
-
-
-
-
 
     def get_xoff(self,pos):
         check=False

@@ -1000,6 +1000,9 @@ def get_SS(wfe,aim,link,lim,ret={},t_all={},ang_output={},m='tilt',component='te
 def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,option=False,print_on=False,value=0,offset_l=False,offset_r=False,dt=3600*24):
     if option==False:
         option = aim.aimset.option_tele
+    
+    if t_end>=aim.data.t_all[-1]:
+        t_end = aim.data.t_all[-1]-dt
 
     t_adjust=[]
     tele_adjust_l = [] 
@@ -1081,9 +1084,17 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,o
 
             k=1
             found=False
+            if t_val+dt*(k-1)>=t_end:
+                #t_val=t_end
+                end=True
+                print('End of range')
+                break
+
             while found==False and end is False:
                 if t_val+dt*(k-1)>=t_end:
                     t_val=t_end
+                    end=True
+                    print('End of range')
                     break
                 else:
                     under = t_val+dt*(k-1)+1.0
@@ -1124,7 +1135,7 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,o
                 tele_adjust_r.append(tele_r)
                 if print_on==True:
                     print(t_val/t_end,t_val,tele_l,tele_r)
-
+            
     return t_adjust,[tele_adjust_l,tele_adjust_r],i_left,i_right
 
 
