@@ -1053,6 +1053,8 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,o
             offset_r = lambda t: False
 
         elif aim.PAAM_deg==2:
+            ret = 'ang_arm_tele_rec'
+            ret_val = 'angx_arm_tele_rec'
             #A = aim.twoPAAM_pointing(i_left,t_val,'l',out,'rec')
             #B = aim.twoPAAM_pointing(i_right,t_val,'r',out,'rec')
             #tele_l = A[0]
@@ -1064,9 +1066,11 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,o
             beam_l=0.0
             beam_r=0.0
             f_l0 = lambda t, tele_l,tele_r: getattr(output.values(aim,i_left,t,'l',ksi=[0,0],mode='rec',tele_angle_l=tele_l,tele_angle_r=tele_r,offset_l=offset_l,offset_r=offset_r,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=[ret]),ret)
+            f_l1 = lambda t, tele_l,tele_r: getattr(output.values(aim,i_left,t,'l',ksi=[0,0],mode='rec',tele_angle_l=tele_l,tele_angle_r=tele_r,offset_l=offset_l,offset_r=offset_r,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=[ret_val]),ret_val)
             f_r0 = lambda t, tele_l,tele_r: getattr(output.values(aim,i_left,t,'r',ksi=[0,0],mode='rec',tele_angle_l=tele_l,tele_angle_r=tele_r,offset_l=offset_l,offset_r=offset_r,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=[ret]),ret)
-            tele_l_extra = f_l0(t_val,tele_l0,tele_r0)
-            tele_r_extra = f_r0(t_val,tele_l0,tele_r0)
+            f_r1 = lambda t, tele_l,tele_r: getattr(output.values(aim,i_left,t,'r',ksi=[0,0],mode='rec',tele_angle_l=tele_l,tele_angle_r=tele_r,offset_l=offset_l,offset_r=offset_r,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=[ret_val]),ret_val)
+            tele_l_extra = f_l1(t_val,tele_l0,tele_r0)
+            tele_r_extra = f_r1(t_val,tele_l0,tele_r0)
             tele_l = tele_l0+tele_l_extra
             tele_r = tele_r0+tele_r_extra
             tele_l_old = tele_l
@@ -1129,8 +1133,8 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,o
                     tele_l = tele_point_calc(aim,i_left,t_val,'l',option,max_count=5,scale=1,value=value) 
                     tele_r = tele_point_calc(aim,i_right,t_val,'r',option,max_count=5,scale=1,value=value) 
                 elif aim.PAAM_deg==2:
-                    tele_l_extra = f_l0(t_val,tele_l0,tele_r0)
-                    tele_r_extra = f_r0(t_val,tele_l0,tele_r0)
+                    tele_l_extra = f_l1(t_val,tele_l0,tele_r0)
+                    tele_r_extra = f_r1(t_val,tele_l0,tele_r0)
                     tele_l_new = tele_l0+tele_l_extra
                     tele_r_new = tele_r0+tele_r_extra
 

@@ -490,6 +490,18 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
     
+    def get_ang_arm_tele_rec(self,pos):
+        check=False
+        while check==False:
+            try:
+                ret = np.arctan(((pos.arm_tele_rec[2]**2+pos.arm_tele_rec[1]**2)**0.5)/pos.arm_tele_rec[0])
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
+
     def get_angx_arm_tele_send(self,pos):
         check=False
         while check==False:
