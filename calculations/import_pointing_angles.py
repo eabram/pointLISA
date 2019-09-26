@@ -65,7 +65,7 @@ folder_sel='/20190920/_07/offset__400_days/'
 folder_0='/home/ester/git/Results/'
 source_folder = folder_0+folder_sel
 #folder=folder_0+'test/'+folder_sel
-folder=folder_0+'/Results/test/Data_for_Graphs/NC0/400_days/'
+folder=folder_0+'/test/Data_for_Graphs/NCoffset/400_days/'
 
 for (dirpath, dirnames, filenames_calc) in os.walk(source_folder):
     for f in filenames_calc:
