@@ -961,8 +961,8 @@ class AIM():
              
             tele_l_ang = lambda i,t: methods.get_SS_func(t_l_adjust[i],tele_l_adjust[i],t)
             tele_r_ang = lambda i,t: methods.get_SS_func(t_r_adjust[i],tele_r_adjust[i],t)
-        tele_adjust={'l': tele_l_adjust,'r':tele_r_adjust}
-        t_adjust={'l': t_l_adjust,'r':t_r_adjust}
+            tele_adjust={'l': tele_l_adjust,'r':tele_r_adjust}
+            t_adjust={'l': t_l_adjust,'r':t_r_adjust}
         else:
             raise ValueError('Please select a valid telescope pointing method (tele_control)')
         
