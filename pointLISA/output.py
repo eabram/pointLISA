@@ -1547,12 +1547,17 @@ class OUTPUT():
             if 'adjust' == k:
                 for s in side:
                     for i_sel in i:
-                        if s=='l':
-                            A = [np.array(getattr(self.aim,'t_adjust')[0][int(i_sel)-1])]
-                            A.append(np.array([self.aim.tele_l_ang(i_sel,t) for t in A[0]]))
-                        elif s=='r':
-                            A = [np.array(getattr(self.aim,'t_adjust')[1][int(i_sel)-1])]
-                            A.append(np.array([self.aim.tele_r_ang(i_sel,t) for t in A[0]]))
+                        if self.aim.PAAM_deg==1:
+                            if s=='l':
+                                A = [np.array(getattr(self.aim,'t_adjust')[0][int(i_sel)-1])]
+                                A.append(np.array([self.aim.tele_l_ang(i_sel,t) for t in A[0]]))
+                            elif s=='r':
+                                A = [np.array(getattr(self.aim,'t_adjust')[1][int(i_sel)-1])]
+                                A.append(np.array([self.aim.tele_r_ang(i_sel,t) for t in A[0]]))
+                        elif self.aim.PAAM_deg==2:
+                            A = [np.array(getattr(self.aim,'t_adjust')[s][int(i_sel)])]
+                            A.append(np.array(getattr(self.aim,'tele_adjust')[s][int(i_sel)]))
+                            
                         B = [A,'value='+k+', mode='+str(mode)]
                         setattr(getattr(getattr(sampled,s),'i'+str(i_sel)),k,B)
             else:
