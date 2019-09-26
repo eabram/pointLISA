@@ -1563,8 +1563,11 @@ class OUTPUT():
                     for s in side:
                         for i_sel in i:
                             A=[t_plot]
-                            A.append(np.array([self.mean_var(i_sel,t,s,ret=[k],Nbins=Nbins,mode=mode) for t in t_plot]))
-
+                            try:
+                                A.append(np.array([self.mean_var(i_sel,t,s,ret=[k],Nbins=Nbins,mode=mode) for t in t_plot]))
+                            except TypeError,e:
+                                if "'dict' object is not callable" in str(e):
+                                    A = getattr(self.aim,k)[s][i_sel]
                             B = [A,'value='+k+', mode='+str(mode)]
                             #print(getattr(sampled,s),k,B)
                             setattr(getattr(getattr(sampled,s),'i'+str(i_sel)),k,B)
