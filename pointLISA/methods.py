@@ -1127,14 +1127,16 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,o
                     tele_l = tele_point_calc(aim,i_left,t_val,'l',option,max_count=5,scale=1,value=value) 
                     tele_r = tele_point_calc(aim,i_right,t_val,'r',option,max_count=5,scale=1,value=value) 
                 elif aim.PAAM_deg==2:
-                    tele_l = tele_l0+f_l0(t_val,tele_l0,tele_r0)*scale
-                    tele_r = tele_r0+f_r0(t_val,tele_l0,tele_r0)*scale
+                    tele_l_extra = f_l0(t_val,tele_l0,tele_r0)*scale
+                    tele_r_extra = f_r0(t_val,tele_l0,tele_r0)*scale
+                    tele_l = tele_l0+tele_l_extra
+                    tele_r = tele_r0+tele_r_extra
 
 
                 tele_adjust_l.append(tele_l)
                 tele_adjust_r.append(tele_r)
                 if print_on==True:
-                    print(t_val/t_end,t_val,tele_l,tele_r)
+                    print(t_val/t_end,t_val,tele_l_extra,tele_r_extra)
             
     return t_adjust,[tele_adjust_l,tele_adjust_r],i_left,i_right
 
