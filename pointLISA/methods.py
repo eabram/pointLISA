@@ -1067,8 +1067,8 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,o
             f_r0 = lambda t, tele_l,tele_r: getattr(output.values(aim,i_left,t,'r',ksi=[0,0],mode='rec',tele_angle_l=tele_l,tele_angle_r=tele_r,offset_l=offset_l,offset_r=offset_r,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=[ret]),ret)
             tele_l_extra = f_l0(t_val,tele_l0,tele_r0)
             tele_r_extra = f_r0(t_val,tele_l0,tele_r0)
-            tele_l = tele_l0+tele_l_extra*scale
-            tele_r = tele_r0+tele_r_extra*scale
+            tele_l = tele_l0+tele_l_extra
+            tele_r = tele_r0+tele_r_extra
             tele_l_old = tele_l
             tele_r_old = tele_r
 
