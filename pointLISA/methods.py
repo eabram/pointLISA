@@ -997,7 +997,7 @@ def get_SS(wfe,aim,link,lim,ret={},t_all={},ang_output={},m='tilt',component='te
 
     return ret,t_all,ang_output
 
-def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,option=False,print_on=False,value=0,offset_l=False,offset_r=False,dt=3600*24):
+def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,option=False,print_on=False,value=0,offset_l=False,offset_r=False,dt=3600*24,scale=1):
     if option==False:
         option = aim.aimset.option_tele
     
@@ -1067,8 +1067,8 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='xoff',tele_l=False,tele_r=False,o
             f_r0 = lambda t, tele_l,tele_r: getattr(output.values(aim,i_left,t,'r',ksi=[0,0],mode='rec',tele_angle_l=tele_l,tele_angle_r=tele_r,offset_l=offset_l,offset_r=offset_r,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=[ret]),ret)
             tele_l_extra = f_l0(t_val,tele_l0,tele_r0)
             tele_r_extra = f_r0(t_val,tele_l0,tele_r0)
-            tele_l = tele_l0+tele_l_extra
-            tele_r = tele_r0+tele_r_extra
+            tele_l = tele_l0+tele_l_extra*scale
+            tele_r = tele_r0+tele_r_extra*scale
 
         tele_adjust_l.append(tele_l)
         tele_adjust_r.append(tele_r)

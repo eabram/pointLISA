@@ -62,7 +62,7 @@ aimset.FOV = 8.0e-6
 aimset.value_center = 0.0
 aimset.value_wavefront = 0.0
 aimset.PAAM_deg = 1 # Number of rotational axis of PAAM (either 1 or 2)
-
+aimset.tele_SS_scale = 1
 ### Limits/accuracies
 #aimset.limits = utils.Object()
 aimset.limit_xoff = np.float64(1.0e-9) #tele center
