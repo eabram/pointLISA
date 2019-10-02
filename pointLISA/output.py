@@ -160,7 +160,7 @@ class OUTPUT():
         return pos
 
     ### Returns important parameters
-    
+     
     def get_end_ksi(self,pos):
         check=False
         while check==False:
@@ -1186,13 +1186,41 @@ class OUTPUT():
 #                #print(e)
 #                self.add_attribute(e,pos)
 #        return pos
-
-    def get_I(self,pos):
+    
+    def get_waist(self,pos):
         check=False
         while check==False:
             try:
-                #I_0 = (self.P_L*np.pi*(self.w0_laser**2))/2.0
-                ret = (pos.I0*np.exp((-2*(pos.xoff**2+pos.yoff**2))/(self.w(pos.zoff)**2)))*np.cos(pos.angx_rec)*np.cos(pos.angy_rec) 
+                ret = self.w(pos.zoff)
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
+    
+    def get_FOVlim(self,pos):
+        check=False
+        while check==False:
+            try:
+                if pos.waist>pos.aim.FOV:
+                    ret=0
+                else:
+                    ret=1
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
+
+
+    def get_Ival(self,pos):
+        check=False
+        while check==False:
+            try:
+                ret = (pos.I0*np.exp((-2*(pos.xoff**2+pos.yoff**2))/(pos.waist**2)))*(pos.aim.w0_laser/pos.waist)
+
                 #ret = (abs(pos.u)**2)[0]#*np.cos(pos.angx_rec)*np.cos(pos.angy_rec)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
@@ -1201,6 +1229,18 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
     
+    def get_I(self,pos):
+        check=False
+        while check==False:
+            try:
+                ret = pos.Ival*pos.FOVlim
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
+
     def get_I0(self,pos):
         check=False
         while check==False:
