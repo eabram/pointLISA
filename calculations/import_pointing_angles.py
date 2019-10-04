@@ -6,7 +6,9 @@ import copy
 
 #rets = ['tele_ang','PAAM_ang','xoff','yoff','zoff','r','R','angx_ab_rec','angy_ab_rec','angx_nab_rec','angy_nab_rec','angx_ab_send','angy_ab_send','angx_nab_send','angy_nab_send','angx_rec','angy_rec','angx_send','any_send','angx_wf_send','angy_wf_send','piston','z_extra','FOV_wavefront','u','power']
 #rets = [['xoff','yoff','r']]
-rets=[['xoff','yoff','zoff','r'],['angx_ab_rec','angy_ab_rec','angx_ab_send','angy_ab_send'],['I','I0'],'FOV_wavefront',['piston','z_extra'],['angx_wf_send','angy_wf_send','angx_wf_rec','angy_wf_rec']]
+rets=[['xoff','yoff'],['I','I0','Ival','FOVlim'],'alpha']
+#rets=[['xoff','yoff','zoff','r'],['angx_ab_rec','angy_ab_rec','angx_ab_send','angy_ab_send'],['I','I0'],'FOV_wavefront',['piston','z_extra'],['angx_wf_send','angy_wf_send','angx_wf_rec','angy_wf_rec']]
+#rets=[['Ival']]
 #rets=[['angx_wf_rec','angy_wf_rec']]
 #rets=[['offset']]
 #rets=[['xoff','yoff','offset'],['angx_wf_rec','angy_wf_rec'],['angx_wf_send','angy_wf_send']]
@@ -60,12 +62,12 @@ def get_all(input_file=None,set_stat=utils.Object(),set_din=utils.Object()):
 #folder_sel = '20190627/_02/'
 #folder_sel = '20190626/_01/'
 #folder_sel='20190810/_01/full_control__400_days/'#read_offset_ab_rel/'
-#folder_sel='Data_for_Graphs/SSFCread/SS_full_control__400_days/read_offset_ab_rel/_option_tele_center_option_PAAM_center/'
-folder_sel='/20190920/_07/offset__400_days/'
+folder_sel='Data_for_Graphs/FC0/full_control__400_days/read_offset_ab_rel/_option_tele_center_option_PAAM_center/'
+#folder_sel='/20191002/_01/NC__400_days/'
 folder_0='/home/ester/git/Results/'
 source_folder = folder_0+folder_sel
 #folder=folder_0+'test/'+folder_sel
-folder=folder_0+'/test/Data_for_Graphs/NCoffset/400_days/'
+folder=folder_0+'/test/Data_for_Graphs/new/FC_center/400_days/'
 
 for (dirpath, dirnames, filenames_calc) in os.walk(source_folder):
     for f in filenames_calc:

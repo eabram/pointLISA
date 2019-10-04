@@ -1106,7 +1106,7 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
-    def get_FOV_wavefront(self,pos):
+    def get_alpha(self,pos):
         check=False
         while check==False:
             try:
@@ -1203,7 +1203,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                if pos.waist>pos.aim.FOV:
+                if pos.alpha>pos.aim.data.FOV:#pos.waist>pos.aim.data.FOV:
                     ret=0
                 else:
                     ret=1
@@ -1219,7 +1219,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = (pos.I0*np.exp((-2*(pos.xoff**2+pos.yoff**2))/(pos.waist**2)))*(pos.aim.w0_laser/pos.waist)
+                ret = (pos.I0*np.exp((-2*(pos.xoff**2+pos.yoff**2))/(pos.waist**2)))*(pos.aim.data.w0_laser/pos.waist)
 
                 #ret = (abs(pos.u)**2)[0]#*np.cos(pos.angx_rec)*np.cos(pos.angy_rec)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
