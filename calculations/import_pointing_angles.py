@@ -62,12 +62,13 @@ def get_all(input_file=None,set_stat=utils.Object(),set_din=utils.Object()):
 #folder_sel = '20190627/_02/'
 #folder_sel = '20190626/_01/'
 #folder_sel='20190810/_01/full_control__400_days/'#read_offset_ab_rel/'
-folder_sel='Data_for_Graphs/FC0/full_control__400_days/read_offset_ab_rel/_option_tele_center_option_PAAM_center/'
+folder_sel='Data_for_Graphs/offset/full_control__400_days/read_offset_ab_rel/_option_tele_wavefront_option_PAAM_wavefront/'
+#folder_sel='Data_for_Graphs/FCread/full_control__400_days/read_offset_ab_rel/_option_tele_center_option_PAAM_center/'
 #folder_sel='/20191002/_01/NC__400_days/'
 folder_0='/home/ester/git/Results/'
 source_folder = folder_0+folder_sel
 #folder=folder_0+'test/'+folder_sel
-folder=folder_0+'/test/Data_for_Graphs/new/FC_center/400_days/'
+folder=folder_0+'/test/Data_for_Graphs/new/FC_offset_wf/400_days/'
 
 for (dirpath, dirnames, filenames_calc) in os.walk(source_folder):
     for f in filenames_calc:
