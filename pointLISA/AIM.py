@@ -959,7 +959,7 @@ class AIM():
                 tele_r_adjust[SS[j][3]] = SS[j][1][1]
                 t_l_adjust[SS[j][2]] = SS[j][0]
                 t_r_adjust[SS[j][3]] = SS[j][0]
-             
+            
             tele_l_ang = lambda i,t: methods.get_SS_func(t_l_adjust[i],tele_l_adjust[i],t)
             tele_r_ang = lambda i,t: methods.get_SS_func(t_r_adjust[i],tele_r_adjust[i],t)
             tele_adjust={'l': tele_l_adjust,'r':tele_r_adjust}
