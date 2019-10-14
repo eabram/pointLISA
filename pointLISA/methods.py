@@ -1140,6 +1140,13 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
 
                     tele_l = (tele_l_new - tele_l_old)*scale + tele_l_old
                     tele_r = (tele_r_new - tele_r_old)*scale + tele_r_old
+                    if scale!=1:
+                        c1 = f_l1(t_val,tele_l,tele_r)
+                        c2 = f_l2(t_val,tele_l,tele_r)
+                        if abs(c1)>lim or abs(c2)>lim:
+                            tele_l = (tele_l_new - tele_l_old) + tele_l_old
+                            tele_r = (tele_r_new - tele_r_old) + tele_r_old
+
                     tele_l_old = tele_l_new
                     tele_r_old = tele_r_new
 
