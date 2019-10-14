@@ -1135,18 +1135,32 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
                 elif aim.PAAM_deg==2:
                     tele_l_extra = f_l1(t_val,tele_l0,tele_r0)
                     tele_r_extra = f_r1(t_val,tele_l0,tele_r0)
-                    tele_l_new = tele_l0+tele_l_extra
-                    tele_r_new = tele_r0+tele_r_extra
+                    
+                    sign_l = np.sign(tele_l_extra)
+                    sign_r = np.sign(tele_r_extra)
+                    tele_l_new = tele_l_old+tele_l_extra+(scale-1)*sign_l*-aim.aimset.FOV
+                    tele_r_new = tele_r_old+tele_r_extra+(scale-1)*sign_r*-aim.aimset.FOV
 
-                    tele_l = (tele_l_new - tele_l_old)*scale + tele_l_old
-                    tele_r = (tele_r_new - tele_r_old)*scale + tele_r_old
-                    if scale!=1:
-                        c1 = f_l1(t_val,tele_l,tele_r)
-                        c2 = f_r1(t_val,tele_l,tele_r)
-                        if abs(c1)>lim or abs(c2)>lim:
-                            tele_l = (tele_l_new - tele_l_old) + tele_l_old
-                            tele_r = (tele_r_new - tele_r_old) + tele_r_old
+                    #tele_l_new = tele_l_old+tele_l_extra*scale
+                    #tele_r_new = tele_r_old+tele_r_extra*scale
+                    #if scale!=1:
+                    #    c1 = f_l1(t_val,tele_l_new,tele_r_new)
+                    #    c2 = f_r1(t_val,tele_l_new,tele_r_new)
+                    #    if abs(c1)>lim:
+                    #        tele_l_new = tele_-(tele_l_new - tele_l_old) + tele_l_old
+                    #
+                    #    if abs(c2)>lim:
+                    #        tele_r = -(tele_r_new - tele_r_old) + tele_r_old
 
+
+                    
+                    #tele_l_new = tele_l0+tele_l_extra
+                    #tele_r_new = tele_r0+tele_r_extra
+
+                    #tele_l = (tele_l_new - tele_l_old)*scale + tele_l_old
+                    #tele_r = (tele_r_new - tele_r_old)*scale + tele_r_old
+                    tele_l = tele_l_new
+                    tele_r = tele_r_new
                     tele_l_old = tele_l_new
                     tele_r_old = tele_r_new
 
