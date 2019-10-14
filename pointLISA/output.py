@@ -342,7 +342,7 @@ class OUTPUT():
                 if pos.mode=='send':
                     ret = get_coor_tele(pos.aim,pos.i_opp,pos.t+pos.tdel,pos.invside,tele_angle=tele_angle_end)
                 elif pos.mode=='rec':
-                    ret = get_coor_tele(pos.aim,pos.i_self,pos.t,pos.side,tele_angle=tele_angle_end)
+                    ret = get_coor_tele(pos.aim,pos.i_self,pos.t+pos.tdel0,pos.side,tele_angle=tele_angle_end)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError, e:
