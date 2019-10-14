@@ -941,14 +941,15 @@ class AIM():
                 t_end=self.data.t_all[-1] 
             method='solve'
             lim=parameters.FOV
-            ret='angx_arm_tele_rec'
+            #ret='angx_arm_tele_rec'
+            #ret='ang_arm_tele_rec'
             dt=24*3600
             scale = self.aimset.tele_SS_scale
             SS=[]
 
             for link in range(1,4):
                 print('Link is '+str(link))
-                SS.append(methods.SS_value(self,link,t0,t_end,method,lim,ret=ret,print_on=True,dt=dt,scale=scale))
+                SS.append(methods.SS_value(self,link,t0,t_end,method,lim,print_on=True,dt=dt,scale=scale))
 
             tele_l_adjust={}
             tele_r_adjust={}
