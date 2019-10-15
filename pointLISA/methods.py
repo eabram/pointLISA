@@ -1169,6 +1169,7 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
                 tele_adjust_r.append(tele_r)
                 if print_on==True:
                     print(t_val/t_end,t_val,tele_l_extra,tele_r_extra)
+                    print(tele_l,tele_r)
             
     return t_adjust,[tele_adjust_l,tele_adjust_r],i_left,i_right
 
