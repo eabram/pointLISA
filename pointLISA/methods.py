@@ -1167,10 +1167,15 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
 
                 tele_adjust_l.append(tele_l)
                 tele_adjust_r.append(tele_r)
+                if t_val>=t_end:
+                    break
+
                 if print_on==True:
                     print(t_val/t_end,t_val,tele_l_extra,tele_r_extra)
-                    print(f_l1(t_val,tele_l,tele_r),f_r1(t_val,tele_l,tele_r))
-                    print(f_l1(t_val,tele_adjust_l[-2],tele_adjust_r[-2]),f_r1(t_val,tele_adjust_l[-2],tele_adjust_r[-2]))
+                    print(t_end/(3600*24.0)
+                    #print(f_l1(t_val,tele_l,tele_r),f_r1(t_val,tele_l,tele_r))
+                    #print(f_l1(t_val,tele_adjust_l[-2],tele_adjust_r[-2]),f_r1(t_val,tele_adjust_l[-2],tele_adjust_r[-2]))
+
             
     return t_adjust,[tele_adjust_l,tele_adjust_r],i_left,i_right
 
