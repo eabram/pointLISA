@@ -938,7 +938,7 @@ class AIM():
             try:
                 t_end = kwargs['t_end']
             except KeyError:
-                t_end=np.float(self.data.length_calc)
+                t_end=np.float(self.data.length_calc)*3600*24.0
             method='solve'
             lim=parameters.FOV
             #ret='angx_arm_tele_rec'
@@ -949,7 +949,6 @@ class AIM():
 
             for link in range(1,4):
                 print('Link is '+str(link))
-                print(t_end)
                 SS.append(methods.SS_value(self,link,t0,t_end,method,lim,print_on=True,dt=dt,scale=scale))
 
             tele_l_adjust={}
