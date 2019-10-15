@@ -949,6 +949,7 @@ class AIM():
 
             for link in range(1,4):
                 print('Link is '+str(link))
+                print(t_end)
                 SS.append(methods.SS_value(self,link,t0,t_end,method,lim,print_on=True,dt=dt,scale=scale))
 
             tele_l_adjust={}
