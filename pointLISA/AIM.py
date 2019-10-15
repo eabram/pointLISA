@@ -940,7 +940,7 @@ class AIM():
             except KeyError:
                 t_end=np.float(self.data.length_calc)*3600*24.0
             method='solve'
-            lim=self.settings.FOV
+            lim=self.aimset.FOV
             print('lim= ',lim)
             #ret='angx_arm_tele_rec'
             #ret='ang_arm_tele_rec'
