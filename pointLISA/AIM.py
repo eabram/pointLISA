@@ -938,7 +938,7 @@ class AIM():
             try:
                 t_end = kwargs['t_end']
             except KeyError:
-                t_end=np.float(self.data.length_calc )
+                t_end=np.float(self.data.length_calc)
             method='solve'
             lim=parameters.FOV
             #ret='angx_arm_tele_rec'
