@@ -1170,7 +1170,7 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
                 if print_on==True:
                     print(t_val/t_end,t_val,tele_l_extra,tele_r_extra)
                     print(tele_l,tele_r)
-                    print(f_l1(t_val,tele_l,tele_r),f_r1(t_val,tele_l,tele_r)
+                    print(f_l1(t_val,tele_l,tele_r),f_r1(t_val,tele_l,tele_r))
             
     return t_adjust,[tele_adjust_l,tele_adjust_r],i_left,i_right
 
