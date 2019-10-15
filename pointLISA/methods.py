@@ -1138,8 +1138,8 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
                     
                     sign_l = np.sign(tele_l_extra)
                     sign_r = np.sign(tele_r_extra)
-                    tele_l_new = tele_l_0+tele_l_extra+(scale-1)*sign_l*-aim.aimset.FOV
-                    tele_r_new = tele_r_0+tele_r_extra+(scale-1)*sign_r*-aim.aimset.FOV
+                    tele_l_new = tele_l0+tele_l_extra+(scale-1)*sign_l*-aim.aimset.FOV
+                    tele_r_new = tele_r0+tele_r_extra+(scale-1)*sign_r*-aim.aimset.FOV
 
                     #tele_l_new = tele_l_old+tele_l_extra*scale
                     #tele_r_new = tele_r_old+tele_r_extra*scale
