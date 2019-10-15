@@ -698,7 +698,7 @@ class AIM():
             offset=np.nan
         elif self.offset_tele=='no_control':
             offset=0.0
-            
+           
         return [ang_in_end,ang_out_end,ang_in_start,ang_out_start,t,Dt,i_rec,i_send,offset]
 
     def twoPAAM_angles(self,sampled=None,**kwargs):
