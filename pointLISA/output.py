@@ -1321,9 +1321,9 @@ class OUTPUT():
             try:
                 if pos.mode=='send':
                     if pos.side=='l':
-                        ret = get_coor_tele(pos.aim,pos.i_self,pos.t,'l',tele_angle=pos.tele_angle_l)
+                        ret = get_coor_tele(pos.aim,pos.i_self,pos.t+pos.tdel0,'l',tele_angle=pos.tele_angle_l)
                     elif pos.side=='r':
-                        ret = get_coor_tele(pos.aim,pos.i_self,pos.t,'r',tele_angle=pos.tele_angle_r)
+                        ret = get_coor_tele(pos.aim,pos.i_self,pos.t+pos.tdel0,'r',tele_angle=pos.tele_angle_r)
                 elif pos.mode=='rec':
                     if pos.side=='l':
                         ret = get_coor_tele(pos.aim,pos.i_left,pos.t-pos.tdel,'r',tele_angle=pos.tele_angle_r)
@@ -1341,10 +1341,10 @@ class OUTPUT():
             try:
                 if pos.mode=='send':
                     if pos.side=='l':
-                        ret = get_coor_beam_out(pos.aim,pos.i_self,pos.t,'l',tele_angle=pos.tele_angle_l,beam_angle=pos.beam_angle_l,offset=pos.offset_l)
+                        ret = get_coor_beam_out(pos.aim,pos.i_self,pos.t+pos.tdel0,'l',tele_angle=pos.tele_angle_l,beam_angle=pos.beam_angle_l,offset=pos.offset_l)
                         
                     elif pos.side=='r':
-                        ret = get_coor_beam_out(pos.aim,pos.i_self,pos.t,'r',tele_angle=pos.tele_angle_r,beam_angle=pos.beam_angle_r,offset=pos.offset_r)
+                        ret = get_coor_beam_out(pos.aim,pos.i_self,pos.t+pos.tdel0,'r',tele_angle=pos.tele_angle_r,beam_angle=pos.beam_angle_r,offset=pos.offset_r)
                 elif pos.mode=='rec':
                     if pos.side=='l':
                         ret = get_coor_beam_out(pos.aim,pos.i_left,pos.t-pos.tdel,'r',tele_angle=pos.tele_angle_r,beam_angle=pos.beam_angle_r,offset=pos.offset_r)
@@ -1369,9 +1369,9 @@ class OUTPUT():
                         ret = get_coor_tele(pos.aim,pos.i_right,pos.t+pos.tdel,'l',tele_angle=pos.tele_angle_l)
                 elif pos.mode=='rec':
                     if pos.side=='l':
-                        ret = get_coor_tele(pos.aim,pos.i_self,pos.t,'l',tele_angle=pos.tele_angle_l)
+                        ret = get_coor_tele(pos.aim,pos.i_self,pos.t-pos.tdel0,'l',tele_angle=pos.tele_angle_l)
                     elif pos.side=='r':
-                        ret = get_coor_tele(pos.aim,pos.i_self,pos.t,'r',tele_angle=pos.tele_angle_r)
+                        ret = get_coor_tele(pos.aim,pos.i_self,pos.t-pos.tdel0,'r',tele_angle=pos.tele_angle_r)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError, e:
@@ -1573,9 +1573,10 @@ class OUTPUT():
         
         func=utils.Object() 
         sampled=utils.Object()
-
-        if t==False:
-           t_plot = self.t_calc(calc=True) #add parameters
+        
+        if type(t)==bool:
+            if t==False:
+                t_plot = self.t_calc(calc=True) #add parameters
         else:
             t_plot=np.array(t)
         
