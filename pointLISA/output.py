@@ -1573,9 +1573,9 @@ class OUTPUT():
         else:
             for inc in include:
                 ret.append(inc)
-        
-        func=utils.Object() 
-        sampled=utils.Object()
+         
+        func=pointLISA.utils.Object() 
+        sampled=pointLISA.utils.Object()
         
         if type(t)==bool:
             if t==False:
