@@ -3,6 +3,8 @@ import inspect
 import numpy as np
 import methods
 from pointLISA import * 
+import pointLISA.utils as utils
+
 class OUTPUT():
     def __init__(self,aim=False,**kwargs):
         from pointLISA import * 
