@@ -7,6 +7,7 @@ import output
 import datetime
 import os
 from pointLISA import *
+import scipy.optimize
 def get_putp_sampled(data,method='interp1d'):
     t_all = data.orbit.t
     pos = []
