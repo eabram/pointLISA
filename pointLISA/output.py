@@ -1558,7 +1558,7 @@ class OUTPUT():
 
     def make_functions(self,include=[],exclude=[],option='both',i='all',side=['l','r'],auto_clear=False,t=False,mode='mean_var',**kwargs):
         import pointLISA
-        import pointLISA.utils as utils
+        from pointLISA import utils
 
         Nbins=kwargs.pop('Nbins',False)
 
