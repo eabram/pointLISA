@@ -5,6 +5,7 @@ import methods
 from pointLISA import * 
 class OUTPUT():
     def __init__(self,aim=False,**kwargs):
+        from pointLISA import * 
         if aim!=False:
             self.aim = aim
         else:
