@@ -1823,7 +1823,7 @@ def get_start_calc(aim,i,t,side,tele_angle):
     return ret
 
 def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=False,beam_angle_l=False,beam_angle_r=False,offset_l=False,offset_r=False,ret=[]):
-    [i_self,i_left,i_right] = utils.i_slr(i)
+    [i_self,i_left,i_right] = pointLISA.utils.i_slr(i)
     
 
     if 'AIM' in str(inp):
