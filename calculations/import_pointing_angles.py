@@ -62,8 +62,8 @@ def get_all(input_file=None,set_stat=utils.Object(),set_din=utils.Object()):
 #folder_sel = '20190627/_02/'
 #folder_sel = '20190626/_01/'
 #folder_sel='20190810/_01/full_control__400_days/'#read_offset_ab_rel/'
-folder_sel = 'Data_for_Graphs/PAAM2/full_control__400_days/read_offset_ab_rel/_option_tele_center_option_PAAM_center/'
-folder_sel = "20191016/_05_wal/offset_2PAAM__400_days"
+#folder_sel = 'Data_for_Graphs/PAAM2/full_control__400_days/read_offset_ab_rel/_option_tele_center_option_PAAM_center/'
+folder_sel = "/20191017/_01/SS_2PAAM__20_days/"
 #folder_sel='Data_for_Graphs/offset/full_control__400_days/'
 #folder_sel='Data_for_Graphs/FCread/full_control__400_days/read_offset_ab_rel/_option_tele_center_option_PAAM_center/'
 #folder_sel='/20191002/_01/NC__400_days/'
@@ -120,7 +120,8 @@ if run==True:
         except NameError:
             t0 = aim.data.t_all[3]
             tend = aim.data.t_all[-3]
-            dt = aim.data.t_all[1] - aim.data.t_all[0]
+            #dt = aim.data.t_all[1] - aim.data.t_all[0]
+            dt = 300#aim.data.t_all[1] - aim.data.t_all[0]
             steps = 5
             t_plot = np.linspace(t0,tend,int((tend-t0)/dt)+1)
         
@@ -146,7 +147,7 @@ if run==True:
                             direct = f.split(title)[0]
                             title=title+'_Res_'+tit_ret+'_SC_'+str(i)+'_side_'+s+'_mode_'+m+'.txt'
                             if (os.path.exists(title)==False) or (os.path.exists(title) and overwrite==True):
-                                inp = out.make_functions(include=ret_inp,option='sampled',i=i,side=s,mode=m,t_plot=t_plot,Nbins=Nbins)
+                                inp = out.make_functions(include=ret_inp,option='sampled',i=i,side=s,mode=m,t=t_plot,Nbins=Nbins)
                                 print(ret)
                                 print(inp[1])
                                 print('')
