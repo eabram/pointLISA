@@ -998,6 +998,7 @@ def get_SS(wfe,aim,link,lim,ret={},t_all={},ang_output={},m='tilt',component='te
     return ret,t_all,ang_output
 
 def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,option=False,print_on=False,value=0,offset_l=False,offset_r=False,dt=3600*24,scale=1): #set scale at maximum of <2.0
+    import pointLISA
 
     if option==False:
         option = aim.aimset.option_tele
