@@ -2,7 +2,7 @@ from imports import *
 import inspect
 import numpy as np
 import methods
-
+from pointLISA import * 
 class OUTPUT():
     def __init__(self,aim=False,**kwargs):
         if aim!=False:
