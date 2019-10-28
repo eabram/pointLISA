@@ -1014,6 +1014,7 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
     offset_adjust_r = []
 
     i = (link-2)%3
+
     [i_left,i_right,link] = utils.i_slr(i)
     
     if method=='step':
