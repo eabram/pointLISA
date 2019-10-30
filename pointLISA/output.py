@@ -1604,6 +1604,7 @@ class OUTPUT():
 
         for k in ret:
             print(k)
+            
             if 'adjust' == k:
                 for s in side:
                     for i_sel in i:
