@@ -1601,6 +1601,11 @@ class OUTPUT():
 
 
 
+        ret_new = []
+        for k in ret:
+            ret_new.append(k.replace("'",""))
+        ret = ret_new
+        del ret_new
 
         for k in ret:
             print(k)
