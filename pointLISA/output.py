@@ -8,6 +8,7 @@ class OUTPUT():
     def __init__(self,aim=False,**kwargs):
         from pointLISA import * 
         import pointLISA.utils as utils
+        globals{}['utils'] = pointLISA.utils
         if aim!=False:
             self.aim = aim
         else:
