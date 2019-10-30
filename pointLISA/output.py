@@ -3,7 +3,7 @@ import inspect
 import numpy as np
 import methods
 from pointLISA import * 
-
+import scipy
 class OUTPUT():
     def __init__(self,aim=False,**kwargs):
         from pointLISA import * 
@@ -105,6 +105,7 @@ class OUTPUT():
         return ps
     
     def z_solve(self,x,y,z,calc_R=False,ret='piston',R_guess=True):
+        
         try:
             if z!=np.nan:
                 x = np.float64(x)
@@ -283,7 +284,7 @@ class OUTPUT():
                 if pos.mode=='send':
                     ret=get_coor_beam_out(pos.aim,pos.i_self,pos.t,pos.side,tele_angle=pos.tele_angle_start,beam_angle=pos.beam_angle_start,offset=pos.offset_start)
                 elif pos.mode=='rec':
-                    ret=get_coor_tele(pos.aim,pos.i_opp,pos.t-pos.tdel,pos.invside,tele_angle=pos.tele_angle_start,beam_angle=pos.beam_angle_start)
+                    ret=get_coor_beam_out(pos.aim,pos.i_opp,pos.t-pos.tdel,pos.invside,tele_angle=pos.tele_angle_start,beam_angle=pos.beam_angle_start)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError, e:
@@ -1083,7 +1084,7 @@ class OUTPUT():
             except AttributeError,e:
                 #print(e)
                 self.add_attribute(e,pos)
-        return pos
+        return pos 
 
     def get_z_extra(self,pos):
         check=False
@@ -1798,8 +1799,8 @@ def get_coor_beam_out(aim,i,t,side,tele_angle=False,beam_angle=False,offset=Fals
                 beam_angle = 0.0
         
         if offset is False:
-            #offset = get_offset_tele(aim,i,t,side)
-            raise ValueError
+            offset = get_offset(aim,i,t,side)
+            #raise ValueError
 
         ret = methods.beam_coor_out(aim.data,i,t,tele_angle,beam_angle,offset)
 
@@ -2117,7 +2118,9 @@ def PAAM_wavefront_calc(aim,i,t,side,lim=1e-12):
     return ret
 
 def tele_wavefront_calc(aim,i_l,t,method,scale=1,lim=1e-12,max_count=20,tele_angle_l=None,tele_angle_r=None,beam_l=None,beam_r=None,offset_l=False,offset_r=False,print_on=False): #The sending is always the left telescope and the receiving the right one
-    i_r = utils.i_slr(i_l)[1]
+    import pointLISA.utils
+
+    i_r = pointLISA.utils.i_slr(i_l)[1]
     
     tdel = aim.data.L_sl_func_tot(i_l,t)
     t_l=t
