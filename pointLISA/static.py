@@ -1,5 +1,6 @@
 from imports import *
 from pointLISA import *
+import pointLISA
 import LA
 import numpy as np
 import time
@@ -11,12 +12,21 @@ import utils
 
 class STAT():
     def __init__(self,input_param,para,**kwargs):
+        input_param_new = {}
+        for k in input_param.keys():
+            if '__' not in k:
+                input_param_new[k] = input_param[k]
+        del input_param
+        input_param = input_param_new
+        del input_param_new
+
         from imports import *
         for k in para:
             globals()[k] = para[k]
             setattr(self,k,para[k])
-        for k in input_param:
-            setattr(self,k,input_param[k])
+        for k in input_param.keys():
+            if '__' not in k:
+                setattr(self,k,input_param[k])
 
         for key,value in kwargs.items():
             input_param[key] = value
@@ -53,7 +63,27 @@ class STAT():
         input_param['timeunit'] = self.timeunit
 
         self.input_param = input_param
-            
+        stat = utils.Object()
+        for k in input_param.keys():
+            if '__' not in k:
+                try:
+                    setattr(stat,k,input_param[k])
+                except:
+                    print('Not copy:')
+                    print(k,input_param[k])
+                    print('')
+                    pass
+        self.stat = stat
+
+    def putp(self,i,t,mode='sampled'):
+        if mode=='sampled':
+            return self.putp_sampled(i,t)
+        elif mode=='LISA':
+            return self.LISA.putp(i,t)
+
+
+
+
     def PAA_func(self):
         print('')
         print('Importing Orbit')
@@ -64,6 +94,8 @@ class STAT():
         utils.LISA_obj(self,type_select=self.LISA_opt)
         print('Done in '+str(time.clock()-tic))
         self.SC = range(1,4)
+        
+        self.putp_sampled = pointLISA.methods.get_putp_sampled(self)
 
         # Calculations
         #LA=utils.la()
@@ -146,6 +178,7 @@ class STAT():
         self.PAA_func = PAA_func_val 
        
         self.ang_breathing_din = lambda i, time: LA.angle(self.v_l_func_tot(i,time),self.v_r_func_tot(i,time))
+        self.ang_breathing_in = lambda i, time: LA.angle(self.u_l_func_tot(i,time),self.u_r_func_tot(i,time))
         self.ang_breathing_stat = lambda i, time: LA.angle(self.v_l_stat_func_tot(i,time),self.v_r_stat_func_tot(i,time))
         
         self.ang_in_l = lambda i,t: LA.ang_in(self.v_l_func_tot(i,t),self.n_func(i,t),self.r_func(i,t))

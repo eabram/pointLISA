@@ -1,6 +1,6 @@
 from pointLISA import *
 import LA
-
+import pointLISA.methods as methods
 from synthlisa import *
 import numpy as np
 import matplotlib.pyplot as plt
@@ -82,7 +82,7 @@ def get_link(i,side):
 
 def get_armvec_func(OBJ,i,side): #used
     [i_OBJ,i_next] = i_slr(i,side=side)
-    arm_vec = lambda time: np.array(OBJ.LISA.putp(i_next,time)) - np.array(OBJ.LISA.putp(i_OBJ,time))
+    arm_vec = lambda time: np.array(OBJ.putp(i_next,time)) - np.array(OBJ.putp(i_OBJ,time))
 
     return arm_vec
 
@@ -108,14 +108,14 @@ def solve_num(func,guess,method='fsolve'):
 
 def func_pos(OBJ,i): #used
     '''Generate functions of the positions'''
-    L = lambda time: np.array(OBJ.LISA.putp(i,time))
+    L = lambda time: np.array(OBJ.putp(i,time))
     return L
 
 def solve_L_PAA(OBJ,t,pos_OBJ,pos_left,pos_right,select='sl',calc_method='Waluschka'): #used
     if OBJ.LISA==False:
         t_guess = np.linalg.norm(OBJ.orbit.p[0][0,:] - OBJ.orbit.p[1][0,:])/c
     else:
-        t_guess = np.linalg.norm(np.array(OBJ.LISA.putp(1,0)) - np.array(OBJ.LISA.putp(2,0)))/c
+        t_guess = np.linalg.norm(np.array(OBJ.putp(1,0)) - np.array(OBJ.putp(2,0)))/c
 
     if select=='sl' or select=='rl':
         s1 = lambda x: pos_left(x)
@@ -158,11 +158,11 @@ def n_r_lisa(i,time,LISA,m=[2,2,2],ret='all'):
     '''Obtaining normal, r and COM vectors'''
     [i_OBJ,i_left,i_right] = i_slr(i)
 
-    v_l = np.array(LISA.putp(i_left,time)) - np.array(LISA.putp(i_OBJ,time))
-    v_r = np.array(LISA.putp(i_right,time)) - np.array(LISA.putp(i_OBJ,time))
-    COM = (m[i_left-1]*np.array(LISA.putp(i_left,time)) + m[i_right-1]*np.array(LISA.putp(i_right,time)) + m[i_OBJ-1]*np.array(LISA.putp(i_OBJ,time)))/sum(m)
+    v_l = np.array(putp(i_left,time)) - np.array(putp(i_OBJ,time))
+    v_r = np.array(putp(i_right,time)) - np.array(putp(i_OBJ,time))
+    COM = (m[i_left-1]*np.array(putp(i_left,time)) + m[i_right-1]*np.array(putp(i_right,time)) + m[i_OBJ-1]*np.array(putp(i_OBJ,time)))/sum(m)
 
-    r = COM(time) - np.array(LISA.putp(i_OBJ,time))
+    r = COM(time) - np.array(putp(i_OBJ,time))
 
     n = np.cross(v_l(time)/np.linalg.norm(v_l(time)),v_r(time)/np.linalg.norm(v_r(time)))
 
@@ -252,11 +252,11 @@ def relativistic_aberrations(OBJ,i,t,tdel,side,relativistic=True): #used
         tdel0 = tdel
 
     if side=='l':
-        u_not_ab = np.array(OBJ.LISA.putp(i_self,t-tdel0)) - np.array(OBJ.LISA.putp(i_left,t-tdel))
+        u_not_ab = np.array(OBJ.putp(i_self,t-tdel0)) - np.array(OBJ.putp(i_left,t-tdel))
         u_ab = np.linalg.norm(u_not_ab)*(LA.unit(LA.unit(u_not_ab)*OBJ.c+(OBJ.vel.abs(i_self,t-tdel0) - OBJ.vel.abs(i_left,t-tdel))))
 
     elif side=='r':
-        u_not_ab = np.array(OBJ.LISA.putp(i_self,t-tdel0)) - np.array(OBJ.LISA.putp(i_right,t-tdel))
+        u_not_ab = np.array(OBJ.putp(i_self,t-tdel0)) - np.array(OBJ.putp(i_right,t-tdel))
         u_ab = np.linalg.norm(u_not_ab)*(LA.unit(LA.unit(u_not_ab)*OBJ.c+(OBJ.vel.abs(i_self,t-tdel0) - OBJ.vel.abs(i_right,t-tdel))))
  
     if relativistic==False:
@@ -289,64 +289,6 @@ def relativistic_aberrations(OBJ,i,t,tdel,side,relativistic=True): #used
         u_new=LA.unit(c_prime)*np.linalg.norm(u_not_ab)
    
     return u_new
-
-#def add_velo(v,u):
-#    c=np.float64(300000000.0)
-#    v_mag = np.linalg.norm(v)
-#    gamma = 1.0/((1-((v/c)**2))**0.5)
-#    u_prime = (1.0/(1.0-(np.dot(u,v)/(c**2))))*((u/gamma) - v+(1.0/(c**2))*(gamma/(1+gamma))*(np.dot(u,v))*v)
-#
-#    return u_prime
-#
-#def get_receiving(OBJ,i,t,side):
-#    #LA = la()
-#    [i_self,i_left,i_right] = i_slr(i)
-#    
-#    if side=='l':
-#        tdel = OBJ.L_rl_func_tot(i_self,t)
-#        v_send = OBJ.v_abs(i_left,t-tdel)
-#    elif side=='r':
-#        tdel = OBJ.L_rr_func_tot(i_self,t)
-#        v_send = OBJ.v_abs(i_right,t-tdel)
-#    
-#    if OBJ.calc_method=='Abram':
-#        tdel0=0
-#    elif OBJ.calc_method=='Waluschka':
-#        tdel0=tdel
-#    
-#    if OBJ.aberration==True:
-#        v_rec = OBJ.v_abs(i_self,t)
-#        if OBJ.relativistic==True:
-#            ux = v_rec
-#            v = v_send
-#            v_rec_sendframe = add_velo(v,ux)
-#            if side=='l':
-#                c_vec_sendframe = LA.unit(OBJ.v_r_func_tot(i_left,t-tdel))*np.float64(c)
-#            elif side=='r':
-#                c_vec_sendframe = LA.unit(OBJ.v_l_func_tot(i_right,t-tdel))*np.float64(c)
-#
-#            c_vec_recframe = add_velo(v_rec_sendframe,c_vec_sendframe)
-#            return (tdel*np.float64(c)*c_vec_recframe)/(np.linalg.norm(c_vec_recframe))
-#        elif OBJ.relativistic==False:
-#            if side=='l':
-#                c_vec =  np.array(OBJ.LISA.putp(i_self,t-tdel0)) - np.array(OBJ.LISA.putp(i_left,t-tdel))
-#            elif side=='r':
-#                c_vec = np.array(OBJ.LISA.putp(i_self,t-tdel0)) - np.array(OBJ.LISA.putp(i_right,t-tdel))
-#            c_vec = (np.float64(c)*c_vec)/(np.linalg.norm(c_vec))
-#            ret = c_vec + (v_rec-v_send)
-#            return (tdel*np.float64(c)*ret)/np.linalg.norm(ret)
-#
-#
-#    elif OBJ.aberration==False:
-#        if side=='l':
-#            return np.array(OBJ.LISA.putp(i_self,t-tdel0)) - np.array(OBJ.LISA.putp(i_left,t-tdel))
-#        elif side=='r':
-#            return np.array(OBJ.LISA.putp(i_self,t-tdel0)) - np.array(OBJ.LISA.putp(i_right,t-tdel))
-#
-#    #angle = LA.angle(-c_vec_recframe,wfe.data.v_l_func_tot(i,t))
-#
-#    #return angle
-
 
 def calc_PAA_ltot(OBJ,i,t):
     #LA = la()
@@ -398,51 +340,9 @@ def calc_PAA_rout(OBJ,i,t):
     
     return calc_ang
 
-#def calc_PAA(OBJ,i,t,side,ab=True):
-#    LA = la()
-#    coor = NOISE_LISA.functions.coor_SC(OBJ,i,t)
-#    if side=='l':
-#        if ab==True:
-#            beam_in = -(LA.matmul(coor,OBJ.u_l_func_tot(i,t)))
-#        elif ab==False:
-#            beam_in = -(LA.matmul(coor,OBJ.u_l0_func_tot(i,t)))
-#        beam_out = (LA.matmul(coor,OBJ.v_l_func_tot(i,t)))
-#    elif side=='r':
-#        if ab==True:
-#            beam_in = -(LA.matmul(coor,OBJ.u_r_func_tot(i,t)))
-#        elif ab==False:
-#            beam_in = -(LA.matmul(coor,OBJ.u_r0_func_tot(i,t)))
-#        beam_out = (LA.matmul(coor,OBJ.v_r_func_tot(i,t)))
-#
-#    beam_in_in = (np.array([beam_in[2],beam_in[0]]))
-#    beam_in_out = (np.array([beam_in[1],beam_in[0]]))
-#    beam_out_in = (np.array([beam_out[2],beam_out[0]]))
-#    beam_out_out = (np.array([beam_out[1],beam_out[0]]))
-#    #
-#    #PAA_in_calc = beam_out_in - beam_in_in
-#    #PAA_in = (np.arctan(PAA_in_calc[1]/PAA_in_calc[0]))
-#    #
-#    #
-#    #PAA_out_calc = beam_out_out - beam_in_out
-#    #PAA_out = abs(np.arctan(PAA_out_calc[1]/PAA_out_calc[0]))
-#
-#
-#    #PAA_in = np.arccos(np.dot(beam_out_in,beam_in_in)/(np.linalg.norm(beam_out_in)*np.linalg.norm(beam_in_in)))
-#    #PAA_out = np.arccos(np.dot(beam_out_out,beam_in_out)/(np.linalg.norm(beam_out_out)*np.linalg.norm(beam_in_out)))
-#    
-#    PAA_in = LA.angle(beam_out_in,beam_in_in)
-#    PAA_out = LA.angle(beam_out_out,beam_in_out)
-#    PAA_tot = LA.angle(beam_out,beam_in)
-#
-#    return [PAA_in,PAA_out,PAA_tot]
-
-
-
-
-
 # Velocity
 def velocity_abs_calc(OBJ,i_select,t,hstep): #used
-    v = (np.array(OBJ.LISA.putp(i_select,np.float64(t+hstep)))-np.array(OBJ.LISA.putp(i_select,t)))/hstep
+    v = (np.array(OBJ.putp(i_select,np.float64(t+hstep)))-np.array(OBJ.putp(i_select,t)))/hstep
     return v
 
 
@@ -468,10 +368,10 @@ def velocity_calc(OBJ,i,time,hstep,side,rs): #used
     elif side=='r':
         v_pos = v_pos_r 
 
-    pos_OBJ = np.array(OBJ.LISA.putp(i_OBJ,time))
-    pos_next = np.array(OBJ.LISA.putp(i_next,time))
-    pos_OBJ_h = np.array(OBJ.LISA.putp(i_OBJ,time+np.float64(hstep)))
-    pos_next_h = np.array(OBJ.LISA.putp(i_next,time+np.float64(hstep)))
+    pos_OBJ = np.array(OBJ.putp(i_OBJ,time))
+    pos_next = np.array(OBJ.putp(i_next,time))
+    pos_OBJ_h = np.array(OBJ.putp(i_OBJ,time+np.float64(hstep)))
+    pos_next_h = np.array(OBJ.putp(i_next,time+np.float64(hstep)))
     v = ((pos_next_h-pos_next) - (pos_OBJ_h - pos_OBJ))/hstep
 
     v_out = n*(np.dot(v,n))
