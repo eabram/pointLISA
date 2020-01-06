@@ -74,8 +74,6 @@ def do_run(input_file=None,input_param={},set_stat=utils.Object,**kwargs):
 
         if execute == True:
             filename_save = i.split('/')[-1].split('_')[0]
-            #for k in input_param.keys():
-            #    print(k,input_param[k])
             data=STAT(input_param,para,filename = i).PAA_func()
             data.input_file = input_file
 
