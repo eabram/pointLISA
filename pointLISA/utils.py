@@ -201,8 +201,8 @@ def send_func(OBJ,i,calc_method='Waluschka'): #used
         L_rr=L_sr
 
     elif OBJ.delay=='constant':
-        L_sl = lambda t: 2500000000/c
-        L_sr = lambda t: 2500000000/c
+        L_sl = lambda t: OBJ.armlength/c #...adjust
+        L_sr = lambda t: OBJ.armlength/c
         L_rl=L_sl
         L_rr=L_sr
 

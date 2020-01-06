@@ -12,7 +12,7 @@ import AIM
 import run_din
 import read_write
 import add_noise
-
+ 
 from synthlisa import *
 import numpy as np
 import matplotlib.pyplot as plt

@@ -11,7 +11,7 @@
 #from sympy import *
 from imports import *
 import numpy as np
-
+ 
 #year2sec=32536000
 #day2sec=year2sec/365.25
 #c=300000000

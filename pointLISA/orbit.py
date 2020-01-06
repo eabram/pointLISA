@@ -11,7 +11,7 @@ from decimal import *
 from scipy.interpolate import interp1d
 year2sec=32536000
 day2sec = year2sec/365.25
-
+ 
 # This class creates an orbit object which containes the positions of the spacecrafts ans its corresponding syntheticLISA object
 
 class ORBIT():
