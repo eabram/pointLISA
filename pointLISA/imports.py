@@ -38,8 +38,4 @@ import methods
 import AIM
 from output import OUTPUT
 
-#import calc_values
-#import plotfile
-#import add_noise
-
 print('Necessary packages have been imported and loaded')
