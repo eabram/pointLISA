@@ -5,7 +5,8 @@ import control
 import numpy as np
 import random
  
-
+# This file contains functions for adding/simulating (pointing noise
+### --- This is not yet finished ###
 def tele_param(dz_dis=False): #Used
     m=100.0
     c=0.1
