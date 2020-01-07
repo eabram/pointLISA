@@ -8,7 +8,11 @@ import datetime
 import os
 from pointLISA import *
 import scipy.optimize
+
+#This file contains some (specific) calulation methods (the more general ones can be found in utils.py)
+
 def get_putp_sampled(data,method='interp1d'):
+    '''Returns an interpolation of the spacecraft positions'''
     t_all = data.orbit.t
     pos = []
     for i in range(1,4):
@@ -38,6 +42,7 @@ def get_putp_sampled(data,method='interp1d'):
 
 
 def get_nearest_smaller_value(lst,val):
+    '''Returns the nearest smaller vallue of val in list lst'''
     lst.sort()
     if val<lst[0]:
          pos = np.nan #...check if this holds
@@ -53,6 +58,7 @@ def get_nearest_smaller_value(lst,val):
         pass
 
 def get_tele_SS(aim,method,i,t,side,x=False,y=False):
+    '''Returns the pointing angle at time t for a SS control'''
     if method==False:
         if type(y)==bool:
             if side=='l':
@@ -78,29 +84,24 @@ def get_tele_SS(aim,method,i,t,side,x=False,y=False):
                     print(pos_t)
                     return np.nan
 
-def make_nan(function,t,lim):
-    [a,b]=lim
-    if t<a or t>b:
-        return np.nan
-    else:
-        return function(t)
-
 def string_length(l,string):
+    '''Returns the length of a string'''
     while len(string)<l:
         string = '0'+string
 
     return string
 
 def get_date(option='date'):
+    '''Returns the date'''
     now = datetime.datetime.now()
     if option=='date':
         ret=string_length(2,str(now.year))+string_length(2,str(now.month))+string_length(2,str(now.day))
     elif option=='time':
         ret=string_length(2,str(now.hour))+string_length(2,str(now.minute))+string_length(2,str(now.second))
-    #date=date+'-'+dir_extr
     return ret
 
 def get_folder(direct=False,opt_date=True):
+    '''Returns a folder (name)'''
     if direct==False:
         if opt_date==True:
            date = get_date(option='date')+'/'
@@ -114,7 +115,7 @@ def get_folder(direct=False,opt_date=True):
     return direct
 
 def savefig(f,title='',direct=True,newtime=False,extension='.png'):
-    
+    '''This function can plot and save a figure'''
     if newtime==True:
         time = get_date(option='time')
     else:
@@ -139,6 +140,7 @@ def savefig(f,title='',direct=True,newtime=False,extension='.png'):
     return 0
 
 def flatten(y):
+    '''Returns a flattened list'''
     ynew=[]
     check=True
     try:
@@ -158,118 +160,8 @@ def flatten(y):
 
     return ynew
 
-def nanfilter(l):
-    l = flatten(l)
-    l_copy = []
-    for i in l:
-        if i!=np.nan:
-            l_copy.append(i)
-    
-    return l
-
-def nanmean(l):
-    return np.mean(nanfilter(l))
-
-
-
-
-def write(inp,title='',direct ='',extr='',list_inp=False,sampled=False,headers=[],opt_date=True,opt_time=True,time='',extra_title=''):
-    date = get_date(option='date')
-    if time=='':
-        time = get_date(option='time')
-    
-    if direct=='':
-        direct=get_folder(opt_date=opt_date)
-    direct=direct+extr+'/'
-    if not os.path.exists(direct):
-        os.makedirs(direct)
-
-    if opt_time==True:
-        title=extra_title+'_'+time+'_'+title+'.txt'
-    elif opt_time==False:
-        title=extra_title+'_'+title+'.txt'
-    if '.txt' not in title:
-        title = title+'.txt'
-
-    writefile = open(direct+'/'+title,'w')
-
-    #if len(inp)==1:
-    #    inp=[inp]
-    
-    if sampled==True:
-        for h in headers:
-            writefile.write(h+'\n')
-        [x,y]=inp
-        for i in range(0,len(x)):
-            writefile.write(str(x[i])+';'+str(y[i])+'\n')
-
-        
-
-    elif sampled==False:
-        if type(inp)==dict:
-            inp_new = []
-            for k in inp.keys():
-                inp_new.append(inp[k])
-            inp = inp_new
-            del inp_new
-        elif type(inp)!=list:
-            inp=[inp]
-
-        for m in inp:
-            if str(type(m)) == "<type 'instance'>":
-                for k in m.__dict__.keys():
-                    writefile.write(str(k)+':: '+str(m.__dict__[k])+'\n')
-
-            if type(m)==list:
-                if len(m)==3 and 'Figure' in str(type(m[0])):
-                    f= m[0]
-                    ax = flatten(m[1])
-                    title=f._suptitle.get_text()
-                    print(title.split('iter_'))
-                    writefile.write('Title:: '+f._suptitle.get_text()+'\n')
-                    writefile.write('Iteration:: '+str(m[2])+'\n')
-                    for i in range(0,len(ax)):
-                        ax_calc=ax[i]
-                        ax_title = ax_calc.get_title()
-                        line = 'ax_title:: '+ax_title
-                        writefile.write(line+'\n')
-                        
-                        for l in range(0,len(ax_calc.lines)):
-                            label = str(ax_calc.lines[l]._label)
-                            writefile.write('Label:: '+label+'\n')
-                            xy = ax_calc.lines[l]._xy
-                            for k in xy:
-                                writefile.write(str(k[0])+';'+str(k[1])+'\n')
-            elif type(m)==tuple and type(m[4])==dict:
-                for out in m[0:-2]:
-                    writefile.write(out+'\n')
-                for k in sorted(m[-1].keys()):
-                    writefile.write(m[3]+' '+k+'\n')
-                    for SC in sorted(m[-1][k].keys()):
-                        for side in sorted(m[-1][k][SC].keys()):
-                            if side=='l':
-                                side_wr='left'
-                            elif side=='r':
-                                side_wr='right'
-                            writefile.write('Label:: SC'+SC+', '+side_wr+'\n')
-                            for point in m[-1][k][SC][side]:
-                                try:
-                                    writefile.write(str(point[0])+';'+str(point[1])+'\n')
-                                except IndexError:
-                                    writefile.write(str(point)+'\n')
-
-
-
-            
-
-    writefile.close()
-
-    print(title+' saved in:')
-    print(direct)
-
-    return direct
-
 def rdln(line,typ='text'):
+    '''Reads information of a line from an imported file'''
     if '[array(' in line:
         newline = line.split('array(')
         line = newline[-1].split(')')[0]+']'
@@ -295,6 +187,7 @@ def rdln(line,typ='text'):
             return ret
 
 def read(filename='',direct='',meas='all'):
+    '''Reads imported values'''
     if type(meas)==str:
         meas = [meas]
     ret={}
@@ -313,7 +206,6 @@ def read(filename='',direct='',meas='all'):
     else:
         print('Please select filename or leave blank')
 
-    
     try:
         filenames
         go =True
@@ -400,8 +292,6 @@ def read(filename='',direct='',meas='all'):
                                 except:
                                     pass
                             ret[key0][key1][iteration][option][key2][key3]['y'] = np.append(ret[key0][key1][iteration][option][key2][key3]['y'],np.array(ynew_write))
-
-
             
             readfile.close()
 
@@ -409,55 +299,12 @@ def read(filename='',direct='',meas='all'):
 
 
 
-
 ### Pointing functions
 
 ### Telescope pointing
-def get_extra_angle(data,SC,side,component,tmin=False,tmax=False,ret='value'):
-    if ret=='value':
-        A = NOISE_LISA.calc_values.piston(wfe,SC=[SC],side=[side],dt=False,meas='R_vec_tele_rec')
-        WF = A[3]['mean'][str(SC)][side]
-        t=[]
-        angx=[]
-        angy=[]
-        ang=[]
-        if tmin==False:
-            tmin = wfe.t_all[0]
-        if tmax==False:
-            tmax = wfe.t_all[-1]
-        for i in range(0,len(WF)):
-            vec = -WF[i][1]
-            ang.append(LA.angle(vec,np.array([1,0,0])))
-            t.append(WF[i][0])
-            if t[-1]>=tmin and t[-1]<=tmax:
-                angx.append(np.sign(vec[2])*np.arctan(abs(vec[2]/vec[0])))
-                angy.append(np.sign(vec[1])*np.arctan(abs(vec[1]/vec[0])))
-        
-        if component=='tele':
-            return angx
-        elif component=='PAAM':
-            return angy
-
-    elif ret=='function':
-        vec = lambda t: -wfe.calc_piston_val(SC,t,side,ret='R_vec_tele_rec')
-        if component=='tele':
-            angx = lambda t: np.sign(vec(t)[2])*np.arctan(abs(vec(t)[2]/vec(t)[0]))
-            return angx
-        elif component=='PAAM':
-            angy = lambda t: np.sign(vec(t)[1])*np.arctan(abs(vec(t)[1]/vec(t)[0]))
-            return angy
-
-
-def get_extra_ang_mean(data,component):
-    offset_l=[]
-    offset_r=[]
-    for SC in range(1,4):
-        offset_l.append(np.mean(get_extra_angle(data,SC,'l',component,ret='value')))
-        offset_r.append(np.mean(get_extra_angle(data,SC,'r',component,ret='value')))
-
-    return [offset_l,offset_r]
 
 def get_wavefront_parallel(data,aim,i,t,side,PAAM_ang,ret,mode='opposite',precision=0,ksi=[0,0],angles=False):
+    '''Calculates how the telescopes should rotate for a 90 degree angle between the recieving waveront and the receiving telescope'''
     [i_self,i_left,i_right] = utils.i_slr(i)
     if mode=='opposite':
         if side=='l':
@@ -597,9 +444,6 @@ def get_wavefront_parallel(data,aim,i,t,side,PAAM_ang,ret,mode='opposite',precis
         ret_val['angx_func_rec'] = angx
         ret_val['angy_func_rec'] = angy
         ret_val['R_vec_tele_rec']=R_vec_tele_rec
-        #ret_val['tilt'] = np.arccos(R_vec_tele_rec[0]/np.linalg.norm(R_vec_tele))
-        #ret_val['tilt']=(angx**2+angy**2)**0.5
-        #ret_val['tilt']=LA.angle(R_vec_tele,(angx**2+angy**2)**0.5
         if precision==1:
             ret_val['piston']=piston
             ret_val['z_extra'] = z_extra
@@ -618,42 +462,8 @@ def get_wavefront_parallel(data,aim,i,t,side,PAAM_ang,ret,mode='opposite',precis
 
         return ret_val
 
-
-def rotate_tele_wavefront(data,aim,link,t,count_max=np.inf,lim=2e-16,scale=1):
-    i = (link-2)%3
-    [i_left,i_right,link] = utils.i_slr(i)
-    tdel = data.L_rl_func_tot(i_left,t)
-    angles=[aim.tele_l_ang(i_left,t),aim.beam_l_ang(i_left,t),aim.tele_r_ang(i_right,t-tdel),aim.beam_r_ang(i_right,t-tdel)]
-
-    do=True
-    count=0
-    da0=[]
-    da2=[]
-    while do:
-        angles_new0 = scale*get_wavefront_parallel(data,aim,i_left,t,'l',False,'angx',mode='self',precision=0,angles=angles)+angles[0]
-        da0.append(angles_new0 - angles[0])
-        angles[0]=angles_new0
-
-        angles_new2 = scale*get_wavefront_parallel(data,aim,i_right,t-tdel,'r',False,'angx',mode='self',precision=0,angles=[angles[2],angles[3],angles[0],angles[1]])+angles[2]
-        da2.append(angles_new2 - angles[2])
-        angles[2]=angles_new2
-        count=count+1
-        #print(da0[-1],da2[-1])
-        if count>=2:
-            if abs(da0[-1])==abs(da0[-2]) or abs(da2[-1])==abs(da2[-2]):
-                #print('No convergence')
-                count=count_max
-                do=False
-        if max(abs(da0[-1]),abs(da2[-1]))<lim or count>=count_max:
-            do=False
-
-    
-    if count>=count_max:
-        return False
-    else:
-        return angles
-
 def rotate_PAA_wavefront(data,aim,SC,t,side,ret,output_full=False):
+    '''Rotates the telescope angles for a straignt hit wit the receiving wavefront'''
     [i_left,i_right,link] = utils.i_slr(SC)
 
     import scipy.optimize
@@ -668,62 +478,9 @@ def rotate_PAA_wavefront(data,aim,SC,t,side,ret,output_full=False):
         return ang_solve
 
 
-
-
-def spotsize_limit(wfe,aim,i,t,side,limit=0,PAAM_ang=False,rtol=False):
-    if side=='l':
-        guess = aim.tele_l_ang(i,t)
-        if PAAM_ang==False:
-            PAAM_ang_calc = aim.beam_l_ang(i,t)
-        else:
-            PAAM_ang_calc = PAAM_ang
-    elif side=='r':
-        guess = aim.tele_r_ang(i,t)
-        if PAAM_ang==False:
-            PAAM_ang_calc = aim.beam_r_ang(i,t)
-        else:
-            PAAM_ang_calc = PAAM_ang
-                
-    f = lambda ang_tele: NOISE_LISA.functions.get_wavefront_parallel(wfe,aim,i,t,side,PAAM_ang_calc,'xoff',mode='opposite',angles=ang_tele) - limit
-    #f_solve = lambda x: f(x)-limit
-    offset=0.1
-    #print(limit)
-    #print(f_solve(guess-offset),f_solve(guess+offset))
-    
-    if rtol==False:
-        ang_solve = scipy.optimize.brentq(f,guess-offset,guess+offset)
-    else:
-        ang_solve = scipy.optimize.brentq(f,guess-offset,guess+offset,rtol=rtol)
-    
-    return ang_solve
-
-#def set_offset_waist(wfe,aim,SC,t,side):
-
-
-
-
-#def get_tele_fc(wfe,aim,i,t,side,count_max=np.inf,lim=1e-10,scale=1):
-#    if side=='l':
-#        ang = rotate_tele_wavefront(wfe,aim,PAA_LISA.utils.get_link(i,'l'),t,count_max=count_max,lim=lim,scale=scale)[0]
-#    elif side=='r':
-#       ang =rotate_tele_wavefront(wfe,aim,PAA_LISA.utils.get_link(i,'r'),t+wfe.data.L_rl_func_tot(i_left,t),count_max=count_max,lim=lim,scale=scale)[2]
-#
-#    return ang 
-
-
-
-
-
-
-
-
-
-
-#LA = PAA_LISA.utils.la()
-
 # Changes of coordinate system
 def coor_SC(data,i,t):
-    # r,n,x (inplane) format
+    '''Returns the coordinates of a spacecraft in [r,n,x] components'''
     t_calc=t
 
     r = LA.unit(data.r_func(i,t_calc))
@@ -734,7 +491,7 @@ def coor_SC(data,i,t):
     return np.array([r,n,x])
 
 def coor_tele(data,i,t,ang_tele):
-    # Retunrs the coordinate system of telescope (same as SC but rotated over ang_tele inplane)
+    '''Returns the coordinate system of telescope (same as SC but rotated over ang_tele inplane)'''
     L_tele = data.L_tele
     [r,n,x] = coor_SC(data,i,t)
     tele = r*L_tele
@@ -744,14 +501,8 @@ def coor_tele(data,i,t,ang_tele):
 
     return np.array([r,n,x])
 
-def pos_tele(wfe,i,t,side,ang_tele):
-    offset = np.array(wfe.data.putp(i,t))
-    pointing = coor_tele(wfe,i,t,ang_tele)
-
-    return offset+pointing
-
 def beam_coor_out(data,i,t,ang_tele,ang_paam,ang_tele_offset):
-    # Retunrs the coordinate system of the transmitted beam (same as SC but rotated over ang_tele inplane and ang_tele outplane)
+    '''Retunrs the coordinate system of the transmitted beam (same as SC but rotated over ang_tele inplane and ang_tele outplane)'''
     [r,n,x] = coor_tele(data,i,t,ang_tele+ang_tele_offset) #Telescope coordinate system
 
     r = LA.unit(LA.rotate(r,x,ang_paam)) # Rotate r in out of plane over ang_paam
@@ -760,6 +511,7 @@ def beam_coor_out(data,i,t,ang_tele,ang_paam,ang_tele_offset):
     return np.array([r,n,x])
 
 def i_slr(i):
+    '''Returns [i_self,i_left,i_right]'''
     i_self = i
     i_left = (i+1)%3
     i_right = (i+2)%3
@@ -771,43 +523,8 @@ def i_slr(i):
 
     return i_ret
 
-def delay(data,l_array,t,para='X',delay_on=True):
-    t_del = 0
-    if delay_on==True:
-        for k in range(0,len(l_array)):
-            j = -1-k
-            i_r = (abs(l_array[j])+1)%3
-            try:
-                if l_array[j]>0:
-                    t_del = t_del - data.L_rl[i_r-1](t - t_del)
-                elif l_array[j]<0:
-                    t_del = t_del - data.L_rr[i_r-1](t - t_del)
-            except:
-                pass
-
-    return t_del
-
-def PSD(f_list,SD_list):
-    return interp1d(f_list,SD_list,bounds_error=False,fill_value=0)
-
-def PowerLaw(SD_val,f0,exp=1):
-    return lambda f: (SD_val)*((f/f0)**exp)
-
-def add_func_help(func_list,f):
-
-    func_ret = func_list[0]
-
-    if len(func_list)>1:
-        for i in range(1,len(func_list)):
-            func_ret = func_ret(f)+func_list[i](f)
-
-    return func_ret
-
-def add_func(func_list):
-
-    return lambda f: add_func_help(func_list,f)
-
 def get_matrix_from_function(A,t):
+    '''Returns a matrix from a function'''
     ret=[]
     for i in range(0,len(A)):
         vec=[]
@@ -818,6 +535,7 @@ def get_matrix_from_function(A,t):
     return np.array(ret)
 
 def interpolate(x,y,method='interp1d'):
+    '''Obtains a function by interpolation'''
     if method=='interp1d':
         if str(type(y[0]))!="<type 'numpy.ndarray'>":
             return interp1d(x,y,bounds_error=False)
@@ -842,163 +560,8 @@ def interpolate(x,y,method='interp1d'):
     else:
         print('Please select proper interpolation method (interp1d)')
 
-def get_FOV_optimized_PAAM(angles,wfe,aim,link,t,m='tilt',mode='normal'):
-    ang_l_tele=angles[0]
-    ang_r_tele = angles[1]
-    ang_l_PAAM0=0
-    ang_r_PAAM0=0
-
-    f_solve  = lambda ang1,ang2,_mode: get_FOV([ang_l_tele,ang1,ang_r_tele,ang2],wfe,aim,link,t,mode=_mode)
-    ang_l_PAAM_new = scipy.optimize.minimize(lambda ang: f_solve(ang,ang_r_PAAM0,mode),x0=0)['fun']
-    ang_r_PAAM_new = scipy.optimize.minimize(lambda ang: f_solve(ang_l_PAAM0,ang,mode),x0=0)['fun']
-
-    angles_new = [ang_l_tele,ang_l_PAAM_new,ang_r_tele,ang_r_PAAM_new]
-    FOV = f_solve(ang_l_PAAM_new,ang_r_PAAM_new,'direction')
-
-    return [angles_new,FOV]
-    
-
-
-def get_FOV(angles,wfe,aim,link,t,m='tilt',mode='normal'):
-    i = (link-2)%3
-    [i_left,i_right,link] = utils.i_slr(i)
-    
-    tilt_left = NOISE_LISA.functions.get_wavefront_parallel(wfe,aim,i_left,t,'l',False,'all',mode='self',precision=0,angles=angles)[m]
-    tilt_right = NOISE_LISA.functions.get_wavefront_parallel(wfe,aim,i_right,t,'r',False,'all',mode='self',precision=0,angles=[angles[2],angles[3],angles[0],angles[1]])[m]
-    
-
-    if mode=='normal':
-        ret =  max(abs(tilt_left),abs(tilt_right))
-        return(ret)
-
-    elif mode=='direction':
-        return [[tilt_right,i_right],[tilt_left,i_left]]
-    elif mode=='l':
-        return tilt_left
-    elif mode=='r':
-        return tilt_right
-
-
-def get_new_angles(aim,link,t,ang_old=False,lim=8e-6,margin=0.9,component='tele'):#...only works with 'tele' #Used
-    i = (link-2)%3
-    [i_left,i_right,link] = utils.i_slr(i)
-    
-    if ang_old==False:
-        if component=='tele':
-            ang_l = aim.tele_ang_l_fc(i_left,t)
-            ang_r = aim.tele_ang_r_fc(i_right,t)
-
-            angles=[ang_l,False,ang_r,False]
-        
-    else:
-        ang_old[1] = False
-        ang_old[3] = False
-        [ang_l_tele,ang_l_PAAM,ang_r_tele,ang_r_PAAM] = ang_old
-        [[tilt_right,i_right],[tilt_left,i_left]] = get_FOV(ang_old,aim,link,t,m='tilt',mode='direction')
-        [[angx_r,i_right],[angx_l,i_left]] = get_FOV(ang_old,aim,link,t,m='angx_func_rec',mode='direction')
-        
-        if tilt_right>=lim*0.99:
-            f_solve = lambda ang: get_FOV([ang_l_tele,ang_l_PAAM,ang,ang_r_PAAM],aim,link,t,m='angx_func_rec',mode='r') +angx_r*margin
-            side ='r'
-        elif tilt_right<=-lim*0.99:
-            f_solve = lambda ang: get_FOV([ang_l_tele,ang_l_PAAM,ang,ang_r_PAAM],aim,link,t,m='angx_func_rec',mode='r') +angx_r*margin
-            side='r'
-        elif tilt_left>=lim*0.99:
-            f_solve = lambda ang: get_FOV([ang,ang_l_PAAM,ang_r_tele,ang_r_PAAM],aim,link,t,m='angx_func_rec',mode='l') +angx_l*margin
-            side='l'
-        elif tilt_left<=-lim*0.99:
-            f_solve = lambda ang: get_FOV([ang,ang_l_PAAM,ang_r_tele,ang_r_PAAM],aim,link,t,m='angx_func_rec',mode='l') +angx_l*margin
-            side='l'
-        
-        step=0.1
-        if side=='r':
-            ang_new = scipy.optimize.brentq(f_solve,ang_r_tele-step,ang_r_tele+step,xtol=1e-7)
-            angles = [ang_l_tele,False,ang_new,False]
-        elif side=='l':
-            ang_new = scipy.optimize.brentq(f_solve,ang_l_tele-step,ang_l_tele+step,xtol=1e-7)
-            angles = [ang_new,False,ang_r_tele,False]
-    
-    return angles
-
-def get_SS(wfe,aim,link,lim,ret={},t_all={},ang_output={},m='tilt',component='tele'): #Used 
-    FOV_lim = lim
-
-    print('SS limit = '+str(FOV_lim))
-    if component not in ret.keys():
-        ret[component]={}
-        for SC in range(1,4):
-            ret[component][str(SC)]={}
-
-    if t_all=={}:
-        for SC in range(1,4):
-            t_all[str(SC)]={}
-            ang_output[str(SC)]={}
-    
-    t0 = aim.t_all[3]
-    t_end = aim.t_all[-3]
-
-    t_adjust=[t0]
-    t_solve=t_adjust[0]
-    angles_all=[]
-
-    angles_all.append(get_new_angles(aim,link,t0,component=component))
-
-    while t_solve<t_end:
-        FOV_func = lambda t: get_FOV(angles_all[-1],aim,link,t,m=m,mode='normal') - FOV_lim
-        check=True
-        try:
-            t_solve = scipy.optimize.brentq(FOV_func,t_adjust[-1],t_end,xtol=1)
-            t_adjust.append(t_solve)
-        except ValueError,e:
-            print e
-            t_solve=t_end
-            check=False
-            if e=='f(a) and f(b) must have different signs':
-                break
-        if check==True:
-            angles_new = get_new_angles(aim,link,t_solve,ang_old = angles_all[-1],lim=FOV_lim)
-            #angles_new = get_new_angles(aim,link,t_solve,ang_old = False,lim=FOV_lim,wfe=wfe)
-            angles_all.append(angles_new)
-    angles_all = np.matrix(angles_all)
-    i = (link-2)%3
-    [i_left,i_right,link] = utils.i_slr(i)
-
-    
-    if component=='tele':
-        ang_l_list=[angles_all[0,0]]
-        ang_r_list=[angles_all[0,2]]
-        loc=[0,2]
-    elif component=='PAAM':
-        ang_l_list=[angles_all[0,1]]
-        ang_r_list=[angles_all[0,3]]
-        loc=[1,3]
-
-    t_adjust_l=[t_adjust[0]]
-    t_adjust_r=[t_adjust[0]]
-    for j in range(1,len(angles_all)):
-        if angles_all[j,loc[0]]!=ang_l_list[-1]:
-            ang_l_list.append(angles_all[j,loc[0]])
-            t_adjust_l.append(t_adjust[j])
-        if angles_all[j,loc[1]]!=ang_r_list[-1]:
-            ang_r_list.append(angles_all[j,loc[1]])
-            t_adjust_r.append(t_adjust[j])
-    
-    ang_l_list = np.array(ang_l_list)
-    ang_r_list = np.array(ang_r_list)
-
-    ang_l = lambda t: get_SS_func(t_adjust_l,ang_l_list,t)
-    ang_r = lambda t: get_SS_func(t_adjust_r,ang_r_list,t)
-    
-    ret[component][str(i_left)]['l'] = ang_l
-    ret[component][str(i_right)]['r'] = ang_r
-    t_all[str(i_left)]['l'] = np.array(t_adjust_l)
-    t_all[str(i_right)]['r'] = np.array(t_adjust_r)
-    ang_output[str(i_left)]['l'] = ang_l_list
-    ang_output[str(i_right)]['r'] = ang_r_list
-
-    return ret,t_all,ang_output
-
 def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,option=False,print_on=False,value=0,offset_l=False,offset_r=False,dt=3600*24,scale=1): #set scale at maximum of <2.0
+    '''Calculate the repointing time stamps and corresponfing telecsope angles'''
     import pointLISA
 
     if option==False:
@@ -1051,8 +614,6 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
         if aim.PAAM_deg==1:
             tele_l = tele_point_calc(aim,i_left,t_val,'l',option,max_count=5,scale=1,value=value) 
             tele_r = tele_point_calc(aim,i_right,t_val,'r',option,max_count=5,scale=1,value=value) 
-            #offset_l = aim.offset['l'][i_left]
-            #offset_r = aim.offset['l'][i_right]
             offset_l = lambda t: False
             offset_r = lambda t: False
 
@@ -1189,6 +750,7 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
 
 
 def tele_point_calc(aim,i,t,side,option,lim=False,method=False,value=0,scale=1,max_count=20,tele_l0=None,tele_r0=None,beam_l0=None,beam_r0=None,offset_l0=None,offset_r0=None,**kwargs): # Recommended to use aim0
+    '''Calculates the (full control) telescope pointing angles (with the center or wavefront method)'''
     if option=='center':
         if lim==False:
             lim = aim.aimset.limit_xoff
@@ -1217,13 +779,14 @@ def tele_point_calc(aim,i,t,side,option,lim=False,method=False,value=0,scale=1,m
     return ang
 
 
-
 def get_SS_func(x,y,x_check):
+    '''Returns the SS function'''
     A = [t for t in x if t<x_check]
     val = y[len(A)-1]
     return np.float64(val)
 
 def t_sample(data,i,s,speed=1):
+    '''Samples the timestamps'''
     if 'AIM' in str(data):
         data=data.data
     elif 'STAT' in str(data):
@@ -1231,7 +794,6 @@ def t_sample(data,i,s,speed=1):
     else:
         raise(ValueError)
     
-
     t0 = data.t_all
     if speed==0:
         if s=='l':
@@ -1249,6 +811,7 @@ def t_sample(data,i,s,speed=1):
     return np.sort(t_sampled)
 
 def get_t_sample(data,speed=0):
+    '''Obtains the sampled timestamps'''
     t_l=[]
     t_r=[]
     t_all={}
@@ -1260,10 +823,3 @@ def get_t_sample(data,speed=0):
     t_all['r']= t_r
 
     return t_all
-
-
-
-
-
-
-

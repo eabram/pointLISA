@@ -269,7 +269,7 @@ def read_output(filenames=False,direct=False):
                             R[R['value']] = [[0,''],0]
                             new=True
                         if new==True:
-                            R[R['value']][0][0] = np.array(utils.flatten(np.array(np.matrix(value))))
+                            R[R['value']][0][0] = np.array(methods.flatten(np.array(np.matrix(value))))
                         elif new==False:
                             R[R['value']][0][1] = R[R['value']][0][1]+value
 

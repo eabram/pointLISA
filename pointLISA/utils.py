@@ -14,15 +14,15 @@ import scipy.optimize
 from sympy import *
 from imports import *
 from parameters import *
-#year2sec=32536000
-#day2sec=year2sec/365.25
-#c=300000000
+
+# This class contains different helper functions
 
 class Object(object):
+    '''Creates a (empty) class'''
     pass
 
-
 def nominal_arm(OBJ,i,t):
+    '''Returns a functions of the normalized OBJ.orbit.L'''
     L_vec=[]
     t_vec=OBJ.orbit.t
     for j in range(0,len(t_vec)):
@@ -33,6 +33,7 @@ def nominal_arm(OBJ,i,t):
     return f(t)
 
 def LISA_obj(OBJ,type_select='cache'):
+    '''Creates the attribute LISA for OBJ which is a synthLISA object of a pre-setted type'''
     func_nominal_arm = lambda i,time: nominal_arm(OBJ,i,time)
     lisa=OBJ.orbit.lisa_obj
     lisa_orb=PyLISA(lisa,func_nominal_arm)
@@ -69,49 +70,50 @@ def i_slr(i,side='all'):
     elif side=='r':
         return [i_ret[0],i_ret[2]]
 
-def get_link(i,side):
-    if side=='l':
-        link=(i+2)%3
-    if side=='r':
-        link=(i+1)%3
+#def get_link(i,side):
+#    if side=='l':
+#        link=(i+2)%3
+#    if side=='r':
+#        link=(i+1)%3
+#
+#    if link==0:
+#        link=3
+#
+#    return link
 
-    if link==0:
-        link=3
-
-    return link
-
-def get_armvec_func(OBJ,i,side): #used
+def get_armvec_func(OBJ,i,side):
+    '''Obtains the functions of the distance vectors between two spacecrafts'''
     [i_OBJ,i_next] = i_slr(i,side=side)
     arm_vec = lambda time: np.array(OBJ.putp(i_next,time)) - np.array(OBJ.putp(i_OBJ,time))
 
     return arm_vec
 
+#def solve_num(func,guess,method='fsolve'):
+#    '''Select method for numerically solving an equation'''
+#    if method == 'fsolve':
+#        guess = np.array(guess)
+#        ret = scipy.optimize.fsolve(func,guess)
+#    elif method == 'excitingmixing':
+#        ret = scipy.optimize.excitingmixing(func,guess)
+#    elif method == 'linearmixing':
+#        ret = scipy.optimize.linearmixing(func,guess)
+#    elif method == 'newton_krylov':
+#        guess = [guess]
+#        ret = scipy.optimize.newton_krylov(func,guess)
+#    elif method == 'anderson':
+#        ret = scipy.optimize.anderson(func,guess)
+#    elif method == 'broyden1':
+#        ret = scipy.optimize.broyden1(func,guess)
+#
+#    return ret
 
-def solve_num(func,guess,method='fsolve'):
-    '''Select method for numerically solving an equation'''
-    if method == 'fsolve':
-        guess = np.array(guess)
-        ret = scipy.optimize.fsolve(func,guess)
-    elif method == 'excitingmixing':
-        ret = scipy.optimize.excitingmixing(func,guess)
-    elif method == 'linearmixing':
-        ret = scipy.optimize.linearmixing(func,guess)
-    elif method == 'newton_krylov':
-        guess = [guess]
-        ret = scipy.optimize.newton_krylov(func,guess)
-    elif method == 'anderson':
-        ret = scipy.optimize.anderson(func,guess)
-    elif method == 'broyden1':
-        ret = scipy.optimize.broyden1(func,guess)
-
-    return ret
-
-def func_pos(OBJ,i): #used
+def func_pos(OBJ,i):
     '''Generate functions of the positions'''
     L = lambda time: np.array(OBJ.putp(i,time))
     return L
 
-def solve_L_PAA(OBJ,t,pos_OBJ,pos_left,pos_right,select='sl',calc_method='Waluschka'): #used
+def solve_L_PAA(OBJ,t,pos_OBJ,pos_left,pos_right,select='sl',calc_method='Waluschka'):
+    '''Calculate the photon traveling time along one of the six laserlinks'''
     if OBJ.LISA==False:
         t_guess = np.linalg.norm(OBJ.orbit.p[0][0,:] - OBJ.orbit.p[1][0,:])/c
     else:
@@ -142,7 +144,7 @@ def solve_L_PAA(OBJ,t,pos_OBJ,pos_left,pos_right,select='sl',calc_method='Walusc
     return res
 
 
-def L_PAA(OBJ,pos_OBJ,pos_left,pos_right,calc_method='Walushka'): #used
+def L_PAA(OBJ,pos_OBJ,pos_left,pos_right,calc_method='Walushka'):
     '''Obtain time of flight of beam between spacecrafts'''
 
     selections = ['sl','sr','rl','rr']
@@ -154,38 +156,40 @@ def L_PAA(OBJ,pos_OBJ,pos_left,pos_right,calc_method='Walushka'): #used
 
     return [L_sl_func,L_sr_func,L_rl_func,L_rr_func]
 
-def n_r_lisa(i,time,LISA,m=[2,2,2],ret='all'):
-    '''Obtaining normal, r and COM vectors'''
-    [i_OBJ,i_left,i_right] = i_slr(i)
-
-    v_l = np.array(putp(i_left,time)) - np.array(putp(i_OBJ,time))
-    v_r = np.array(putp(i_right,time)) - np.array(putp(i_OBJ,time))
-    COM = (m[i_left-1]*np.array(putp(i_left,time)) + m[i_right-1]*np.array(putp(i_right,time)) + m[i_OBJ-1]*np.array(putp(i_OBJ,time)))/sum(m)
-
-    r = COM(time) - np.array(putp(i_OBJ,time))
-
-    n = np.cross(v_l(time)/np.linalg.norm(v_l(time)),v_r(time)/np.linalg.norm(v_r(time)))
-
-    if ret=='all':
-        return [n,r]
-    elif ret=='n':
-        return n
-    elif ret=='r':
-        return r
+#def n_r_lisa(i,time,LISA,m=[2,2,2],ret='all'):
+#    '''Obtaining normal, r and COM vectors'''
+#    [i_OBJ,i_left,i_right] = i_slr(i)
+#
+#    v_l = np.array(putp(i_left,time)) - np.array(putp(i_OBJ,time))
+#    v_r = np.array(putp(i_right,time)) - np.array(putp(i_OBJ,time))
+#    COM = (m[i_left-1]*np.array(putp(i_left,time)) + m[i_right-1]*np.array(putp(i_right,time)) + m[i_OBJ-1]*np.array(putp(i_OBJ,time)))/sum(m)
+#
+#    r = COM(time) - np.array(putp(i_OBJ,time))
+#
+#    n = np.cross(v_l(time)/np.linalg.norm(v_l(time)),v_r(time)/np.linalg.norm(v_r(time)))
+#
+#    if ret=='all':
+#        return [n,r]
+#    elif ret=='n':
+#        return n
+#    elif ret=='r':
+#        return r
 
 def r_calc(v_l,v_r,i,m=[2,2,2]):
-
+    '''Returns the vector r pointing from a spacecraft towards the COMof the constellation'''
     [i_OBJ,i_left,i_right] = i_slr(i)
     r =  (v_l*m[i_left-1]+v_r*m[i_right-1])/(m[i_left-1]+m[i_right-1])
 
     return r
 
 def func_over_sc(func_tot):
+    '''Makes from a list of funcions a function (wih two variables'''
     f = lambda i,t: func_tot[i-1](t)
 
     return f
 
-def send_func(OBJ,i,calc_method='Waluschka'): #used
+def send_func(OBJ,i,calc_method='Waluschka'):
+    '''Uses previous defined functions to return the vecors L, u, v, r and n'''
     [i_OBJ,i_left,i_right] = i_slr(i)
 
     pos_left = func_pos(OBJ,i_left)
@@ -216,9 +220,7 @@ def send_func(OBJ,i,calc_method='Waluschka'): #used
     if calc_method=='Abram':
         #Abram2018
         v_send_l = lambda t: pos_left(t+L_sl(t)) - pos_OBJ(t)
-        #v_send_l = lambda t: (L_sl(t)*c*v_send_l_calc(t))/(np.linalg.norm(v_send_l_calc(t)))
         v_send_r = lambda t: pos_right(t+L_sr(t)) - pos_OBJ(t)
-        #v_send_r = lambda t: (L_sr(t)*c*v_send_r_calc(t))/(np.linalg.norm(v_send_r_calc(t)))
         v_rec_l0 = lambda t: pos_OBJ(t) - pos_left(t - L_rl(t))
         v_rec_r0 = lambda t: pos_OBJ(t) - pos_right(t - L_rr(t))
         if OBJ.aberration==False:
@@ -243,8 +245,8 @@ def send_func(OBJ,i,calc_method='Waluschka'): #used
     return [[v_send_l,v_send_r,v_rec_l,v_rec_r],[L_sl,L_sr,L_rl,L_rr],[v_rec_l0,v_rec_r0]]
 
 
-
 def relativistic_aberrations(OBJ,i,t,tdel,side,relativistic=True): #used
+    '''Adjust vecor u by adding the angle caused by aberration'''
     [i_self,i_left,i_right] = i_slr(i)
     if OBJ.calc_method=='Abram':
         tdel0=0
@@ -290,74 +292,54 @@ def relativistic_aberrations(OBJ,i,t,tdel,side,relativistic=True): #used
    
     return u_new
 
+#PAA angles
 def calc_PAA_ltot(OBJ,i,t):
-    #LA = la()
-    #if OBJ.abb:
-    #    v_abb = [OBJ.v_in_l(i,t),OBJ.v_out_mag_l(i,t),OBJ.v_arm_mag_l(i,t)]
-    #else:
+    '''Returns the total PAA for the left telecope'''
     calc_ang=LA.angle(OBJ.v_l_func_tot(i,t),-OBJ.u_l_func_tot(i,t))
     return calc_ang
 
-def calc_PAA_rtot(OBJ,i,t):
-    #LA = la()
-    #if OBJ.abb:
-    #    v_abb = [OBJ.v_in_l(i,t),OBJ.v_out_mag_l(i,t),OBJ.v_arm_mag_l(i,t)]
-    #else:
-    calc_ang=LA.angle(OBJ.v_r_func_tot(i,t),-OBJ.u_r_func_tot(i,t))
-    return calc_ang
-
 def calc_PAA_lin(OBJ,i,t):
-    #LA = la()
-    #if OBJ.abb:
-    #    v_abb = [OBJ.v_in_l(i,t),OBJ.v_out_mag_l(i,t),OBJ.v_arm_mag_l(i,t)]
-    #else:
+     '''Returns the inplane PAA for the left telecope'''
     calc_ang=LA.ang_in_out(OBJ.v_l_func_tot(i,t),-OBJ.u_l_func_tot(i,t),OBJ.n_func(i,t),OBJ.r_func(i,t),give='in')
     return calc_ang
 
 def calc_PAA_lout(OBJ,i,t):
-    #LA = la()
-    #if OBJ.abb:
-    #    v_abb = [OBJ.v_in_l(i,t),OBJ.v_out_mag_l(i,t),OBJ.v_arm_mag_l(i,t)]
-    #else:
+     '''Returns the outplanr PAA for the left telecope'''
     calc_ang=LA.ang_in_out(OBJ.v_l_func_tot(i,t),-OBJ.u_l_func_tot(i,t),OBJ.n_func(i,t),OBJ.r_func(i,t),give='out')
     return calc_ang
 
+def calc_PAA_rtot(OBJ,i,t):
+     '''Returns the total PAA for the right telecope'''
+    calc_ang=LA.angle(OBJ.v_r_func_tot(i,t),-OBJ.u_r_func_tot(i,t))
+    return calc_ang
+
 def calc_PAA_rin(OBJ,i,t):
-    #LA = la()
-    #if OBJ.abb:
-    #    v_abb = [OBJ.v_in_r(i,t),OBJ.v_out_mag_r(i,t),OBJ.v_arm_mag_r(i,t)]
-    #else:
+     '''Returns the inplane PAA for the right telecope'''
     calc_ang=LA.ang_in_out(OBJ.v_r_func_tot(i,t),-OBJ.u_r_func_tot(i,t),OBJ.n_func(i,t),OBJ.r_func(i,t),give='in')
-    
     return calc_ang
 
 def calc_PAA_rout(OBJ,i,t):
-    #LA = la()
-    #if OBJ.abb:
-    #    v_abb = [OBJ.v_in_r(i,t),OBJ.v_out_mag_r(i,t),OBJ.v_arm_mag_r(i,t)]
-    #else:
+     '''Returns the outplane PAA for the right telecope'''
     calc_ang=LA.ang_in_out(OBJ.v_r_func_tot(i,t),-OBJ.u_r_func_tot(i,t),OBJ.n_func(i,t),OBJ.r_func(i,t),give='out')
     
     return calc_ang
 
 # Velocity
-def velocity_abs_calc(OBJ,i_select,t,hstep): #used
+def velocity_abs_calc(OBJ,i_select,t,hstep):
+    '''Returns the velocity vector of a spacecraft'''
     v = (np.array(OBJ.putp(i_select,np.float64(t+hstep)))-np.array(OBJ.putp(i_select,t)))/hstep
     return v
 
 
-def velocity_abs(OBJ,hstep=1.0): #used
+def velocity_abs(OBJ,hstep=1.0):
+    '''Returns the velocity vector in a function'''
     hstep = np.float128(hstep)
-
     v_ret = lambda i,time: velocity_abs_calc(OBJ,i,time,hstep)
-
     OBJ.vel.abs = v_ret
-
     return OBJ.vel.abs
     
-def velocity_calc(OBJ,i,time,hstep,side,rs): #used
-    #LA=la()
-
+def velocity_calc(OBJ,i,time,hstep,side,rs):
+    '''Calculates the velocity components'''
     [i_OBJ,i_next] = i_slr(i,side=side)
     v_pos_l = OBJ.v_l_stat_func_tot(i_OBJ,time)
     v_pos_r = OBJ.v_r_stat_func_tot(i_OBJ,time)
@@ -390,7 +372,8 @@ def velocity_calc(OBJ,i,time,hstep,side,rs): #used
 
     return ret[rs]
 
-def velocity_func(OBJ,hstep=1.0): #used
+def velocity_func(OBJ,hstep=1.0):
+    '''Returns functions of al velocity components'''
     hstep = np.float64(hstep)
     OBJ.vel = Object()
     OBJ.vel.l= lambda i,time: velocity_calc(OBJ,i,time,hstep,'l',0)
@@ -408,11 +391,11 @@ def velocity_func(OBJ,hstep=1.0): #used
     OBJ.vel.out_mag_r = lambda i,time: velocity_calc(OBJ,i,time,hstep,'r',5)
     OBJ.vel.arm_mag_r = lambda i,time: velocity_calc(OBJ,i,time,hstep,'r',6)
     
-
     return 0
 
 
 def high_precision(p):
+    '''Returns a high precision fit by the use of fourier components'''
     Y = p
     for i in range(0,len(p)):
         y_p=[]
@@ -421,17 +404,4 @@ def high_precision(p):
             y_inv = scipy.fftpack.ifft(y)
             y_new = scipy.fftpack.fft(y_inv)
             Y[i,:,j] = np.real(y_new)
-
     return Y
-
-
-
-
-
-
-
-
-
-
-
-

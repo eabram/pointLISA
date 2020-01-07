@@ -1,38 +1,27 @@
-import os 
+import os
 import imports
 import utils
 import numpy as np
 
 # Static settings
 stat = utils.Object()
-stat.filename = ''
-stat.read_max = 'all'
-stat.scale = 'Default'
-stat.method = 'fsolve'
-stat.new_folder = True
-stat.calc_method= 'Abram'
-stat.dir_savefig= os.getcwd() +'/' # The directory where the figures will be saved. If False, it will be in the current working directory
-stat.noise_check=False
+stat.scale = 'Default' #The scaling of the imported coordinates ('Default'=scale is set by the filename or equal to 1)
+stat.calc_method= 'Abram' # Use either the 'Abram' method or 'Waluschka' method
 stat.home='/home/ester/git/synthlisa/' # Home directory
-stat.directory_imp= False
-stat.num_back= 0
+stat.directory_imp= False # If not False adding a subfolder to sta.home 
 stat.dir_orbits= '/home/ester/git/synthlisa/orbits/' # Folder with orbit files
 stat.length_calc= 'all' # Length of number of imported datapoints of orbit files. 'all' is also possible
-stat.dir_extr= 'zzzAbram_no_abberation' # This will be added to the folder name of the figures
+#stat.dir_extr= 'zzzAbram_no_abberation' #NN # This will be added to the folder name of the figures
 stat.timeunit='Default' # The timeunit of the plots (['minutes'],['days']['years'])
 stat.LISA_opt='cache' # If a LISA object from syntheticLISA will be used for further calculations (not sure if it works properly if this False)
-stat.arm_influence= True # Set True to consider the travel time of the photons when calculating the nominal armlengths
-stat.tstep=False
 stat.delay=True #'Not ahead' or False
-stat.method='fsolve' # Method used to solve the equation for the photon traveling time
 stat.valorfunc='Function' #
 stat.select='Hallion' # Select which orbit files will be imported ('all' is all)
-stat.aberration=True
-stat.delay= True
-stat.relativistic= True
-stat.test_calc = False
+stat.aberration=True #Consider the aberration angle of the incoming light 
+stat.relativistic= True #Using relativistic calculations (False = classical)
+stat.test_calc = False #If True, STAT object would not be written to an object
 stat.hstep=100 #Time step for calculating the velocity (over hstep seconds average)
-stat.putp_mode='sampled' # Or 'LISA'
+stat.putp_mode='sampled' # 'samped' or 'LISA'
 
 ### AIM settings
 aimset = utils.Object()

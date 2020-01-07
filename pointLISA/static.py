@@ -1,4 +1,4 @@
-from imports import * 
+from imports import *
 from pointLISA import *
 import pointLISA
 import LA
@@ -6,9 +6,8 @@ import numpy as np
 import time
 from orbit import ORBIT 
 import utils
-#year2sec=32536000
-#day2sec=year2sec/365.25
-#c=300000000
+
+# in the STAT class an ORBIT object is used which containes the imported or constructed orbital coordinates of the spacecrafts. In STAT different vectors are being constructed and calculaded (r, n, v, u, L) as well as angles (PAA, breathing)
 
 class STAT():
     def __init__(self,input_param,para,**kwargs):
@@ -76,15 +75,14 @@ class STAT():
         self.stat = stat
 
     def putp(self,i,t,mode='sampled'):
+        '''Returns the coordinates of spacecraft i from a linear interpolation or by the putp function in synthLISA'''
         if mode=='sampled':
             return self.putp_sampled(i,t)
         elif mode=='LISA':
             return self.LISA.putp(i,t)
 
-
-
-
     def PAA_func(self):
+        '''Obtains functions of vectors and angles (PAA, brething, n, r, u, v, L'''
         print('')
         print('Importing Orbit')
         tic=time.clock()
@@ -98,7 +96,6 @@ class STAT():
         self.putp_sampled = pointLISA.methods.get_putp_sampled(self)
 
         # Calculations
-        #LA=utils.la()
         v_l_func_tot=[]
         v_r_func_tot=[]
         u_l_func_tot=[]
@@ -187,5 +184,3 @@ class STAT():
         self.ang_out_r = lambda i,t: LA.ang_out(self.v_r_func_tot(i,t),self.n_func(i,t))
 
         return self
-
-

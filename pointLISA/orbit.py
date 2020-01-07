@@ -28,9 +28,9 @@ class ORBIT():
         
     
     def import_file(self,read_max='all'):
+        '''Import the file with the spacecrafts coordinates and time stamps and creates functions and a synthLISA object or in creates functions from a inported synthLISA object'''
         directory=self.directory_imp
         file_orb=self.filename
-        num_back=self.num_back
          
         par=['t','p1x','p1y','p1z','p2x','p2y','p2z','p3x','p3y','p3z']
         p=[[],[],[]]
