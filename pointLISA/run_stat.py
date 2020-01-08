@@ -1,9 +1,7 @@
-from imports import * 
+from imports import *
 import os
-#import plotfile2
-#import save_fig
-#import writefile
 
+# This runner file imports a LISA data file, obtains a STAT object whith an ORBIT attribute 
 def do_run(input_file=None,input_param={},set_stat=utils.Object,**kwargs):
     para = parameters.__dict__
     setting = settings.stat.__dict__
@@ -53,10 +51,6 @@ def do_run(input_file=None,input_param={},set_stat=utils.Object,**kwargs):
 
     for i in filename_list:
         filename_name = i.split('/')[-1]
-        if i == filename_list[0]:
-            new_folder=False # Adjust if you (don't) want to override
-        else:
-            new_folder=False
         
         if select == 'all':
             if '/try/' in i:
