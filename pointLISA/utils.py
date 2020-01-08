@@ -299,27 +299,27 @@ def calc_PAA_ltot(OBJ,i,t):
     return calc_ang
 
 def calc_PAA_lin(OBJ,i,t):
-     '''Returns the inplane PAA for the left telecope'''
+    '''Returns the inplane PAA for the left telecope'''
     calc_ang=LA.ang_in_out(OBJ.v_l_func_tot(i,t),-OBJ.u_l_func_tot(i,t),OBJ.n_func(i,t),OBJ.r_func(i,t),give='in')
     return calc_ang
 
 def calc_PAA_lout(OBJ,i,t):
-     '''Returns the outplanr PAA for the left telecope'''
+    '''Returns the outplanr PAA for the left telecope'''
     calc_ang=LA.ang_in_out(OBJ.v_l_func_tot(i,t),-OBJ.u_l_func_tot(i,t),OBJ.n_func(i,t),OBJ.r_func(i,t),give='out')
     return calc_ang
 
 def calc_PAA_rtot(OBJ,i,t):
-     '''Returns the total PAA for the right telecope'''
+    '''Returns the total PAA for the right telecope'''
     calc_ang=LA.angle(OBJ.v_r_func_tot(i,t),-OBJ.u_r_func_tot(i,t))
     return calc_ang
 
 def calc_PAA_rin(OBJ,i,t):
-     '''Returns the inplane PAA for the right telecope'''
+    '''Returns the inplane PAA for the right telecope'''
     calc_ang=LA.ang_in_out(OBJ.v_r_func_tot(i,t),-OBJ.u_r_func_tot(i,t),OBJ.n_func(i,t),OBJ.r_func(i,t),give='in')
     return calc_ang
 
 def calc_PAA_rout(OBJ,i,t):
-     '''Returns the outplane PAA for the right telecope'''
+    '''Returns the outplane PAA for the right telecope'''
     calc_ang=LA.ang_in_out(OBJ.v_r_func_tot(i,t),-OBJ.u_r_func_tot(i,t),OBJ.n_func(i,t),OBJ.r_func(i,t),give='out')
     
     return calc_ang
