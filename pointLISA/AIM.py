@@ -11,6 +11,7 @@ import pointLISA
 class AIM():
     def __init__(self,data=False,setting=utils.Object(),filename=False,**kwargs):        
         from pointLISA import *
+        # Get settings and parameters
         for key, value in kwargs.items():
             setattr(self,key,value)
 
@@ -49,6 +50,7 @@ class AIM():
                 
 
     def get_offset_inplane(self,option,**kwargs):
+        '''This function obtains the offset between the inplane telescope alignment and the transmitting beam (offset)'''
         print('Getting initial offset angles')
         if self.aimset.PAAM_deg==1:
             offset = {'l': {1: 0.0, 2: 0.0, 3: 0.0},
@@ -149,6 +151,7 @@ class AIM():
 
 
     def tele_control_ang_fc(self,option=None,value=False):
+        '''Obtains the telescope pointing angles for a continuous actuation (full_control)'''
         # Option 'wavefront' means poiting with the purpose of getting a zero/small tilt of the receiving wavefront
         # 'center' means pointing it to te center of the receiving telescope aperture
         if option==None:
@@ -169,6 +172,7 @@ class AIM():
 
 
     def tele_aim(self,method=False,lim=1e-10,tele_ang_extra=True,option=False):
+        '''Obtains the telescope pointing angles (for the selected telescope pointing method)'''
         if method==False:
             method=self.aimset.tele_control
         else:
@@ -195,18 +199,11 @@ class AIM():
 
         if self.data.input_file==None:
             if method=='no_control':
+                # For no_control (no pointing)
                 print('tele_ang_extra: '+str(tele_ang_extra))
                 if tele_ang_extra==False:
                     offset_l = {'1':0,'2':0,'3':0}
                     offset_r = {'1':0,'2':0,'3':0}
-                elif tele_ang_extra==True:
-                    try:
-                        offset_l = self.wfe.mean_angin_l
-                        offset_r = self.wfe.mean_angin_r
-                    except:
-                        self.wfe.do_mean_angin()
-                        offset_l = self.wfe.mean_angin_l
-                        offset_r = self.wfe.mean_angin_r
                 else:
                     [offset_l,offset_r] = tele_ang_extra
 
@@ -214,11 +211,13 @@ class AIM():
                 self.tele_r_ang_func = lambda i,t: np.radians(30)+offset_r[str(i)]
 
             elif method=='full_control':
+                # For ful_control (continuous poiting)
                 [self.tele_ang_l_fc,self.tele_ang_r_fc] = self.tele_control_ang_fc(option=option,value=value)
                 self.tele_l_ang_func = self.tele_ang_l_fc
                 self.tele_r_ang_func = self.tele_ang_r_fc
 
             elif 'SS' in method:
+                # For Step-and_Stare
                 tele_l_tot=[0,0,0]
                 tele_r_tot=[0,0,0]
                 t_l_adjust=[0,0,0]
@@ -226,7 +225,7 @@ class AIM():
                 
                 if option=='wavefront':
                     ret = 'angx_wf_send'
-                    lim=self.aimset.FOV #Klopt niet want alleen in inplane i.p.v. totaal, kan ook met I
+                    lim=self.aimset.FOV #Klopt niet want alleen in inplane i.p.v. totaal, kan ook met I ...adjust
                 elif option=='center':
                     ret = 'xoff'
                     lim=self.aimset.width/2.0
@@ -241,8 +240,6 @@ class AIM():
                     t_l_adjust[i_left-1] = t_adjust
                     t_r_adjust[i_right-1] = t_adjust
 
-
-
                 self.t_l_adjust = lambda i,t: t_l_adjust[i-1]
                 self.t_r_adjust = lambda i,t: t_r_adjust[i-1]
                 self.tele_l_ang_SS = lambda i,t: tele_l_tot[i-1](t)
@@ -256,6 +253,7 @@ class AIM():
                 self.tele_adjust_samp=[tele_l,tele_r]
 
             elif type(method)==list and method[0]=='Imported pointing':
+                # Import (previously obtained) angles
                 print(method[0])
                 self.tele_l_ang = lambda i,t: methods.get_tele_SS(False,False,i,t,'l',x=method[1]['SC'+str(i)+', left']['x'],y=method[1]['SC'+str(i)+', left']['y'])
                 self.tele_r_ang = lambda i,t: methods.get_tele_SS(False,False,i,t,'r',x=method[1]['SC'+str(i)+', right']['x'],y=method[1]['SC'+str(i)+', right']['y'])
@@ -283,8 +281,6 @@ class AIM():
             ret = pointLISA.read_write.read_output(filenames=self.data.input_file)
             tele_l_ang=[]
             tele_r_ang=[]
-            #beam_l_ang=[]
-            #beam_r_ang=[]
             if method=='SS':
                 self.tele_l_ang = lambda i,t: methods.get_tele_SS(False,False,i,t,'l',x=ret['SC'+str(i)+', left']['x'],y=ret['SC'+str(i)+', left']['y'])
                 self.tele_r_ang = lambda i,t: methods.get_tele_SS(False,False,i,t,'r',x=ret['SC'+str(i)+', right']['x'],y=ret['SC'+str(i)+', right']['y'])
@@ -361,27 +357,16 @@ class AIM():
         return 0
 
     def PAAM_control_ang_fc(self,option='center'):
+        '''Obtains the PAAM pointing angles for a continuous actuation (full_control)'''
         print('PAAM pointing strategy: '+option)
 
         if option=='center':
-            #ang_l = lambda i,t: output.PAAM_center_calc(self.aim0,i,t,tele_l=self.tele_l_ang(i,t),tele_r=self.tele_r_ang(utils.i_slr(i)[1],t),lim=self.aimset.limits.yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value)[0][0]
             ang_l = lambda i,t: output.PAAM_center_calc(self,i,t,tele_l=self.tele_l_ang(i,t),tele_r=self.tele_r_ang(utils.i_slr(i)[1],t),lim=self.aimset.limit_yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.aimset.optimize_PAAM_margin)[0][0]
-            #ang_r = lambda i,t: output.PAAM_center_calc(self.aim0,utils.i_slr(i)[2],t,tele_l=self.tele_l_ang(utils.i_slr(i)[2],t),tele_r=self.tele_r_ang(i,t),lim=self.aimset.limits.yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value)[0][1]
             ang_r = lambda i,t: output.PAAM_center_calc(self,utils.i_slr(i)[2],t,tele_l=self.tele_l_ang(utils.i_slr(i)[2],t),tele_r=self.tele_r_ang(i,t),lim=self.aimset.limit_yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.aimset.optimize_PAAM_margin)[0][1]
-            
-            #ang_l = lambda i,t: output.PAAM_center_calc(self.aim0,i,t,lim=self.aimset.limits.yoff)[0][0]
-            #ang_r = lambda i,t: output.PAAM_center_calc(self.aim0,utils.i_slr(i)[2],t,lim=self.aimset.limits.yoff)[0][1]
-
 
         elif option=='wavefront':
             ang_l = lambda i,t: output.PAAM_wavefront_calc(self,i,t,'l',lim=self.aimset.limit_angy)
             ang_r = lambda i,t: output.PAAM_wavefront_calc(self,i,t,'r',lim=self.aimset.limit_angy)
-
-
-            #ang_l = lambda i,t: output.PAAM_wavefront_calc(self,i,t,'l',lim=self.aimset.limit_angy)
-            #ang_r = lambda i,t: output.PAAM_wavefront_calc(self,i,t,'r',lim=self.aimset.limit_angy)
-            #ang_l = lambda i,t: methods.rotate_PAA_wavefront(self.data,self.aim_old,i,t,'l','angy')
-            #ang_r = lambda i,t: methods.rotate_PAA_wavefront(self.data,self.aim_old,i,t,'r','angy')
 
         self.PAAM_control = 'full_control'
         self.option_PAAM = option
@@ -389,6 +374,7 @@ class AIM():
 
 
     def PAAM_aim(self,method=False,dt=3600*24,jitter=False,tau=1,mode='overdamped',PAAM_ang_extra=False,option=False):
+        '''Obtains the PAAM pointing angles (for the selected telescope pointing method)'''
         if method==False:
             method = self.aimset.PAAM_control
         else:
@@ -457,11 +443,9 @@ class AIM():
                 if self.sampled==True:
                     sampled = self.sample()
                     self.aim_sampled = sampled
-                    #self.aim_sampled.get_coordinate_systems(iteration_val=False,option='self')
                 else:
                     self.aim_sampled=False
 
-            #self.get_coordinate_systems(iteration_val=False,option='self')
             if self.inp!=False:
                 self.aim_sampled = self
 
@@ -484,9 +468,8 @@ class AIM():
 
         return self
 
-
-
-    def sample(self): 
+    def sample(self):
+        '''Returns a new AIM object with the pointing angles sampled'''
         self_new = AIM(data=None)
         not_copy = ['tele_l_ang','tele_r_ang','beam_l_ang','beam_r_ang']
         for k,value in self.__dict__.items():
@@ -528,7 +511,7 @@ class AIM():
         return self_new
 
     def get_tele_coor(self,i,t,tele_l_ang,tele_r_ang):
-        # Calculating new pointing vectors and coordinate system
+        ''' Calculating new pointing vectors and telescope coordinate system '''
         tele_l_coor = methods.coor_tele(self.data,i,t,tele_l_ang(i,t))
         tele_r_coor = methods.coor_tele(self.data,i,t,tele_r_ang(i,t))
         tele_l_vec = LA.unit(tele_l_coor[0])*self.data.L_tele
@@ -538,12 +521,11 @@ class AIM():
 
         return [[tele_l_coor,tele_r_coor],[tele_l_vec,tele_r_vec],[tele_l_start,tele_r_start]]
 
-
     def get_beam_coor(self,i,t,tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset):
+        ''' Calculating new pointing vectors and beam coordinate system '''
         if offset == False:
             offset = self.offset_tele
 
-        # Calculating new pointing vectors and coordinate system
         offset_l = methods.get_offset(self,i,t,'l')
         offset_r = methods.get_offset(self,i,t,'r')
 
@@ -559,6 +541,7 @@ class AIM():
         return [[beam_l_coor,beam_r_coor],[beam_l_direction,beam_r_direction],[beam_l_start,beam_r_start]]
 
     def get_coordinate_systems(self,iteration_val=False,option='self'):
+        '''Make functions of the coordinate vectors and systems'''
         if iteration_val==False:
             tele_l_ang = self.tele_l_ang
             tele_r_ang = self.tele_r_ang
@@ -588,11 +571,10 @@ class AIM():
         self.beam_l_ang_calc = beam_l_ang
         self.beam_r_ang_calc = beam_r_ang
 
-        return 0 #[tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,tele_l_coor,tele_r_coor,tele_l_vec,tele_r_vec,beam_l_coor,beam_r_coor,beam_l_direction,beam_r_direction,beam_l_start,beam_r_start]
-
-
+        return 0 
    
     def twoPAAM_calc(self,i,t,side):
+        '''Calculates the two PAAM pointing angles for a dual axis PAAM'''
         max_count=5
         scale=1
         value = self.aimset.value_center
@@ -602,9 +584,7 @@ class AIM():
             if self.tele_control=='full_control':
                 Dt = self.data.L_sl_func_tot(i_self,t)
                 ang_in_l = methods.tele_point_calc(self,i,t,'l','center',max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0,offset_l0=0.0,offset_r0=0.0)
-                #ang_in_l = methods.tele_point_calc(self,i,t,'l','center',max_count=max_count,scale=scale,value=value)
                 ang_in_r = methods.tele_point_calc(self,utils.i_slr(i)[1],t+Dt,'r','center',max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0,offset_l0=0.0,offset_r0=0.0)
-                #ang_in_r = methods.tele_point_calc(self,utils.i_slr(i)[1],t,'r','center',max_count=max_count,scale=scale,value=value)
             elif self.tele_control=='no_control':
                 ang_in_l = np.radians(-30.0)
                 ang_in_r = np.radians(30.0)
@@ -632,18 +612,8 @@ class AIM():
 
             return [ang_in_r,ang_out]
     
-#    def twoPAAM_pointing_init(self):
-#        if self.offset_init==False:
-#            delattr(self,'offset')
-#            self.get_offset_inplane('0')
-#            self.offset_init=True
-
     def twoPAAM_pointing(self,i,t,side,out,mode,short=False):
-        #if self.offset_init==False:
-        #    delattr(self,'offset')
-        #    self.get_offset_inplane('0')
-        #    self.offset_init=True
-
+        '''Obtains the dual axis PAAM poiting angles (which uses the twoPAAM_calc helper function'''
         [i_self,i_left,i_right] = utils.i_slr(i)
         if mode=='rec':
             if side=='l':
@@ -702,8 +672,7 @@ class AIM():
         return [ang_in_end,ang_out_end,ang_in_start,ang_out_start,t,Dt,i_rec,i_send,offset]
 
     def twoPAAM_angles(self,sampled=None,**kwargs):
-        #out=output.OUTPUT(aim=self)
-        
+        '''Runner function for obtaineing the dual axis PAAM poiting angles and accompanying objects'''
         param = ['tele_control','PAAMin_control','PAAMout_control']
         for p in param:
             try:
@@ -757,32 +726,9 @@ class AIM():
                     
                     offset_l_calc.append(self.offset(i,t,'l'))
                     offset_r_calc.append(self.offset(i,t,'r'))
-                    
-#                    #C = self.twoPAAM_pointing(i,t,'l',out,'send')
-#                    #D = self.twoPAAM_pointing(A[7],t,'r',out,'send')
-#                    #
-#                    #tele_r_calc.append(C[0])
-#                    #beam_r_calc.append(C[1])
-#                    #t_r_calc.append(C[4])
-#                    #tele_l_calc.append(C[2])
-#                    #beam_l_calc.append(C[3])
-#                    #t_l_calc.append(C[4]+C[5])
-#
-#                    #tele_l_calc.append(D[0])
-#                    #beam_l_calc.append(D[1])
-#                    #t_l_calc.append(D[4])
-#                    #tele_r_calc.append(D[2])
-#                    #beam_r_calc.append(D[3])
-#                    #t_r_calc.append(D[4]+D[5])
-#
-#                    #offset_l_calc.append(D[-1])
-#                    #offset_l_t_calc.append(D[4]+D[5])
-#
-#                    #offset_r_calc.append(C[-1])
-#                    #offset_r_t_calc.append(C[4]+C[5])
-#                     
+                     
                     print(t/t_sample[-1])
-#
+                
                 tele_func_dict['l'][i] = methods.interpolate(np.array(t_l_calc),np.array(tele_l_calc))
                 beam_func_dict['l'][i] = methods.interpolate(np.array(t_l_calc),np.array(beam_l_calc))
                 tele_func_dict['r'][i] = methods.interpolate(np.array(t_r_calc),np.array(tele_r_calc))
@@ -790,10 +736,7 @@ class AIM():
 #
                 offset['l'][i] = methods.interpolate(np.array(t_l_calc),np.array(offset_l_calc))
                 offset['r'][i] = methods.interpolate(np.array(t_r_calc),np.array(offset_r_calc))
-#                t_func_dict['l'][A[6]]=t_l_calc
-#                t_func_dict['r'][A[7]]=t_r_calc
-#
-#
+            
             tele_l_ang = lambda i,t: tele_func_dict['l'][i](t)
             beam_l_ang = lambda i,t: beam_func_dict['l'][i](t)
             tele_r_ang = lambda i,t: tele_func_dict['r'][i](t)
@@ -810,86 +753,27 @@ class AIM():
             self.tele_l_ang = tele_l_ang
             self.tele_r_ang = tele_r_ang
             self.offset = lambda i,t,s: offset[s][i](t)
-#           
-#        else:
-#            if self.tele_control=='no_control' and self.PAAM_control=='no_control':
-#                tele_l_ang = lambda i,t: np.radians(-30.0)
-#                tele_r_ang = lambda i,t: np.radians(30.0)
-#                beam_l_ang = lambda i,t: 0.0
-#                beam_r_ang = lambda i,t: 0.0
-#                offset = lambda i,t,side: 0.0
-#            else:
-#                tele_l_ang = lambda i,t: self.twoPAAM_get_tele(i,t,'l',out)
-#                tele_r_ang = lambda i,t: self.twoPAAM_get_tele(i,t,'r',out)
-#                beam_l_ang = lambda i,t: self.twoPAAM_get_beam(i,t,'l',out,short=True)
-#                beam_r_ang = lambda i,t: self.twoPAAM_get_beam(i,t,'r',out,short=True)
-#                offset = lambda i,t, side: self.twoPAAM_get_offset(i,t,side,out)
-#            del_list=['tele_l_ang','tele_r_ang','beam_l_ang','beam_r_ang']
-#            for l in del_list:
-#                try:
-#                    delattr(self,l)
-#                except AttributeError:
-#                    pass
-#
-#            self.beam_l_ang = beam_l_ang
-#            self.beam_r_ang = beam_r_ang
-#            self.tele_l_ang = tele_l_ang
-#            self.tele_r_ang = tele_r_ang
-#            #self.tele_l_ang_old = tele_l_ang
-#            #self.tele_r_ang_old = tele_r_ang
-#
-#
-#            
-#            #tele_l_ang = lambda i,t: self.twoPAAM_pointing(i,t,'l',out,'rec')[0]
-#            #beam_l_ang = lambda i,t: self.twoPAAM_pointing(i,t,'l',out,'rec')[1]
-#            #tele_r_ang = lambda i,t: self.twoPAAM_pointing(i,t,'r',out,'rec')[0]
-#            #beam_r_ang = lambda i,t: self.twoPAAM_pointing(i,t,'r',out,'rec')[1]
-#            #offset={}
-#            #offset['l']={}
-#            #offset['r']={}
-#            #for i in range(1,4):
-#            #    offset['l'][i] = lambda t: self.twoPAAM_pointing(i,t,'l',out,'rec')[-1]
-#            #    offset['r'][i] = lambda t: self.twoPAAM_pointing(i,t,'r',out,'rec')[-1]
-#
-# 
-#        #del_list=['tele_l_ang','tele_r_ang','beam_l_ang','beam_r_ang']
-#        #for l in del_list:
-#        #    try:
-#        #        delattr(self,l)
-#        #    except AttributeError:
-#        #        pass
-# 
-#        #self.beam_l_ang = beam_l_ang
-#        #self.beam_r_ang = beam_r_ang
-#        #self.tele_l_ang = lambda i,t: tele_l_ang(i,t) - offset['l'][i](t)
-#        #self.tele_r_ang = lambda i,t: tele_r_ang(i,t) - offset['r'][i](t)
-#        #self.tele_l_ang_old = tele_l_ang
-#        #self.tele_r_ang_old = tele_r_ang
-#
-#        delattr(self,'offset')
-#        print('Removed old offset')
-#        self.offset = offset
-#        self.offset_init=True
-
 
         return 0
 
 
     def twoPAAM_get_tele(self,i,t,side,out,short=False):
+        '''Getfunction to obtain the telescope pointing angle for a dual axis PAAM pointing'''
         A = self.twoPAAM_pointing(i,t,side,out,'rec',short=short)
         return A[0] - A[-1]
     
     def twoPAAM_get_beam(self,i,t,side,out,short=False):
+        '''Getfunction to obtain the beam direction for a dual axis PAAM pointing'''
         A = self.twoPAAM_pointing(i,t,side,out,'rec',short=short)
         return A[1]
 
     def twoPAAM_get_offset(self,i,t,side,out,short=False):
+        '''Getfunction to obtain the telescopei offset angle for a dual axis PAAM pointing'''
         A = self.twoPAAM_pointing(i,t,side,out,'rec',short=short)
         return A[-1]
 
-
-
     def twoPAAM_tele_aim(self,**kwargs):
+        '''Obtianing the telescope pointing angle when using a dual axis PAAM'''
         try:
             tele_control = kwargs['tele_control']
             delattr(self,'tele_control')
@@ -942,8 +826,6 @@ class AIM():
             method='solve'
             lim=self.aimset.FOV
             print('lim= ',lim)
-            #ret='angx_arm_tele_rec'
-            #ret='ang_arm_tele_rec'
             dt=24*3600
             scale = self.aimset.tele_SS_scale
             SS=[]
@@ -984,6 +866,7 @@ class AIM():
         return 0
         
     def twoPAAM_PAAMout_aim(self,**kwargs):
+        '''Runner function to get the outpane PAAM poiting angle of the dual axis PAAM'''
         try:
             PAAMiout_control = kwargs['PAAMout_control']
             delattr(self,'PAAMout_control')
@@ -1043,6 +926,8 @@ class AIM():
         return 0
 
     def twoPAAM_PAAMin_aim(self,**kwargs):
+        '''Runner function to get the inplane PAAM poiting angle of th
+e dual axis PAAM'''
         try:
             PAAMin_control = kwargs['PAAMin_control']
             delattr(self,'PAAMin_control')
