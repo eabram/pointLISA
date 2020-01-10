@@ -1,6 +1,7 @@
 from imports import * 
 import copy
 
+### This runner file uses a STAT object (data), calculates the pointig angles and other properties and writes it to a dafile
 def get_pointing(data,import_file=None,filename=False,set_din=utils.Object(),aim0=False,aim_old=False,print_on=False,**kwargs):
     from pointLISA import *
     try:
@@ -64,6 +65,3 @@ def get_pointing(data,import_file=None,filename=False,set_din=utils.Object(),aim
         out = aim.PAAM_aim(method=aim.aimset.PAAM_control,PAAM_ang_extra=aim.aimset.PAAM_ang_extra,option=aim.aimset.option_PAAM)
 
     return aim
-
-
-

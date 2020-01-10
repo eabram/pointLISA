@@ -4,6 +4,7 @@ import numpy as np
 import datetime
 import os
 
+### This file will read and/or write output values (from and to datafiles) and also contains some helper functions
 def string_length(l,string):
     while len(string)<l:
         string = '0'+string
@@ -33,6 +34,7 @@ def get_folder(direct=False,opt_date=True):
     return direct
 
 def write(inp,aim,title='',direct='',extr='',opt_date=True,opt_time=True,time='',extra_title='',include='all',exclude=[],offset=False,overwrite=True):
+    '''Writes the output to a datafile'''
     
     date = get_date(option='date')
     if time=='':
@@ -154,6 +156,7 @@ def make_matrix(A):
     return out
 
 def read_options(filename,print_on=False,del_auto=True):
+    '''Reads the options (used settings) from the datafile filenme'''
     aimset=utils.Object()
     read_on=False
     readfile = open(filename,'r')
@@ -199,6 +202,7 @@ def read_options(filename,print_on=False,del_auto=True):
     return aimset_ret
 
 def read_output(filenames=False,direct=False):
+    '''Reads the properties (output) of filename'''
     ret=utils.Object()
     if type(direct)==str:
         direct=[direct]
@@ -252,7 +256,6 @@ def read_output(filenames=False,direct=False):
                 except AttributeError:
                     setattr(getattr(getattr(ret,R['Side']),'i'+R['SC']),R['value'],R[R['value']])
                 
-                #setattr(getattr(getattr(Y,R['Side']),'i'+R['SC']),[R['value']],R[R['value']])
                 read_on=False
             elif read_on:
                 if ':: ' in line:
