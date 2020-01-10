@@ -15,7 +15,6 @@ def import_data_calc(direct_list):
     settings=[]
     for f in f_list:
         ret_new, options_new, settings_new = pointLISA.read_write.read_output(f,ret=ret)
-        #ret.__dict__ = ret_new.__dict__.copy()
         ret = ret_new
         del ret_new
         options.append(options_new)

@@ -190,7 +190,10 @@ def read_options(filename,print_on=False,del_auto=True):
     if del_auto==True:
         exceptions = ['dir_orbits','dir_savefig','filename','home','directory_imp','test_calc']
         for ex in exceptions:
-            setattr(aimset_ex, ex, getattr(settings.stat,ex))
+            try:
+                setattr(aimset_ex, ex, getattr(settings.stat,ex))
+            except AttributeError:
+                pass
 
     aimset_ret = utils.Object()
     for k in aimset_ex.__dict__.keys():

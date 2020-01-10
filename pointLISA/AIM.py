@@ -299,36 +299,55 @@ class AIM():
                 
                 self.t_adjust = t_adjust
                 self.tele_ang_adjust = tele_ang_adjust
-            
+
             else:
-                if self.PAAM_deg==2:
-                    try:
-                        delattr(self,'offset')
-                    except AttributeError:
-                        pass
-                    offset={}
-                    offset['l']={}
-                    offset['r']={}
+                #if self.PAAM_deg==2:
+                #    try:
+                #        delattr(self,'offset')
+                #    except AttributeError:
+                #        pass
+                #    offset={}
+                #    offset['l']={}
+                #    offset['r']={}
 
                 for i in range(1,4):
                     t_l =  getattr(getattr(ret[0],'l'),'i'+str(i)).tele_ang
                     t_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).tele_ang
                     tele_l_ang.append(methods.interpolate(t_l[0][0],t_l[0][1]))
                     tele_r_ang.append(methods.interpolate(t_r[0][0],t_r[0][1]))
-                    if self.PAAM_deg==2:
-                        offset_l =  getattr(getattr(ret[0],'l'),'i'+str(i)).offset
-                        offset_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).offset
-                        offset['l'][i] = methods.interpolate(offset_l[0][0],offset_l[0][1])
-                        offset['r'][i] = methods.interpolate(offset_r[0][0],offset_r[0][1])
-                    else:
-                        self.get_offset_inplane(self.aimset.offset_tele)
+                    #if self.PAAM_deg==2:
+                    #    offset_l =  getattr(getattr(ret[0],'l'),'i'+str(i)).offset
+                    #    offset_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).offset
+                    #    offset['l'][i] = methods.interpolate(offset_l[0][0],offset_l[0][1])
+                    #    offset['r'][i] = methods.interpolate(offset_r[0][0],offset_r[0][1])
+                    #else:
+                    #    self.get_offset_inplane(self.aimset.offset_tele)
 
                 self.tele_l_ang = lambda i,t: tele_l_ang[i-1](t)
                 self.tele_r_ang = lambda i,t: tele_r_ang[i-1](t)
-                if self.PAAM_deg==2:
-                    self.offset={}
-                    self.offset = offset
-        
+                #if self.PAAM_deg==2:
+                #    self.offset={}
+                #    self.offset = offset
+            
+            if self.PAAM_deg==2:
+                try:
+                    delattr(self,'offset')
+                except AttributeError:
+                    pass
+                offset={}
+                offset['l']={}
+                offset['r']={}
+                for i in range(1,4):
+                    offset_l =  getattr(getattr(ret[0],'l'),'i'+str(i)).offset
+                    offset_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).offset
+                    offset['l'][i] = methods.interpolate(offset_l[0][0],offset_l[0][1])
+                    offset['r'][i] = methods.interpolate(offset_r[0][0],offset_r[0][1])
+                self.offset={}
+                self.offset = offset
+
+            else:
+                self.get_offset_inplane(self.aimset.offset_tele)
+
         try:
             self.tele_l_ang
         except AttributeError:
