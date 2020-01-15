@@ -14,7 +14,7 @@ source_folder = folder_0+folder_sel
 folder=folder_0+folder_sel+'/data/'
 
 # Select which properties will be ontained
-rets=['tele_ang','PAAM_ang','adjust','offset']
+rets=['adjust']
 #rets=[['xoff','yoff'],['I','I0','Ival','FOVlim'],['alpha','angx_wf_send','angy_wf_send','angx_wf_rec','angy_wf_rec']]
 
 # Select for which arms and what kind of value (mode)

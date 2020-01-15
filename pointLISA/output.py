@@ -1432,8 +1432,14 @@ class OUTPUT():
                                 A = [np.array(getattr(self.aim,'t_adjust')[1][int(i_sel)-1])]
                                 A.append(np.array([self.aim.tele_r_ang(i_sel,t) for t in A[0]]))
                         elif self.aim.PAAM_deg==2:
-                            A = [np.array(getattr(self.aim,'t_adjust')[s][int(i_sel)])]
-                            A.append(np.array(getattr(self.aim,'tele_adjust')[s][int(i_sel)]))
+                            try:
+                                A = [np.array(getattr(self.aim,'t_adjust')[s][int(i_sel)])]
+                            except KeyError:
+                                A = [np.array(getattr(self.aim,'t_adjust')[str(i_sel)][s])]
+                            try:
+                                A.append(np.array(getattr(self.aim,'tele_adjust')[s][int(i_sel)]))
+                            except AttributeError:
+                                A.append(np.array(getattr(self.aim,'tele_ang_adjust')[str(i_sel)][s]))
                             
                         B = [A,'value='+k+', mode='+str(mode)]
                         setattr(getattr(getattr(sampled,s),'i'+str(i_sel)),k,B)
