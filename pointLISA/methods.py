@@ -13,30 +13,34 @@ import scipy.optimize
 
 def get_putp_sampled(data,method='interp1d'):
     '''Returns an interpolation of the spacecraft positions'''
-    t_all = data.orbit.t
-    pos = []
-    for i in range(1,4):
-        pos_array=[]
-        pos_x=[]
-        pos_y=[]
-        pos_z=[]
-        for t in t_all:
-            value = data.LISA.putp(i,t)
-            if value[0]==0.0:
-                pos_x.append(np.nan)
-                pos_y.append(np.nan)
-                pos_z.append(np.nan)
-            else:
-                pos_x.append(value[0])
-                pos_y.append(value[1])
-                pos_z.append(value[2])
-        
-        pos_x_interp  = interpolate(t_all,pos_x,method=method)
-        pos_y_interp  = interpolate(t_all,pos_y,method=method)
-        pos_z_interp  = interpolate(t_all,pos_z,method=method)
-        pos.append([pos_x_interp,pos_y_interp,pos_z_interp])
-        
-    ret = lambda i,t: np.array([pos[i-1][0](t),pos[i-1][1](t),pos[i-1][2](t)])
+    if 'function' in str(type(data.LISA_opt)):
+        print('Not sampled because input function')
+        ret = lambda i,t: data.putp
+    else:
+        t_all = data.orbit.t
+        pos = []
+        for i in range(1,4):
+            pos_array=[]
+            pos_x=[]
+            pos_y=[]
+            pos_z=[]
+            for t in t_all:
+                value = data.LISA.putp(i,t)
+                if value[0]==0.0:
+                    pos_x.append(np.nan)
+                    pos_y.append(np.nan)
+                    pos_z.append(np.nan)
+                else:
+                    pos_x.append(value[0])
+                    pos_y.append(value[1])
+                    pos_z.append(value[2])
+            
+            pos_x_interp  = interpolate(t_all,pos_x,method=method)
+            pos_y_interp  = interpolate(t_all,pos_y,method=method)
+            pos_z_interp  = interpolate(t_all,pos_z,method=method)
+            pos.append([pos_x_interp,pos_y_interp,pos_z_interp])
+            
+        ret = lambda i,t: np.array([pos[i-1][0](t),pos[i-1][1](t),pos[i-1][2](t)])
 
     return ret
 

@@ -1529,9 +1529,9 @@ def get_coor_beam_in(aim,i,t,tdel,side,tele_angle_send=False,beam_angle_send=Fal
         ret = u_not_ab
     elif aim.data.aberration==True:
         if side=='l':
-            u_ab = np.linalg.norm(u_not_ab)*(LA.unit(LA.unit(u_not_ab)*aim.data.c+(aim.data.vel.abs(i_self,t-tdel0) - aim.data.vel.abs(i_left,t-tdel))))
+            u_ab = np.linalg.norm(u_not_ab)*(LA.unit(LA.unit(u_not_ab)*aim.data.c-(aim.data.vel.abs(i_self,t-tdel0) - aim.data.vel.abs(i_left,t-tdel))))
         elif side=='r':
-            u_ab = np.linalg.norm(u_not_ab)*(LA.unit(LA.unit(u_not_ab)*aim.data.c+(aim.data.vel.abs(i_self,t-tdel0) - aim.data.vel.abs(i_right,t-tdel))))
+            u_ab = np.linalg.norm(u_not_ab)*(LA.unit(LA.unit(u_not_ab)*aim.data.c-(aim.data.vel.abs(i_self,t-tdel0) - aim.data.vel.abs(i_right,t-tdel))))
         if aim.data.relativistic==False:
             ret=u_ab
         else:
@@ -1554,7 +1554,7 @@ def get_coor_beam_in(aim,i,t,tdel,side,tele_angle_send=False,beam_angle_send=Fal
             den = 1.0 - ((v/(c**2))*c_velo[2]) #1.0 - ((v/(c**2))*coor_velo[2]) ...adjusted
             num = ((1.0-((v**2)/(c**2)))**0.5)
 
-            ux_prime = (c_velo[2] - v)/den
+            ux_prime = (c_velo[2] - v)/den # Check of dit met plus is
             ur_prime = (num*c_velo[0])/den
             un_prime = (num*c_velo[1])/den
             c_prime = ux_prime*x_prime + un_prime*n_prime +ur_prime*r_prime

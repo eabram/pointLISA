@@ -34,21 +34,27 @@ def nominal_arm(OBJ,i,t):
 
 def LISA_obj(OBJ,type_select='cache'):
     '''Creates the attribute LISA for OBJ which is a synthLISA object of a pre-setted type'''
-    func_nominal_arm = lambda i,time: nominal_arm(OBJ,i,time)
-    lisa=OBJ.orbit.lisa_obj
-    lisa_orb=PyLISA(lisa,func_nominal_arm)
-    lisa_cache=CacheLISA(lisa_orb)
+    if 'function' in str(type(type_select)):
+        lisa = Object()
+        lisa.putp = type_select
+        OBJ.LISA = lisa
 
-    OBJ.t_all = OBJ.orbit.t
-    if type(type_select)==str:
-        if type_select=='cache':
-            OBJ.LISA = lisa_cache
-        elif type_select=='Py':
-            OBJ.LISA = lisa_orb
-        elif type_select=='other':
-            OBJ.LISA = lisa
     else:
-        OBJ.LISA=type_select
+        func_nominal_arm = lambda i,time: nominal_arm(OBJ,i,time)
+        lisa=OBJ.orbit.lisa_obj
+        lisa_orb=PyLISA(lisa,func_nominal_arm)
+        lisa_cache=CacheLISA(lisa_orb)
+
+        OBJ.t_all = OBJ.orbit.t
+        if type(type_select)==str:
+            if type_select=='cache':
+                OBJ.LISA = lisa_cache
+            elif type_select=='Py':
+                OBJ.LISA = lisa_orb
+            elif type_select=='other':
+                OBJ.LISA = lisa
+        else:
+            OBJ.LISA=type_select
     return 0
 
 def i_slr(i,side='all'):
@@ -88,92 +94,90 @@ def get_armvec_func(OBJ,i,side):
 
     return arm_vec
 
-#def solve_num(func,guess,method='fsolve'):
-#    '''Select method for numerically solving an equation'''
-#    if method == 'fsolve':
-#        guess = np.array(guess)
-#        ret = scipy.optimize.fsolve(func,guess)
-#    elif method == 'excitingmixing':
-#        ret = scipy.optimize.excitingmixing(func,guess)
-#    elif method == 'linearmixing':
-#        ret = scipy.optimize.linearmixing(func,guess)
-#    elif method == 'newton_krylov':
-#        guess = [guess]
-#        ret = scipy.optimize.newton_krylov(func,guess)
-#    elif method == 'anderson':
-#        ret = scipy.optimize.anderson(func,guess)
-#    elif method == 'broyden1':
-#        ret = scipy.optimize.broyden1(func,guess)
-#
-#    return ret
-
 def func_pos(OBJ,i):
-    '''Generate functions of the positions'''
-    L = lambda time: np.array(OBJ.putp(i,time))
+    '''Generate functions of the positions''' 
+    if OBJ.test_COM_effect == False:
+        L = lambda time: np.array(OBJ.putp(i,time))
+    if OBJ.test_COM_effect == True:
+        L = lambda time: np.array(OBJ.putp(i,time) - OBJ.COM_func(time))
     return L
 
-def solve_L_PAA(OBJ,t,pos_OBJ,pos_left,pos_right,select='sl',calc_method='Waluschka'):
+def COM_func(OBJ):
+    '''This function obtaines the coordinate function of the center of mass of the LISA constellation'''
+    COM = lambda time: (OBJ.putp(1,time)+OBJ.putp(2,time)+OBJ.putp(3,time))/3.0 
+    return COM
+
+def solve_L_PAA(OBJ,t,pos_OBJ,pos_left,pos_right,select='sl',calc_method='Waluschka',i=False):
     '''Calculate the photon traveling time along one of the six laserlinks'''
     if OBJ.LISA==False:
         t_guess = np.linalg.norm(OBJ.orbit.p[0][0,:] - OBJ.orbit.p[1][0,:])/c
     else:
         t_guess = np.linalg.norm(np.array(OBJ.putp(1,0)) - np.array(OBJ.putp(2,0)))/c
+    
+    if OBJ.test_COM_effect==False:
+        if select=='sl' or select=='rl':
+            s1 = lambda x: pos_left(x)
+        elif select=='sr' or select=='rr':
+            s1 = lambda x: pos_right(x)
 
-    if select=='sl' or select=='rl':
-        s1 = lambda x: pos_left(x)
-    elif select=='sr' or select=='rr':
-        s1 = lambda x: pos_right(x)
+        s2 = lambda x: pos_OBJ(x)
+        x_0 = t
+        if select=='sl' or select=='sr':
+            if calc_method=='Abram':
+                s3 = lambda dt: s1(x_0+dt) - s2(x_0)
+            elif calc_method=='Waluschka':
+                s3 = lambda dt: s1(x_0+dt) - s2(x_0+dt)
+        elif select=='rl' or select=='rr':
+            if calc_method=='Abram':
+                s3 = lambda dt: -s1(x_0-dt) + s2(x_0)
+            elif calc_method=='Waluschka':
+                s3 = lambda dt: -s1(x_0-dt) + s2(x_0-dt)
+        s4 = lambda dt: np.linalg.norm(s3(dt))
+        s5 = lambda dt: s4(dt) - c*dt
 
-    s2 = lambda x: pos_OBJ(x)
-    x_0 = t
-    if select=='sl' or select=='sr':
-        if calc_method=='Abram':
-            s3 = lambda dt: s1(x_0+dt) - s2(x_0)
-        elif calc_method=='Waluschka':
-            s3 = lambda dt: s1(x_0+dt) - s2(x_0+dt)
-    elif select=='rl' or select=='rr':
-        if calc_method=='Abram':
-            s3 = lambda dt: -s1(x_0-dt) + s2(x_0)
-        elif calc_method=='Waluschka':
-            s3 = lambda dt: -s1(x_0-dt) + s2(x_0-dt)
-    s4 = lambda dt: np.linalg.norm(s3(dt))
-    s5 = lambda dt: s4(dt) - c*dt
+        res = scipy.optimize.brentq(s5,0,t_guess*4)
+    
+    elif OBJ.test_COM_effect==True:
+        if select=='sl' or select=='rl':
+            s1 = lambda x: pos_left(x)
+        elif select=='sr' or select=='rr':
+            s1 = lambda x: pos_right(x)
 
-    res = scipy.optimize.brentq(s5,0,t_guess*4)
+        s2 = lambda x: pos_OBJ(x)
+        x_0 = t
+        if select=='sl' or select=='sr':
+            if calc_method=='Abram':
+                s3 = lambda dt: s1(x_0+dt) - s2(x_0)
+                com = lambda dt: OBJ.COM_func(x_0+dt) - OBJ.COM_func(x_0)
+            elif calc_method=='Waluschka':
+                s3 = lambda dt: s1(x_0+dt) - s2(x_0+dt)
+                com = lambda dt: OBJ.COM_func(x_0+dt) - OBJ.COM_func(x_0+dt)
+        elif select=='rl' or select=='rr':
+            if calc_method=='Abram':
+                s3 = lambda dt: -s1(x_0-dt) + s2(x_0)
+                com = lambda dt: -OBJ.COM_func(x_0-dt) + OBJ.COM_func(x_0)
+            elif calc_method=='Waluschka':
+                s3 = lambda dt: -s1(x_0-dt) + s2(x_0-dt)
+                com = lambda dt: -OBJ.COM_func(x_0-dt) + OBJ.COM_func(x_0-dt)
+        s4 = lambda dt: np.linalg.norm(s3(dt)-com(dt))
+        s5 = lambda dt: s4(dt) - c*dt
+        
+        res = scipy.optimize.brentq(s5,0,t_guess*4)
 
     return res
 
 
-def L_PAA(OBJ,pos_OBJ,pos_left,pos_right,calc_method='Walushka'):
+def L_PAA(OBJ,pos_OBJ,pos_left,pos_right,calc_method='Walushka',i=False):
     '''Obtain time of flight of beam between spacecrafts'''
 
     selections = ['sl','sr','rl','rr']
 
-    L_sl_func =  lambda time: solve_L_PAA(OBJ,time,pos_OBJ,pos_left,pos_right,select=selections[0],calc_method=calc_method)
-    L_sr_func =  lambda time: solve_L_PAA(OBJ,time,pos_OBJ,pos_left,pos_right,select=selections[1],calc_method=calc_method)
-    L_rl_func =  lambda time: solve_L_PAA(OBJ,time,pos_OBJ,pos_left,pos_right,select=selections[2],calc_method=calc_method)
-    L_rr_func =  lambda time: solve_L_PAA(OBJ,time,pos_OBJ,pos_left,pos_right,select=selections[3],calc_method=calc_method)
+    L_sl_func =  lambda time: solve_L_PAA(OBJ,time,pos_OBJ,pos_left,pos_right,select=selections[0],calc_method=calc_method,i=i)
+    L_sr_func =  lambda time: solve_L_PAA(OBJ,time,pos_OBJ,pos_left,pos_right,select=selections[1],calc_method=calc_method,i=i)
+    L_rl_func =  lambda time: solve_L_PAA(OBJ,time,pos_OBJ,pos_left,pos_right,select=selections[2],calc_method=calc_method,i=i)
+    L_rr_func =  lambda time: solve_L_PAA(OBJ,time,pos_OBJ,pos_left,pos_right,select=selections[3],calc_method=calc_method,i=i)
 
     return [L_sl_func,L_sr_func,L_rl_func,L_rr_func]
-
-#def n_r_lisa(i,time,LISA,m=[2,2,2],ret='all'):
-#    '''Obtaining normal, r and COM vectors'''
-#    [i_OBJ,i_left,i_right] = i_slr(i)
-#
-#    v_l = np.array(putp(i_left,time)) - np.array(putp(i_OBJ,time))
-#    v_r = np.array(putp(i_right,time)) - np.array(putp(i_OBJ,time))
-#    COM = (m[i_left-1]*np.array(putp(i_left,time)) + m[i_right-1]*np.array(putp(i_right,time)) + m[i_OBJ-1]*np.array(putp(i_OBJ,time)))/sum(m)
-#
-#    r = COM(time) - np.array(putp(i_OBJ,time))
-#
-#    n = np.cross(v_l(time)/np.linalg.norm(v_l(time)),v_r(time)/np.linalg.norm(v_r(time)))
-#
-#    if ret=='all':
-#        return [n,r]
-#    elif ret=='n':
-#        return n
-#    elif ret=='r':
-#        return r
 
 def r_calc(v_l,v_r,i,m=[2,2,2]):
     '''Returns the vector r pointing from a spacecraft towards the COMof the constellation'''
@@ -197,7 +201,7 @@ def send_func(OBJ,i,calc_method='Waluschka'):
     pos_right = func_pos(OBJ,i_right)
 
     if OBJ.delay==True:
-        [L_sl,L_sr,L_rl,L_rr] = L_PAA(OBJ,pos_OBJ,pos_left,pos_right,calc_method=calc_method)
+        [L_sl,L_sr,L_rl,L_rr] = L_PAA(OBJ,pos_OBJ,pos_left,pos_right,calc_method=calc_method,i=i_OBJ)
     elif OBJ.delay=='not ahead':
         L_sl = lambda t: np.linalg.norm(pos_left(t) - pos_OBJ(t))/c
         L_sr = lambda t: np.linalg.norm(pos_right(t) - pos_OBJ(t))/c
@@ -216,32 +220,61 @@ def send_func(OBJ,i,calc_method='Waluschka'):
         L_sr = lambda t: 0
         L_rl=L_sl
         L_rr=L_sr
+    
+    if OBJ.test_COM_effect==False:
+        if calc_method=='Abram':
+            #Abram2018
+            v_send_l = lambda t: pos_left(t+L_sl(t)) - pos_OBJ(t)
+            v_send_r = lambda t: pos_right(t+L_sr(t)) - pos_OBJ(t)
+            v_rec_l0 = lambda t: pos_OBJ(t) - pos_left(t - L_rl(t))
+            v_rec_r0 = lambda t: pos_OBJ(t) - pos_right(t - L_rr(t))
+            if OBJ.aberration==False:
+                v_rec_l = v_rec_l0
+                v_rec_r = v_rec_r0
+            elif OBJ.aberration==True:
+                v_rec_l = lambda t: relativistic_aberrations(OBJ,i,t,L_rl(t),'l',relativistic=OBJ.relativistic)
+                v_rec_r = lambda t: relativistic_aberrations(OBJ,i,t,L_rr(t),'r',relativistic=OBJ.relativistic) 
 
-    if calc_method=='Abram':
-        #Abram2018
-        v_send_l = lambda t: pos_left(t+L_sl(t)) - pos_OBJ(t)
-        v_send_r = lambda t: pos_right(t+L_sr(t)) - pos_OBJ(t)
-        v_rec_l0 = lambda t: pos_OBJ(t) - pos_left(t - L_rl(t))
-        v_rec_r0 = lambda t: pos_OBJ(t) - pos_right(t - L_rr(t))
-        if OBJ.aberration==False:
-            v_rec_l = v_rec_l0
-            v_rec_r = v_rec_r0
-        elif OBJ.aberration==True:
-            v_rec_l = lambda t: relativistic_aberrations(OBJ,i,t,L_rl(t),'l',relativistic=OBJ.relativistic)
-            v_rec_r = lambda t: relativistic_aberrations(OBJ,i,t,L_rr(t),'r',relativistic=OBJ.relativistic) 
+        elif calc_method=='Waluschka':
+            #Waluschka2003
+            v_send_l = lambda t: pos_left(t+L_sl(t)) - pos_OBJ(t+L_sl(t))
+            v_send_r = lambda t: pos_right(t+L_sr(t)) - pos_OBJ(t+L_sr(t))
+            v_rec_l0 = lambda t: pos_OBJ(t-L_rl(t)) - pos_left(t - L_rl(t))
+            v_rec_r0 = lambda t: pos_OBJ(t-L_rr(t)) - pos_right(t - L_rr(t))
+            if OBJ.aberration==False:
+                v_rec_l = v_rec_l0
+                v_rec_r = v_rec_r0
+            elif OBJ.aberration==True:
+                v_rec_l = lambda t: relativistic_aberrations(OBJ,i,t,L_rl(t),'l',relativistic=OBJ.relativistic)
+                v_rec_r = lambda t: relativistic_aberrations(OBJ,i,t,L_rr(t),'r',relativistic=OBJ.relativistic)
 
-    elif calc_method=='Waluschka':
-        #Waluschka2003
-        v_send_l = lambda t: pos_left(t+L_sl(t)) - pos_OBJ(t+L_sl(t))
-        v_send_r = lambda t: pos_right(t+L_sr(t)) - pos_OBJ(t+L_sr(t))
-        v_rec_l0 = lambda t: pos_OBJ(t-L_rl(t)) - pos_left(t - L_rl(t))
-        v_rec_r0 = lambda t: pos_OBJ(t-L_rr(t)) - pos_right(t - L_rr(t))
-        if OBJ.aberration==False:
-            v_rec_l = v_rec_l0
-            v_rec_r = v_rec_r0
-        elif OBJ.aberration==True:
-            v_rec_l = lambda t: relativistic_aberrations(OBJ,i,t,L_rl(t),'l',relativistic=OBJ.relativistic)
-            v_rec_r = lambda t: relativistic_aberrations(OBJ,i,t,L_rr(t),'r',relativistic=OBJ.relativistic)          
+    elif OBJ.test_COM_effect==True:
+        if calc_method=='Abram':
+            #Abram2018
+            v_send_l = lambda t: pos_left(t+L_sl(t)) - pos_OBJ(t) - (OBJ.COM_func(t+L_sl(t)) - OBJ.COM_func(t))
+            v_send_r = lambda t: pos_right(t+L_sr(t)) - pos_OBJ(t) - (OBJ.COM_func(t+L_sr(t)) - OBJ.COM_func(t))
+            v_rec_l0 = lambda t: pos_OBJ(t) - pos_left(t - L_rl(t)) - (OBJ.COM_func(t) - OBJ.COM_func(t-L_rl(t)))
+            v_rec_r0 = lambda t: pos_OBJ(t) - pos_right(t - L_rr(t)) - (OBJ.COM_func(t) - OBJ.COM_func(t-L_rr(t)))
+            if OBJ.aberration==False:
+                v_rec_l = v_rec_l0
+                v_rec_r = v_rec_r0
+            elif OBJ.aberration==True:
+                v_rec_l = lambda t: relativistic_aberrations(OBJ,i,t,L_rl(t),'l',relativistic=OBJ.relativistic)
+                v_rec_r = lambda t: relativistic_aberrations(OBJ,i,t,L_rr(t),'r',relativistic=OBJ.relativistic)
+
+        elif calc_method=='Waluschka':
+            #Waluschka2003
+            v_send_l = lambda t: pos_left(t+L_sl(t)) - pos_OBJ(t+L_sl(t))
+            v_send_r = lambda t: pos_right(t+L_sr(t)) - pos_OBJ(t+L_sr(t))
+            v_rec_l0 = lambda t: pos_OBJ(t-L_rl(t)) - pos_left(t - L_rl(t))
+            v_rec_r0 = lambda t: pos_OBJ(t-L_rr(t)) - pos_right(t - L_rr(t))
+            if OBJ.aberration==False:
+                v_rec_l = v_rec_l0
+                v_rec_r = v_rec_r0
+            elif OBJ.aberration==True:
+                v_rec_l = lambda t: relativistic_aberrations(OBJ,i,t,L_rl(t),'l',relativistic=OBJ.relativistic)
+                v_rec_r = lambda t: relativistic_aberrations(OBJ,i,t,L_rr(t),'r',relativistic=OBJ.relativistic)
+
     return [[v_send_l,v_send_r,v_rec_l,v_rec_r],[L_sl,L_sr,L_rl,L_rr],[v_rec_l0,v_rec_r0]]
 
 

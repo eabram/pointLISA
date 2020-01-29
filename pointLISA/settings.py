@@ -23,6 +23,8 @@ stat.test_calc = False #If True, STAT object would not be written to an object
 stat.hstep=100 #Time step for calculating the velocity (over hstep seconds average)
 stat.putp_mode='sampled' # 'samped' or 'LISA'
 
+stat.test_COM_effect = False
+
 ### AIM settings
 aimset = utils.Object()
 aimset.inp = False #NN

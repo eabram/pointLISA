@@ -179,6 +179,7 @@ class AIM():
             self.aimset.tele_control=method
             print('Changed tele_control option')
         
+        
         if option==False:
             option = self.aimset.option_tele
         else:
@@ -301,33 +302,15 @@ class AIM():
                 self.tele_ang_adjust = tele_ang_adjust
 
             else:
-                #if self.PAAM_deg==2:
-                #    try:
-                #        delattr(self,'offset')
-                #    except AttributeError:
-                #        pass
-                #    offset={}
-                #    offset['l']={}
-                #    offset['r']={}
 
                 for i in range(1,4):
                     t_l =  getattr(getattr(ret[0],'l'),'i'+str(i)).tele_ang
                     t_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).tele_ang
                     tele_l_ang.append(methods.interpolate(t_l[0][0],t_l[0][1]))
                     tele_r_ang.append(methods.interpolate(t_r[0][0],t_r[0][1]))
-                    #if self.PAAM_deg==2:
-                    #    offset_l =  getattr(getattr(ret[0],'l'),'i'+str(i)).offset
-                    #    offset_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).offset
-                    #    offset['l'][i] = methods.interpolate(offset_l[0][0],offset_l[0][1])
-                    #    offset['r'][i] = methods.interpolate(offset_r[0][0],offset_r[0][1])
-                    #else:
-                    #    self.get_offset_inplane(self.aimset.offset_tele)
 
                 self.tele_l_ang = lambda i,t: tele_l_ang[i-1](t)
                 self.tele_r_ang = lambda i,t: tele_r_ang[i-1](t)
-                #if self.PAAM_deg==2:
-                #    self.offset={}
-                #    self.offset = offset
             
             if self.PAAM_deg==2:
                 try:
@@ -392,7 +375,7 @@ class AIM():
         return [ang_l,ang_r]
 
 
-    def PAAM_aim(self,method=False,dt=3600*24,jitter=False,tau=1,mode='overdamped',PAAM_ang_extra=False,option=False):
+    def PAAM_aim(self,method=False,dt=3600*24,tau=1,mode='overdamped',PAAM_ang_extra=False,option=False):
         '''Obtains the PAAM pointing angles (for the selected telescope pointing method)'''
         if method==False:
             method = self.aimset.PAAM_control
@@ -554,8 +537,8 @@ class AIM():
         # Calculating the Transmitted beam direction and position of the telescope aperture
         beam_l_direction = beam_l_coor[0]
         beam_r_direction = beam_r_coor[0]
-        beam_l_start = beam_l_direction+np.array(self.data.putp(i,t))
-        beam_r_start = beam_r_direction+np.array(self.data.putp(i,t))
+        beam_l_start = self.data.L_tele*beam_l_direction+np.array(self.data.putp(i,t)) #...kan weg
+        beam_r_start = self.data.L_tele*beam_r_direction+np.array(self.data.putp(i,t)) #...kan weg
 
         return [[beam_l_coor,beam_r_coor],[beam_l_direction,beam_r_direction],[beam_l_start,beam_r_start]]
 
@@ -574,16 +557,16 @@ class AIM():
         self.tele_r_coor = lambda i,t: self.get_tele_coor(i,t,tele_l_ang,tele_r_ang)[0][1]
         self.tele_l_vec = lambda i,t: self.get_tele_coor(i,t,tele_l_ang,tele_r_ang)[1][0]
         self.tele_r_vec = lambda i,t: self.get_tele_coor(i,t,tele_l_ang,tele_r_ang)[1][1]
-        self.tele_l_start = lambda i,t: self.get_tele_coor(i,t,tele_l_ang,tele_r_ang)[2][0]
-        self.tele_r_start = lambda i,t: self.get_tele_coor(i,t,tele_l_ang,tele_r_ang)[2][1]
+        self.tele_l_start = lambda i,t: self.get_tele_coor(i,t,tele_l_ang,tele_r_ang)[2][0] 
+        self.tele_r_start = lambda i,t: self.get_tele_coor(i,t,tele_l_ang,tele_r_ang)[2][1] 
 
 
         self.beam_l_coor = lambda i,t: self.get_beam_coor(i,t,tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset)[0][0]
         self.beam_r_coor = lambda i,t: self.get_beam_coor(i,t,tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset)[0][1]
         self.beam_l_direction = lambda i,t: self.get_beam_coor(i,t,tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset)[1][0]
         self.beam_r_direction = lambda i,t: self.get_beam_coor(i,t,tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset)[1][1]
-        self.beam_l_start = lambda i,t: self.get_beam_coor(i,t,tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset)[2][0]
-        self.beam_r_start = lambda i,t: self.get_beam_coor(i,t,tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset)[2][1]
+        self.beam_l_start = lambda i,t: self.get_beam_coor(i,t,tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset)[2][0] #...kan weg
+        self.beam_r_start = lambda i,t: self.get_beam_coor(i,t,tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset)[2][1] #...kan weg
 
         self.tele_l_ang_calc = tele_l_ang
         self.tele_r_ang_calc = tele_r_ang

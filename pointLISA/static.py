@@ -76,10 +76,13 @@ class STAT():
 
     def putp(self,i,t,mode='sampled'):
         '''Returns the coordinates of spacecraft i from a linear interpolation or by the putp function in synthLISA'''
-        if mode=='sampled':
-            return self.putp_sampled(i,t)
-        elif mode=='LISA':
+        if 'function' in str(type(self.LISA_opt)):
             return self.LISA.putp(i,t)
+        else:
+            if mode=='sampled':
+                return self.putp_sampled(i,t)
+            elif mode=='LISA':
+                return self.LISA.putp(i,t)
 
     def PAA_func(self):
         '''Obtains functions of vectors and angles (PAA, brething, n, r, u, v, L'''
@@ -94,6 +97,7 @@ class STAT():
         self.SC = range(1,4)
         
         self.putp_sampled = pointLISA.methods.get_putp_sampled(self)
+        self.COM_func = utils.COM_func(self)
 
         # Calculations
         v_l_func_tot=[]
