@@ -104,6 +104,8 @@ class STAT():
         v_r_func_tot=[]
         u_l_func_tot=[]
         u_r_func_tot=[]
+        v_l0test_func_tot=[]
+        v_r0test_func_tot=[]
         u_l0test_func_tot=[]
         u_r0test_func_tot=[]
         L_sl_func_tot=[]
@@ -119,12 +121,14 @@ class STAT():
         utils.velocity_abs(self,hstep=self.hstep)
 
         for i in range(1,4):
-            [[v_l_func,v_r_func,u_l_func,u_r_func],[L_sl_func,L_sr_func,L_rl_func,L_rr_func],[u_l0_func,u_r0_func]] = utils.send_func(self,i,calc_method = self.calc_method)
+            [[v_l_func,v_r_func,u_l_func,u_r_func],[L_sl_func,L_sr_func,L_rl_func,L_rr_func],[v_l0_func,v_r0_func,u_l0_func,u_r0_func]] = utils.send_func(self,i,calc_method = self.calc_method)
 
             v_l_func_tot.append(v_l_func)
             v_r_func_tot.append(v_r_func)
             u_l_func_tot.append(u_l_func)
             u_r_func_tot.append(u_r_func)
+            v_l0test_func_tot.append(v_l0_func)
+            v_r0test_func_tot.append(v_r0_func)
             u_l0test_func_tot.append(u_l0_func)
             u_r0test_func_tot.append(u_r0_func)
             
@@ -142,6 +146,8 @@ class STAT():
         self.v_r_func_tot = utils.func_over_sc(v_r_func_tot)
         self.u_l_func_tot = utils.func_over_sc(u_l_func_tot)
         self.u_r_func_tot = utils.func_over_sc(u_r_func_tot)
+        self.v_l0test_func_tot = utils.func_over_sc(v_l0test_func_tot)
+        self.v_r0test_func_tot = utils.func_over_sc(v_r0test_func_tot)
         self.u_l0test_func_tot = utils.func_over_sc(u_l0test_func_tot)
         self.u_r0test_func_tot = utils.func_over_sc(u_r0test_func_tot)
 

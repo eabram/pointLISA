@@ -224,106 +224,124 @@ def send_func(OBJ,i,calc_method='Waluschka'):
     if OBJ.test_COM_effect==False:
         if calc_method=='Abram':
             #Abram2018
-            v_send_l = lambda t: pos_left(t+L_sl(t)) - pos_OBJ(t)
-            v_send_r = lambda t: pos_right(t+L_sr(t)) - pos_OBJ(t)
+            v_send_l0 = lambda t: pos_left(t+L_sl(t)) - pos_OBJ(t)
+            v_send_r0 = lambda t: pos_right(t+L_sr(t)) - pos_OBJ(t)
             v_rec_l0 = lambda t: pos_OBJ(t) - pos_left(t - L_rl(t))
             v_rec_r0 = lambda t: pos_OBJ(t) - pos_right(t - L_rr(t))
-            if OBJ.aberration==False:
-                v_rec_l = v_rec_l0
-                v_rec_r = v_rec_r0
-            elif OBJ.aberration==True:
-                v_rec_l = lambda t: relativistic_aberrations(OBJ,i,t,L_rl(t),'l',relativistic=OBJ.relativistic)
-                v_rec_r = lambda t: relativistic_aberrations(OBJ,i,t,L_rr(t),'r',relativistic=OBJ.relativistic) 
 
         elif calc_method=='Waluschka':
             #Waluschka2003
-            v_send_l = lambda t: pos_left(t+L_sl(t)) - pos_OBJ(t+L_sl(t))
-            v_send_r = lambda t: pos_right(t+L_sr(t)) - pos_OBJ(t+L_sr(t))
+            v_send_l0 = lambda t: pos_left(t+L_sl(t)) - pos_OBJ(t+L_sl(t))
+            v_send_r0 = lambda t: pos_right(t+L_sr(t)) - pos_OBJ(t+L_sr(t))
             v_rec_l0 = lambda t: pos_OBJ(t-L_rl(t)) - pos_left(t - L_rl(t))
             v_rec_r0 = lambda t: pos_OBJ(t-L_rr(t)) - pos_right(t - L_rr(t))
-            if OBJ.aberration==False:
-                v_rec_l = v_rec_l0
-                v_rec_r = v_rec_r0
-            elif OBJ.aberration==True:
-                v_rec_l = lambda t: relativistic_aberrations(OBJ,i,t,L_rl(t),'l',relativistic=OBJ.relativistic)
-                v_rec_r = lambda t: relativistic_aberrations(OBJ,i,t,L_rr(t),'r',relativistic=OBJ.relativistic)
 
     elif OBJ.test_COM_effect==True:
         if calc_method=='Abram':
             #Abram2018
-            v_send_l = lambda t: pos_left(t+L_sl(t)) - pos_OBJ(t) - (OBJ.COM_func(t+L_sl(t)) - OBJ.COM_func(t))
-            v_send_r = lambda t: pos_right(t+L_sr(t)) - pos_OBJ(t) - (OBJ.COM_func(t+L_sr(t)) - OBJ.COM_func(t))
+            v_send_l0 = lambda t: pos_left(t+L_sl(t)) - pos_OBJ(t) - (OBJ.COM_func(t+L_sl(t)) - OBJ.COM_func(t))
+            v_send_r0 = lambda t: pos_right(t+L_sr(t)) - pos_OBJ(t) - (OBJ.COM_func(t+L_sr(t)) - OBJ.COM_func(t))
             v_rec_l0 = lambda t: pos_OBJ(t) - pos_left(t - L_rl(t)) - (OBJ.COM_func(t) - OBJ.COM_func(t-L_rl(t)))
             v_rec_r0 = lambda t: pos_OBJ(t) - pos_right(t - L_rr(t)) - (OBJ.COM_func(t) - OBJ.COM_func(t-L_rr(t)))
-            if OBJ.aberration==False:
-                v_rec_l = v_rec_l0
-                v_rec_r = v_rec_r0
-            elif OBJ.aberration==True:
-                v_rec_l = lambda t: relativistic_aberrations(OBJ,i,t,L_rl(t),'l',relativistic=OBJ.relativistic)
-                v_rec_r = lambda t: relativistic_aberrations(OBJ,i,t,L_rr(t),'r',relativistic=OBJ.relativistic)
 
         elif calc_method=='Waluschka':
             #Waluschka2003
-            v_send_l = lambda t: pos_left(t+L_sl(t)) - pos_OBJ(t+L_sl(t))
-            v_send_r = lambda t: pos_right(t+L_sr(t)) - pos_OBJ(t+L_sr(t))
+            v_send_l0 = lambda t: pos_left(t+L_sl(t)) - pos_OBJ(t+L_sl(t))
+            v_send_r0 = lambda t: pos_right(t+L_sr(t)) - pos_OBJ(t+L_sr(t))
             v_rec_l0 = lambda t: pos_OBJ(t-L_rl(t)) - pos_left(t - L_rl(t))
             v_rec_r0 = lambda t: pos_OBJ(t-L_rr(t)) - pos_right(t - L_rr(t))
-            if OBJ.aberration==False:
-                v_rec_l = v_rec_l0
-                v_rec_r = v_rec_r0
-            elif OBJ.aberration==True:
-                v_rec_l = lambda t: relativistic_aberrations(OBJ,i,t,L_rl(t),'l',relativistic=OBJ.relativistic)
-                v_rec_r = lambda t: relativistic_aberrations(OBJ,i,t,L_rr(t),'r',relativistic=OBJ.relativistic)
 
-    return [[v_send_l,v_send_r,v_rec_l,v_rec_r],[L_sl,L_sr,L_rl,L_rr],[v_rec_l0,v_rec_r0]]
+    if OBJ.aberration==False:
+        v_send_l = v_send_l0
+        v_send_r = v_send_r0
+        v_rec_l = v_rec_l0
+        v_rec_r = v_rec_r0
+    elif OBJ.aberration==True:
+        v_send_l = lambda t: relativistic_aberrations(OBJ,i,t,v_send_l0(t),relativistic=OBJ.relativistic)
+        v_send_r = lambda t: relativistic_aberrations(OBJ,i,t,v_send_r0(t),relativistic=OBJ.relativistic)
+        v_rec_l = lambda t: relativistic_aberrations(OBJ,i,t,v_rec_l0(t),relativistic=OBJ.relativistic)
+        v_rec_r = lambda t: relativistic_aberrations(OBJ,i,t,v_rec_r0(t),relativistic=OBJ.relativistic)
 
+    return [[v_send_l,v_send_r,v_rec_l,v_rec_r],[L_sl,L_sr,L_rl,L_rr],[v_send_l0,v_send_r0,v_rec_l0,v_rec_r0]]
 
-def relativistic_aberrations(OBJ,i,t,tdel,side,relativistic=True): #used
+def relativistic_aberrations(OBJ,i,t,u,relativistic=True):
     '''Adjust vecor u by adding the angle caused by aberration'''
-    [i_self,i_left,i_right] = i_slr(i)
-    if OBJ.calc_method=='Abram':
-        tdel0=0
-    elif OBJ.calc_method=='Waluschka':
-        tdel0 = tdel
+    if relativistic==True:
+        V = -OBJ.vel.abs(i,t)
+        V_mag = np.linalg.norm(V)
+        u_mag = np.linalg.norm(u)
 
-    if side=='l':
-        u_not_ab = np.array(OBJ.putp(i_self,t-tdel0)) - np.array(OBJ.putp(i_left,t-tdel))
-        u_ab = np.linalg.norm(u_not_ab)*(LA.unit(LA.unit(u_not_ab)*OBJ.c+(OBJ.vel.abs(i_self,t-tdel0) - OBJ.vel.abs(i_left,t-tdel))))
+        ux =(np.dot(u,V)/(V_mag))*LA.unit(V)
+        x = LA.unit(ux)
+        uy = u-ux
+        y = LA.unit(uy)
+        
+        ux_mag = np.linalg.norm(ux)
+        uy_mag = np.linalg.norm(uy)
 
-    elif side=='r':
-        u_not_ab = np.array(OBJ.putp(i_self,t-tdel0)) - np.array(OBJ.putp(i_right,t-tdel))
-        u_ab = np.linalg.norm(u_not_ab)*(LA.unit(LA.unit(u_not_ab)*OBJ.c+(OBJ.vel.abs(i_self,t-tdel0) - OBJ.vel.abs(i_right,t-tdel))))
- 
-    if relativistic==False:
-        return u_ab
-    
-    elif relativistic==True:
-        coor = methods.coor_SC(OBJ,i_self,t-tdel0)
-        if side=='l':
-            velo = (OBJ.vel.abs(i_self,t-tdel0) - OBJ.vel.abs(i_left,t-tdel))
-        elif side=='r':
-            velo = (OBJ.vel.abs(i_self,t-tdel0) - OBJ.vel.abs(i_right,t-tdel))
+        den = (1+((ux_mag*V_mag)/(c**2)))
+        ux_ac = (ux_mag+V_mag)/den
+        gamma = 1.0/((1-(V_mag/c)**2)**0.5)
+        uy_ac = uy_mag/(gamma*den)
 
-        c_vec = LA.unit(u_not_ab)*c
+        u_new = ux_ac*x+uy_ac*y
+    elif relativistic==False:
+        V = -OBJ.vel.abs(i,t)
+        u_mag = np.linalg.norm(u)
 
-        r = coor[0]
-        x_prime = LA.unit(velo)
-        n_prime = LA.unit(np.cross(velo,r))
-        r_prime = LA.unit(np.cross(n_prime,x_prime))
+        u_new = LA.unit(V+u)*u_mag
+    else:
+        print('Error')
 
-        coor_velo = np.array([r_prime,n_prime,x_prime])
-        c_velo = LA.matmul(coor_velo,c_vec)
-        v = np.linalg.norm(velo)
-        den = 1.0 - ((v/(c**2))*coor_velo[2])
-        num = ((1.0-((v**2)/(c**2)))**0.5)
-
-        ux_prime = (c_velo[2] - v)/den
-        ur_prime = (num*c_velo[0])/den
-        un_prime = (num*c_velo[1])/den
-        c_prime = ux_prime*x_prime + un_prime*n_prime +ur_prime*r_prime
-        u_new=LA.unit(c_prime)*np.linalg.norm(u_not_ab)
-   
     return u_new
+
+
+#def relativistic_aberrations2(OBJ,i,t,tdel,side,relativistic=True): #not used
+#    '''Adjust vecor u by adding the angle caused by aberration'''
+#    [i_self,i_left,i_right] = i_slr(i)
+#    if OBJ.calc_method=='Abram':
+#        tdel0=0
+#    elif OBJ.calc_method=='Waluschka':
+#        tdel0 = tdel
+#
+#    if side=='l':
+#        u_not_ab = np.array(OBJ.putp(i_self,t-tdel0)) - np.array(OBJ.putp(i_left,t-tdel))
+#        u_ab = np.linalg.norm(u_not_ab)*(LA.unit(LA.unit(u_not_ab)*OBJ.c+(OBJ.vel.abs(i_self,t-tdel0) - OBJ.vel.abs(i_left,t-tdel))))
+#
+#    elif side=='r':
+#        u_not_ab = np.array(OBJ.putp(i_self,t-tdel0)) - np.array(OBJ.putp(i_right,t-tdel))
+#        u_ab = np.linalg.norm(u_not_ab)*(LA.unit(LA.unit(u_not_ab)*OBJ.c+(OBJ.vel.abs(i_self,t-tdel0) - OBJ.vel.abs(i_right,t-tdel))))
+# 
+#    if relativistic==False:
+#        return u_ab
+#    
+#    elif relativistic==True:
+#        coor = methods.coor_SC(OBJ,i_self,t-tdel0)
+#        if side=='l':
+#            velo = (OBJ.vel.abs(i_self,t-tdel0) - OBJ.vel.abs(i_left,t-tdel))
+#        elif side=='r':
+#            velo = (OBJ.vel.abs(i_self,t-tdel0) - OBJ.vel.abs(i_right,t-tdel))
+#
+#        c_vec = LA.unit(u_not_ab)*c
+#
+#        r = coor[0]
+#        x_prime = LA.unit(velo)
+#        n_prime = LA.unit(np.cross(velo,r))
+#        r_prime = LA.unit(np.cross(n_prime,x_prime))
+#
+#        coor_velo = np.array([r_prime,n_prime,x_prime])
+#        c_velo = LA.matmul(coor_velo,c_vec)
+#        v = np.linalg.norm(velo)
+#        den = 1.0 - ((v/(c**2))*coor_velo[2])
+#        num = ((1.0-((v**2)/(c**2)))**0.5)
+#
+#        ux_prime = (c_velo[2] - v)/den
+#        ur_prime = (num*c_velo[0])/den
+#        un_prime = (num*c_velo[1])/den
+#        c_prime = ux_prime*x_prime + un_prime*n_prime +ur_prime*r_prime
+#        u_new=LA.unit(c_prime)*np.linalg.norm(u_not_ab)
+#   
+#    return u_new
 
 #PAA angles
 def calc_PAA_ltot(OBJ,i,t):
