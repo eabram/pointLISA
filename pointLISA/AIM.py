@@ -63,7 +63,7 @@ class AIM():
                 pass
 
             elif option==True:
-                offset = {'l': {1: -0.00018360462896226676, 2: 0.0, 3: 0.0},
+                offset = {'l': {1: 0.0, 2: 0.0, 3: 0.0},
      'r': {1: 0.0, 2: 0.0, 3: 0.0}}
 
             elif '/' in option:

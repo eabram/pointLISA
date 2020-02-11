@@ -117,8 +117,8 @@ class STAT():
         pos_func=[]
         
         #--- Obtaining Velocity
-        utils.velocity_func(self,hstep=self.hstep)
         utils.velocity_abs(self,hstep=self.hstep)
+        utils.velocity_func(self,hstep=self.hstep)
 
         for i in range(1,4):
             [[v_l_func,v_r_func,u_l_func,u_r_func],[L_sl_func,L_sr_func,L_rl_func,L_rr_func],[v_l0_func,v_r0_func,u_l0_func,u_r0_func]] = utils.send_func(self,i,calc_method = self.calc_method)

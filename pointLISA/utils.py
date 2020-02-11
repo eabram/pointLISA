@@ -270,26 +270,48 @@ def relativistic_aberrations(OBJ,i,t,u,relativistic=True):
         V = -OBJ.vel.abs(i,t)
         V_mag = np.linalg.norm(V)
         u_mag = np.linalg.norm(u)
+        c_vec = LA.unit(u)*c
 
-        ux =(np.dot(u,V)/(V_mag))*LA.unit(V)
-        x = LA.unit(ux)
-        uy = u-ux
-        y = LA.unit(uy)
-        
-        ux_mag = np.linalg.norm(ux)
-        uy_mag = np.linalg.norm(uy)
+        velo = V
+        coor = methods.coor_SC(OBJ,i,t)
+        r=coor[0]
+        x_prime = LA.unit(velo)
+        n_prime = LA.unit(np.cross(velo,r))
+        r_prime = LA.unit(np.cross(n_prime,x_prime))
+        coor_velo = np.array([r_prime,n_prime,x_prime])
+        c_velo = LA.matmul(coor_velo,c_vec)
+        v = np.linalg.norm(velo)
+        den = 1.0 - ((v/(c**2))*coor_velo[2])
+        num = ((1.0-((v**2)/(c**2)))**0.5)
 
-        den = (1+((ux_mag*V_mag)/(c**2)))
-        ux_ac = (ux_mag+V_mag)/den
-        gamma = 1.0/((1-(V_mag/c)**2)**0.5)
-        uy_ac = uy_mag/(gamma*den)
+        ux_prime = (c_velo[2] + v)/den
+        ur_prime = (num*c_velo[0])/den
+        un_prime = (num*c_velo[1])/den
+        c_prime = ux_prime*x_prime + un_prime*n_prime +ur_prime*r_prime
+        u_new = LA.unit(c_prime)*u_mag
 
-        u_new = ux_ac*x+uy_ac*y
+#        ux = (np.dot(c_vec,V)/(V_mag))*LA.unit(V)
+#        x = LA.unit(ux)
+#        uy = c_vec-ux
+#        y = LA.unit(uy)
+#        
+#        ux_mag = np.linalg.norm(ux)
+#        uy_mag = np.linalg.norm(uy)
+#
+#        den = (1+((ux_mag*V_mag)/(c**2)))
+#        ux_ac = (ux_mag+V_mag)/den
+#        gamma = 1.0/((1-((V_mag/c)**2))**0.5)
+#        uy_ac = uy_mag/(gamma*den)
+#        
+#        u_new = LA.unit(ux_ac*x+uy_ac*y)*u_mag
+#        #u_new = (ux_ac*x+uy_ac*y)*(u_mag/c)
+
     elif relativistic==False:
         V = -OBJ.vel.abs(i,t)
         u_mag = np.linalg.norm(u)
+        c_vec = LA.unit(u)*c
 
-        u_new = LA.unit(V+u)*u_mag
+        u_new = LA.unit(c_vec+V)*u_mag
     else:
         print('Error')
 
@@ -386,7 +408,11 @@ def velocity_abs(OBJ,hstep=1.0):
     '''Returns the velocity vector in a function'''
     hstep = np.float128(hstep)
     v_ret = lambda i,time: velocity_abs_calc(OBJ,i,time,hstep)
-    OBJ.vel.abs = v_ret
+    try:
+        OBJ.vel.abs = v_ret
+    except AttributeError:
+        OBJ.vel = Object()
+        OBJ.vel.abs = v_ret
     return OBJ.vel.abs
     
 def velocity_calc(OBJ,i,time,hstep,side,rs):
