@@ -505,14 +505,28 @@ def coor_tele(data,i,t,ang_tele):
 
     return np.array([r,n,x])
 
-def beam_coor_out(data,i,t,ang_tele,ang_paam,ang_tele_offset):
+def aberration_beam_coor(data,i,t,v,reverse=False):
+    if data.aberration==False:
+        ret = v
+    elif data.aberration==True:
+        V = data.vel.abs(i,t)
+        if reverse==True:
+            V=-V
+        v_mag = np.linalg.norm(v)
+        c_vec = LA.unit(v)*data.c
+        ret = LA.unit(c_vec+V)*v_mag
+
+    return ret
+
+def beam_coor_out(data,i,t,ang_tele,ang_paam,ang_tele_offset): # beam coordinates as seen from the Sun
     '''Retunrs the coordinate system of the transmitted beam (same as SC but rotated over ang_tele inplane and ang_tele outplane)'''
     [r,n,x] = coor_tele(data,i,t,ang_tele+ang_tele_offset) #Telescope coordinate system
 
     r = LA.unit(LA.rotate(r,x,ang_paam)) # Rotate r in out of plane over ang_paam
-    n = np.cross(r,x)
+    r_new = aberration_beam_coor(data,i,t,r)
+    n = np.cross(r_new,x)
 
-    return np.array([r,n,x])
+    return np.array([r_new,n,x])
 
 def i_slr(i):
     '''Returns [i_self,i_left,i_right]'''
@@ -755,6 +769,7 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
 
 def tele_point_calc(aim,i,t,side,option,lim=False,method=False,value=0,scale=1,max_count=20,tele_l0=None,tele_r0=None,beam_l0=None,beam_r0=None,offset_l0=None,offset_r0=None,**kwargs): # Recommended to use aim0
     '''Calculates the (full control) telescope pointing angles (with the center or wavefront method)'''
+    import utils
     if option=='center':
         if lim==False:
             lim = aim.aimset.limit_xoff

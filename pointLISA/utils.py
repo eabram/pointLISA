@@ -409,10 +409,11 @@ def velocity_abs(OBJ,hstep=1.0):
     hstep = np.float128(hstep)
     v_ret = lambda i,time: velocity_abs_calc(OBJ,i,time,hstep)
     try:
-        OBJ.vel.abs = v_ret
+        OBJ.vel
     except AttributeError:
         OBJ.vel = Object()
-        OBJ.vel.abs = v_ret
+    OBJ.vel.abs = v_ret
+    
     return OBJ.vel.abs
     
 def velocity_calc(OBJ,i,time,hstep,side,rs):
@@ -452,7 +453,11 @@ def velocity_calc(OBJ,i,time,hstep,side,rs):
 def velocity_func(OBJ,hstep=1.0):
     '''Returns functions of al velocity components'''
     hstep = np.float64(hstep)
-    OBJ.vel = Object()
+    
+    try:
+        OBJ.vel
+    except AttributeError:
+        OBJ.vel = Object()
     OBJ.vel.l= lambda i,time: velocity_calc(OBJ,i,time,hstep,'l',0)
     OBJ.vel.in_l = lambda i,time: velocity_calc(OBJ,i,time,hstep,'l',1)
     OBJ.vel.out_l = lambda i,time: velocity_calc(OBJ,i,time,hstep,'l',2)

@@ -192,5 +192,9 @@ class STAT():
         self.ang_in_r = lambda i,t: LA.ang_in(self.v_r_func_tot(i,t),self.n_func(i,t),self.r_func(i,t))
         self.ang_out_l = lambda i,t: LA.ang_out(self.v_l_func_tot(i,t),self.n_func(i,t))
         self.ang_out_r = lambda i,t: LA.ang_out(self.v_r_func_tot(i,t),self.n_func(i,t))
-
+        
+        try:
+            self.t_all
+        except AttributeError:
+            self.t_all = self.orbit.t
         return self

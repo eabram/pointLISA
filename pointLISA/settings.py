@@ -18,7 +18,7 @@ stat.delay=True #'Not ahead' or False
 stat.valorfunc='Function' #
 stat.select='Hallion' # Select which orbit files will be imported ('all' is all)
 stat.aberration=True #Consider the aberration angle of the incoming light 
-stat.relativistic= True #Using relativistic calculations (False = classical)
+stat.relativistic= False #Using relativistic calculations (False = classical)
 stat.test_calc = False #If True, STAT object would not be written to an object
 stat.hstep=0.01 #Time step for calculating the velocity (over hstep seconds average)
 stat.putp_mode='sampled' # 'samped' or 'LISA'

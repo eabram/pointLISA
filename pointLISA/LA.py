@@ -9,11 +9,16 @@ def norm(v):
 
 def unit(v):
     '''Returns the unit vector of v'''
-    if norm(v)==0:
-        return v #...adjust
+    try:
+        if norm(v)==0:
+            return v #...adjust
+            raise ValueError
+        else:
+            return v/norm(v)
+    except:
+        print('unit(v)')
+        print(v)
         raise ValueError
-    else:
-        return v/norm(v)
 
 def angle(v1,v2,dot=False):
     '''Calculates the angle between vector v1 and v2'''
