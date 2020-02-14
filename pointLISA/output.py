@@ -4,6 +4,7 @@ import numpy as np
 import methods
 from pointLISA import * 
 import scipy
+import utils
 class OUTPUT():
     '''This class uses an AIM object and calculate some useful properties (output) as attributes of an OUTPUT object'''
     def __init__(self,aim=False,**kwargs):
@@ -149,7 +150,7 @@ class OUTPUT():
 
         return pos
 
-    ### All 'get_...' functions defined below will obtain al output value
+    ### All 'get_...' functions defined below will obtain an output value
      
     def get_end_ksi(self,pos):
         check=False
@@ -191,7 +192,21 @@ class OUTPUT():
             except AttributeError, e:
                 self.add_attribute(e,pos)
         return pos
-    
+   
+    def get_off_ab(self,pos):
+        check=False
+        while check==False:
+            try:
+                ret = aberration(pos,pos.off,'send')
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                setattr(pos,'xoff_ab',ret[2])
+                setattr(pos,'yoff_ab',ret[1])
+                setattr(pos,'zoff_ab',ret[0])
+                check=True
+            except AttributeError, e:
+                self.add_attribute(e,pos)
+        return pos
+
     def get_tele_ang(self,pos):
         check=False
         while check==False:
@@ -296,34 +311,34 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = pos.vecs_endbeam[0]
+                ret = pos.vecs_endbeam
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError, e:
                 self.add_attribute(e,pos)
         return pos
 
-    def get_vec_endbeam_na(self,pos):
-        check=False
-        while check==False:
-            try:
-                ret = pos.vecs_endbeam[1]
-                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
-                check=True
-            except AttributeError, e:
-                self.add_attribute(e,pos)
-        return pos
-
-    def get_vec_endbeam_ab(self,pos):
-        check=False
-        while check==False:
-            try:
-                ret = pos.vecs_endbeam[2]
-                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
-                check=True
-            except AttributeError, e:
-                self.add_attribute(e,pos)
-        return pos
+#    def get_vec_endbeam_na(self,pos):
+#        check=False
+#        while check==False:
+#            try:
+#                ret = pos.vecs_endbeam[1]
+#                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+#                check=True
+#            except AttributeError, e:
+#                self.add_attribute(e,pos)
+#        return pos
+#
+#    def get_vec_endbeam_ab(self,pos):
+#        check=False
+#        while check==False:
+#            try:
+#                ret = pos.vecs_endbeam[2]
+#                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+#                check=True
+#            except AttributeError, e:
+#                self.add_attribute(e,pos)
+#        return pos
 
     def get_coor_end(self,pos):
         check=False
@@ -370,10 +385,6 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
-
-
-### end 16 september
-
     def get_xoff(self,pos):
         check=False
         while check==False:
@@ -401,6 +412,39 @@ class OUTPUT():
         while check==False:
             try:
                 ret = pos.off[0]
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError, e:
+                self.add_attribute(e,pos)
+        return pos
+
+    def get_xoff_ab(self,pos):
+        check=False
+        while check==False:
+            try:
+                ret = pos.off_ab[2]
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError, e:
+                self.add_attribute(e,pos)
+        return pos
+
+    def get_yoff_ab(self,pos):
+        check=False
+        while check==False:
+            try:
+                ret = pos.off_ab[1]
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError, e:
+                self.add_attribute(e,pos)
+        return pos
+
+    def get_zoff_ab(self,pos):
+        check=False
+        while check==False:
+            try:
+                ret = pos.off_ab[0]
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError, e:
@@ -444,6 +488,19 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
     
+    def get_arm_tele_rec_ab(self,pos):
+        check=False
+        while check==False:
+            try:
+                ret = aberration(pos,pos.arm_tele_rec,mode='rec')
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
+
+
     def get_arm_tele_send(self,pos):
         check=False
         while check==False:
@@ -456,11 +513,23 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
+    def get_arm_tele_send_ab(self,pos):
+        check=False
+        while check==False:
+            try:
+                ret = aberration(pos,pos.arm_tele_send,mode='send')
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
+
     def get_angx_arm_tele_rec(self,pos):
         check=False
         while check==False:
             try:
-                ret = np.arctan(pos.arm_tele_rec[2]/pos.arm_tele_rec[0])
+                ret = np.arctan(pos.arm_tele_rec_ab[2]/pos.arm_tele_rec_ab[0])
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -472,7 +541,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = np.arctan(pos.arm_tele_rec[1]/pos.arm_tele_rec[0])
+                ret = np.arctan(pos.arm_tele_rec_ab[1]/pos.arm_tele_rec_ab[0])
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -484,7 +553,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = np.arctan(((pos.arm_tele_rec[2]**2+pos.arm_tele_rec[1]**2)**0.5)/pos.arm_tele_rec[0])
+                ret = np.arctan(((pos.arm_tele_rec_ab[2]**2+pos.arm_tele_rec_ab[1]**2)**0.5)/pos.arm_tele_rec_ab[0])
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -496,7 +565,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = np.arctan(pos.arm_tele_send[2]/pos.arm_tele_send[0])
+                ret = np.arctan(pos.arm_tele_send_ab[2]/pos.arm_tele_send_ab[0])
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -508,7 +577,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = np.arctan(pos.arm_tele_send[1]/pos.arm_tele_send[0])
+                ret = np.arctan(pos.arm_tele_send_ab[1]/pos.arm_tele_send_ab[0])
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -523,10 +592,6 @@ class OUTPUT():
                 if precision==0:
                     ret=pos.zoff
                 elif precision==1:
-                    #try:
-                    #   [piston,z_extra] = self.z_solve(pos.xoff,pos.yoff,pos.zoff,ret='all')
-                    #except:
-                    #    [piston,z_extra] = [np.nan,np.nan]
                     ret = self.R(pos.piston)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
@@ -547,6 +612,18 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
+    def get_R_vec_beam_send_ab(self,pos):
+        check=False
+        while check==False:
+            try:
+                ret = aberration(pos,pos.R_vec_beam_send,mode='send') # In beam frame
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
+
     def get_R_vec_tele_send(self,pos):
         check=False
         while check==False:
@@ -558,8 +635,20 @@ class OUTPUT():
                 #print(e)
                 self.add_attribute(e,pos)
         return pos
+    
+    def get_R_vec_tele_send_ab(self,pos):
+        check=False
+        while check==False:
+            try:
+                ret = aberration(pos,pos.R_vec_tele_send,mode='send')
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
 
-    def get_R_vec_origin(self,pos):
+    def get_R_vec_origin(self,pos): #...look
         check=False
         while check==False:
             try:
@@ -582,12 +671,24 @@ class OUTPUT():
                 #print(e)
                 self.add_attribute(e,pos)
         return pos
-    
+
+    def get_R_vec_tele_rec_ab(self,pos):
+        check=False
+        while check==False:
+            try:
+                ret = aberration(pos,pos.R_vec_tele_rec,mode='rec')
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
+ 
     def get_angx_R_vec_tele_rec(self,pos):
         check=False
         while check==False:
             try:
-                ret = np.arctan(pos.R_vec_tele_rec[2]/pos.R_vec_tele_rec[0])
+                ret = np.arctan(pos.R_vec_tele_rec_ab[2]/pos.R_vec_tele_rec_ab[0])
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -599,7 +700,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = np.arctan(pos.R_vec_tele_rec[1]/pos.R_vec_tele_rec[0])
+                ret = np.arctan(pos.R_vec_tele_rec_ab[1]/pos.R_vec_tele_rec_ab[0])
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -611,14 +712,13 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = np.arctan(((pos.R_vec_tele_rec[2]**2+pos.R_vec_tele_rec[1]**2)**0.5)/pos.R_vec_tele_rec[0])
+                ret = np.arctan(((pos.R_vec_tele_rec_ab[2]**2+pos.R_vec_tele_rec_ab[1]**2)**0.5)/pos.R_vec_tele_rec_ab[0])
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
                 #print(e)
                 self.add_attribute(e,pos)
         return pos
-
 
     def get_beam_receive_rec(self,pos):
         check=False
@@ -631,12 +731,12 @@ class OUTPUT():
                 #print(e)
                 self.add_attribute(e,pos)
         return pos
-    
-    def get_beam_receive_rec_na(self,pos):
+
+    def get_beam_receive_rec_ab(self,pos):
         check=False
         while check==False:
             try:
-                ret = LA.matmul(pos.coor_end,-pos.vec_endbeam_na)
+                ret = aberration(pos,pos.beam_receive_rec,'rec')
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -644,11 +744,11 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
-    def get_angx_ab_rec(self,pos):
+    def get_angx_rec(self,pos):
         check=False
         while check==False:
             try:
-                ret = np.sign(pos.beam_receive_rec[2])*abs(np.arctan(pos.beam_receive_rec[2]/pos.beam_receive_rec[0]))
+                ret = np.sign(pos.beam_receive_rec_ab[2])*abs(np.arctan(pos.beam_receive_rec_ab[2]/pos.beam_receive_rec_ab[0]))
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -656,36 +756,11 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
-    def get_angy_ab_rec(self,pos):
+    def get_angy_rec(self,pos):
         check=False
         while check==False:
             try:
-                ret = np.sign(pos.beam_receive_rec[1])*abs(np.arctan(pos.beam_receive_rec[1]/pos.beam_receive_rec[0]))
-                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
-                check=True
-            except AttributeError,e:
-                #print(e)
-                self.add_attribute(e,pos)
-        return pos
-
-    def get_angx_nab_rec(self,pos):
-        check=False
-        while check==False:
-            try:
-
-                ret = np.sign(pos.beam_receive_rec_na[2])*abs(np.arctan(pos.beam_receive_rec_na[2]/pos.beam_receive_rec_na[0]))
-                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
-                check=True
-            except AttributeError,e:
-                #print(e)
-                self.add_attribute(e,pos)
-        return pos
-
-    def get_angy_nab_rec(self,pos):
-        check=False
-        while check==False:
-            try:
-                ret = np.sign(pos.beam_receive_rec_na[1])*abs(np.arctan(pos.beam_receive_rec_na[1]/pos.beam_receive_rec_na[0]))
+                ret = np.sign(pos.beam_receive_rec_ab[1])*abs(np.arctan(pos.beam_receive_rec_ab[1]/pos.beam_receive_rec_ab[0]))
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -705,11 +780,11 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
     
-    def get_beam_receive_send_na(self,pos):
+    def get_beam_receive_send_ab(self,pos):
         check=False
         while check==False:
             try:
-                ret = LA.matmul(pos.coor_starttele,pos.vec_endbeam_na)
+                ret = aberration(pos,pos.beam_receive_send,'send')
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -717,11 +792,11 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
-    def get_angx_ab_send(self,pos):
+    def get_angx_send(self,pos):
         check=False
         while check==False:
             try:
-                ret = np.sign(pos.beam_receive_send[2])*abs(np.arctan(pos.beam_receive_send[2]/pos.beam_receive_send[0]))
+                ret = np.sign(pos.beam_receive_send_ab[2])*abs(np.arctan(pos.beam_receive_send_ab[2]/pos.beam_receive_send_ab[0]))
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -729,35 +804,11 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
-    def get_angy_ab_send(self,pos):
+    def get_angy_send(self,pos):
         check=False
         while check==False:
             try:
-                ret = np.sign(pos.beam_receive_send[1])*abs(np.arctan(pos.beam_receive_send[1]/pos.beam_receive_send[0]))
-                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
-                check=True
-            except AttributeError,e:
-                #print(e)
-                self.add_attribute(e,pos)
-        return pos
-
-    def get_angx_nab_send(self,pos):
-        check=False
-        while check==False:
-            try:
-                ret = np.sign(pos.beam_receive_send_na[2])*abs(np.arctan(pos.beam_receive_send_na[2]/pos.beam_receive_send_na[0]))
-                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
-                check=True
-            except AttributeError,e:
-                #print(e)
-                self.add_attribute(e,pos)
-        return pos
-
-    def get_angy_nab_send(self,pos):
-        check=False
-        while check==False:
-            try:
-                ret = np.sign(pos.beam_receive_send_na[1])*abs(np.arctan(pos.beam_receive_send_na[1]/pos.beam_receive_send_na[0]))
+                ret = np.sign(pos.beam_receive_send_ab[1])*abs(np.arctan(pos.beam_receive_send_ab[1]/pos.beam_receive_send_ab[0]))
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -776,6 +827,19 @@ class OUTPUT():
                 #print(e)
                 self.add_attribute(e,pos)
         return pos
+
+    def get_R_vec_tele_rec_ab(self,pos): #This vector is reversed (pointed away from receiving telescope)
+        check=False
+        while check==False:
+            try:
+                ret = aberration(pos,pos.R_vec_tele_rec,mode='rec')
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
+
   
     def get_tele_vec(self,pos): #This vector is reversed (pointed away from receiving telescope)
         check=False
@@ -789,11 +853,23 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
+    def get_tele_vec_ab(self,pos): #This vector is reversed (pointed away from receiving telescope)
+        check=False
+        while check==False:
+            try:
+                ret = aberration(pos,pos.tele_vec,mode='send')
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
+
     def get_angx_R(self,pos):
         check=False
         while check==False:
             try:
-                ret = np.sign(pos.R_vec_beam_send[2])*abs(np.arctan(pos.R_vec_beam_send[2]/pos.R_vec_beam_send[0]))
+                ret = np.sign(pos.R_vec_beam_send_ab[2])*abs(np.arctan(pos.R_vec_beam_send_ab[2]/pos.R_vec_beam_send_ab[0]))
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -805,7 +881,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = np.sign(pos.R_vec_beam_send[1])*abs(np.arctan(pos.R_vec_beam_send[1]/pos.R_vec_beam_send[0]))
+                ret = np.sign(pos.R_vec_beam_send_ab[1])*abs(np.arctan(pos.R_vec_beam_send_ab[1]/pos.R_vec_beam_send_ab[0]))
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -817,7 +893,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = np.sign(pos.tele_vec[2])*abs(np.arctan(pos.tele_vec[2]/pos.tele_vec[0]))
+                ret = np.sign(pos.tele_vec_ab[2])*abs(np.arctan(pos.tele_vec_ab[2]/pos.tele_vec_ab[0]))
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -829,7 +905,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = np.sign(pos.tele_vec[1])*abs(np.arctan(pos.tele_vec[1]/pos.tele_vec[0]))
+                ret = np.sign(pos.tele_vec_ab[1])*abs(np.arctan(pos.tele_vec_ab[1]/pos.tele_vec_ab[0]))
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -837,63 +913,73 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
-    def get_angx_rec(self,pos):
-        check=False
-        while check==False:
-            try:
-                #ret = (pos.angx_tele-pos.angx_R)
-                ret = np.arctan(abs(pos.R_vec_tele_rec[2]/pos.R_vec_tele_rec[0]))*np.sign(pos.R_vec_tele_rec[2])+pos.angx_ab_rec-pos.angx_nab_rec
-                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
-                check=True
-            except AttributeError,e:
-                #print(e)
-                self.add_attribute(e,pos)
-        return pos
-
-    def get_angy_rec(self,pos):
-        check=False
-        while check==False:
-            try:
-                ret = np.arctan(abs(pos.R_vec_tele_rec[1]/pos.R_vec_tele_rec[0]))*np.sign(pos.R_vec_tele_rec[1])+pos.angy_ab_rec-pos.angy_nab_rec
-                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
-                check=True
-            except AttributeError,e:
-                #print(e)
-                self.add_attribute(e,pos)
-        return pos
-    
-    def get_angx_send(self,pos):
-        check=False
-        while check==False:
-            try:
-                ret = np.arctan(abs(pos.R_vec_tele_send[2]/pos.R_vec_tele_send[0]))*np.sign(pos.R_vec_tele_send[2])+pos.angx_ab_send-pos.angx_nab_send
-                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
-                check=True
-            except AttributeError,e:
-                #print(e)
-                self.add_attribute(e,pos)
-        return pos
-
-    def get_angy_send(self,pos):
-        check=False
-        while check==False:
-            try:
-                ret = np.arctan(abs(pos.R_vec_tele_send[1]/pos.R_vec_tele_send[0]))*np.sign(pos.R_vec_tele_send[1])+pos.angy_ab_send-pos.angy_nab_send
-                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
-                check=True
-            except AttributeError,e:
-                #print(e)
-                self.add_attribute(e,pos)
-        return pos
+#    def get_angx_rec(self,pos): #...check
+#        check=False
+#        while check==False:
+#            try:
+#                ret = np.arctan(abs(pos.R_vec_tele_rec_ab[2]/pos.R_vec_tele_rec_ab[0]))*np.sign(pos.R_vec_tele_rec_ab[2])+pos.angx_rec-pos.angx_rec
+#                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+#                check=True
+#            except AttributeError,e:
+#                #print(e)
+#                self.add_attribute(e,pos)
+#        return pos
+#
+#    def get_angy_rec(self,pos):
+#        check=False
+#        while check==False:
+#            try:
+#                ret = np.arctan(abs(pos.R_vec_tele_rec_ab[1]/pos.R_vec_tele_rec_ab[0]))*np.sign(pos.R_vec_tele_rec_ab[1])+pos.angy_rec-pos.angy_rec
+#                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+#                check=True
+#            except AttributeError,e:
+#                #print(e)
+#                self.add_attribute(e,pos)
+#        return pos
+#    
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#    def get_angx_send(self,pos):
+#        check=False
+#        while check==False:
+#            try:
+#                ret = np.arctan(abs(pos.R_vec_tele_send[2]/pos.R_vec_tele_send[0]))*np.sign(pos.R_vec_tele_send[2])+pos.angx_ab_send-pos.angx_nab_send
+#                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+#                check=True
+#            except AttributeError,e:
+#                #print(e)
+#                self.add_attribute(e,pos)
+#        return pos
+#
+#    def get_angy_send(self,pos):
+#        check=False
+#        while check==False:
+#            try:
+#                ret = np.arctan(abs(pos.R_vec_tele_send[1]/pos.R_vec_tele_send[0]))*np.sign(pos.R_vec_tele_send[1])+pos.angy_ab_send-pos.angy_nab_send
+#                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+#                check=True
+#            except AttributeError,e:
+#                #print(e)
+#                self.add_attribute(e,pos)
+#        return pos
   
-    def get_angx_wf_send(self,pos):
+    def get_angx_wf_send(self,pos): #...check
         check=False
         while check==False:
             try:
                 tele_end = LA.matmul(pos.coor_starttele,-pos.coor_end[0]) # tele_rec is reversed
-                angx_tele_rec = np.sign(tele_end[2])*np.arctan(abs(tele_end[2]/tele_end[0]))
-                angx_R_vec_tele_send = np.sign(pos.R_vec_tele_send[2])*np.arctan(abs(pos.R_vec_tele_send[2]/pos.R_vec_tele_send[0]))
-                ret = angx_tele_rec - angx_R_vec_tele_send+pos.angx_ab_send-pos.angx_nab_send
+                tele_end_ab = aberration(pos,tele_end,mode='send')
+                angx_tele_rec = np.sign(tele_end_ab[2])*np.arctan(abs(tele_end_ab[2]/tele_end_ab[0]))
+                angx_R_vec_tele_send = np.sign(pos.R_vec_tele_send_ab[2])*np.arctan(abs(pos.R_vec_tele_send_ab[2]/pos.R_vec_tele_send_ab[0]))
+                ret = angx_tele_rec - angx_R_vec_tele_send
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -905,12 +991,11 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                tele_end = LA.matmul(pos.coor_starttele,pos.coor_end[0])
-                R_vec_tele_send_y = pos.R_vec_tele_send
-                R_vec_tele_send_y[2] = 0
-                R_y_origin = LA.matmul(np.linalg.inv(pos.coor_startbeam),R_vec_tele_send_y)
-                R_y_rec = LA.matmul(pos.coor_end,-R_y_origin)
-                ret = np.sign(R_y_rec[1])*np.arctan(abs(R_y_rec[1]/R_y_rec[0]))+pos.angy_ab_send-pos.angy_nab_send
+                tele_end = LA.matmul(pos.coor_starttele,-pos.coor_end[0]) # tele_rec is reversed
+                tele_end_ab = aberration(pos,tele_end,mode='send')
+                angy_tele_rec = np.sign(tele_end_ab[1])*np.arctan(abs(tele_end_ab[1]/tele_end_ab[0]))
+                angy_R_vec_tele_send = np.sign(pos.R_vec_tele_send_ab[1])*np.arctan(abs(pos.R_vec_tele_send_ab[1]/pos.R_vec_tele_send_ab[0]))
+                ret = angy_tele_rec - angy_R_vec_tele_send
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -922,8 +1007,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                R_vec_rec = -pos.R_vec_tele_rec
-                ret = np.sign(pos.R_vec_tele_rec[2])*np.arctan(abs(pos.R_vec_tele_rec[2]/pos.R_vec_tele_rec[0]))
+                ret = np.sign(pos.R_vec_tele_rec_ab[2])*np.arctan(abs(pos.R_vec_tele_rec_ab[2]/pos.R_vec_tele_rec_ab[0]))
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -935,12 +1019,11 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                R_vec_rec = -pos.R_vec_tele_rec
-                ret = np.sign(pos.R_vec_tele_rec[1])*np.arctan(abs(pos.R_vec_tele_rec[1]/pos.R_vec_tele_rec[0]))
+                ret = np.sign(pos.R_vec_tele_rec_ab[1])*np.arctan(abs(pos.R_vec_tele_rec_ab[1]/pos.R_vec_tele_rec_ab[0]))
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
-                #print(e)
+                #bprint(e)
                 self.add_attribute(e,pos)
         return pos
 
@@ -1524,57 +1607,10 @@ def get_coor_beam_in(aim,i,t,tdel,side,tele_angle_send=False,beam_angle_send=Fal
             u_not_ab = methods.beam_coor_out(aim.data,i_left,t-tdel,tele_angle_send,beam_angle_send,offset)[0]
         elif side=='r':
             u_not_ab = methods.beam_coor_out(aim.data,i_right,t-tdel,tele_angle_send,beam_angle_send,offset)[0]
+    
+    u_ab = aberration(aim.data,u_not_ab,i=i,t=t)
 
-    if aim.data.aberration==False:
-        ret = u_not_ab
-    elif aim.data.aberration==True:
-        if side=='l':
-            u_ab = np.linalg.norm(u_not_ab)*(LA.unit(LA.unit(u_not_ab)*aim.data.c-(aim.data.vel.abs(i_self,t-tdel0) - aim.data.vel.abs(i_left,t-tdel))))
-        elif side=='r':
-            u_ab = np.linalg.norm(u_not_ab)*(LA.unit(LA.unit(u_not_ab)*aim.data.c-(aim.data.vel.abs(i_self,t-tdel0) - aim.data.vel.abs(i_right,t-tdel))))
-        if aim.data.relativistic==False:
-            ret=u_ab
-        else:
-            coor = get_coor_tele(aim,i_self,t,side,tele_angle=tele_angle_rec)
-            if side=='l':
-                velo = (aim.data.vel.abs(i_self,t-tdel0) - aim.data.vel.abs(i_left,t-tdel))
-            elif side=='r':
-                velo = (aim.data.vel.abs(i_self,t-tdel0) - aim.data.vel.abs(i_right,t-tdel))
-
-            c_vec = LA.unit(u_not_ab)*aim.data.c
-
-            r = coor[0]
-            x_prime = LA.unit(velo)
-            n_prime = LA.unit(np.cross(velo,r))
-            r_prime = LA.unit(np.cross(n_prime,x_prime))
-
-            coor_velo = np.array([r_prime,n_prime,x_prime])
-            c_velo = LA.matmul(coor_velo,c_vec)
-            v = np.linalg.norm(velo)
-            den = 1.0 - ((v/(c**2))*c_velo[2]) #1.0 - ((v/(c**2))*coor_velo[2]) ...adjusted
-            num = ((1.0-((v**2)/(c**2)))**0.5)
-
-            ux_prime = (c_velo[2] - v)/den # Check of dit met plus is
-            ur_prime = (num*c_velo[0])/den
-            un_prime = (num*c_velo[1])/den
-            c_prime = ux_prime*x_prime + un_prime*n_prime +ur_prime*r_prime
-            u_new=LA.unit(c_prime)*np.linalg.norm(u_not_ab)
-            
-            ret = u_new
-    try:
-        u_ab
-    except NameError:
-        u_ab=np.array([np.nan,np.nan,np.nan])
-
-    if out==2:
-        ret = [ret,u_not_ab]
-    elif out==1:
-        ret = [ret]
-    elif out==3:
-        ret = [ret,u_not_ab,u_ab]
-
-
-    return ret
+    return u_ab
 
 def get_coor_beam_out(aim,i,t,side,tele_angle=False,beam_angle=False,offset=False):
     '''Gets outgoing (transmitted) beam coordinate system'''
@@ -1668,6 +1704,8 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
                 offset_r = get_offset(aim,i_left,t+tdel,'r')
             elif offset_r == None:
                 offset_r = 0.0
+            i_send = i_self
+            i_rec = i_left
 
         elif side=='r':
             tdel = aim.data.L_sr_func_tot(i_self,t)
@@ -1683,6 +1721,8 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
                 offset_r = get_offset(aim,i_self,t+tdel0,'r')
             elif offset_r == None:
                 offset_r = 0.0
+            i_send = i_self
+            i_rec = i_right
 
     elif mode=='rec':
         if side=='l':
@@ -1699,7 +1739,9 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
                 offset_r = get_offset(aim,i_left,t-tdel,'r')
             elif offset_r==None:
                 offset_r=0.0
-            
+            i_send = i_left
+            i_rec = i_self
+
         elif side=='r':
             tdel = aim.data.L_rr_func_tot(i_self,t)
             if aim.data.calc_method=='Waluschka':
@@ -1714,6 +1756,8 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
                 offset_r = get_offset(aim,i_self,t-tdel0,'r')
             elif offset_r==None:
                 offset_r=0.0
+            i_send = i_right
+            i_rec = i_self
             
     if (mode=='send' and side=='l') or (mode=='rec' and side=='r'):
         tele_angle_start = tele_angle_l
@@ -1722,7 +1766,7 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
         beam_angle_end = beam_angle_r
         offset_start = offset_l
         offset_end = offset_r
-
+        
     elif (mode=='send' and side=='r') or (mode=='rec' and side=='l'):
         tele_angle_start = tele_angle_r
         beam_angle_start = beam_angle_r
@@ -1731,6 +1775,28 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
         offset_start = offset_r
         offset_end = offset_l
  
+    if mode=='send':
+        r_beam_start = methods.beam_coor_out(aim.data,i_send,t+tdel0,tele_angle_start,beam_angle_start,offset_start)[0]
+        tele_coor_start = methods.coor_tele(aim.data,i_send,t+tdel0,tele_angle_start)
+        r_beam_start_SC = methods.aberration_beam_coor(aim.data,i_send,t+tdel0,r_beam_start,reverse=True)
+        beam_angle_start = LA.angle(r_beam_start_SC,tele_coor_start[0])
+
+        r_beam_end = methods.beam_coor_out(aim.data,i_rec,t+tdel,tele_angle_end,beam_angle_end,offset_end)[0]
+        tele_coor_end = methods.coor_tele(aim.data,i_rec,t+tdel,tele_angle_end)
+        r_beam_end_SC = methods.aberration_beam_coor(aim.data,i_send,t+tdel,r_beam_start,reverse=True)
+        beam_angle_end = LA.angle(r_beam_end_SC,tele_coor_end[0])
+    
+    elif mode=='rec':
+        r_beam_start = methods.beam_coor_out(aim.data,i_send,t-tdel,tele_angle_start,beam_angle_start,offset_start)[0]
+        tele_coor_start = methods.coor_tele(aim.data,i_send,t-tdel,tele_angle_start)
+        r_beam_start_SC = methods.aberration_beam_coor(aim.data,i_send,t-tdel,r_beam_start,reverse=True)
+        beam_angle_start = LA.angle(r_beam_start_SC,tele_coor_start[0])
+
+        r_beam_end = methods.beam_coor_out(aim.data,i_rec,t-tdel0,tele_angle_end,beam_angle_end,offset_end)[0]
+        tele_coor_end = methods.coor_tele(aim.data,i_rec,t-tdel0,tele_angle_end)
+        r_beam_end_SC = methods.aberration_beam_coor(aim.data,i_send,t-tdel0,r_beam_end,reverse=True)
+        beam_angle_end = LA.angle(r_beam_end_SC,tele_coor_end[0])
+
     positions=utils.Object()
     positions.method = aim.data.calc_method
     positions.aim=aim
@@ -1741,7 +1807,7 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
     positions.offset_l = offset_l
     positions.offset_r = offset_r
     
-    param = ['mode','side','i_self','i_left','i_right','t','ksi','tdel','tdel0','tele_angle_start','tele_angle_end','beam_angle_start','beam_angle_end','aim','offset_start','offset_end']
+    param = ['mode','side','i_self','i_left','i_right','t','ksi','tdel','tdel0','tele_angle_start','tele_angle_end','beam_angle_start','beam_angle_end','aim','offset_start','offset_end','i_rec','i_send']
     for p in param:
         try:
             setattr(positions,p,locals()[p])
@@ -1761,11 +1827,50 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
     
     return positions
 
+def aberration(pos,u,mode='rec',**kwargs): # Only classical  
+    if 'Object' in str(type(pos)):
+        aber = pos.aim.data.aberration
+    elif 'STATIC' in str(pos):
+        aber = pos.data.aberration
+
+    if aber==True:
+        if 'Object' in str(type(pos)):
+            if pos.aim.data.aberration==False:
+                u_new = u
+            elif pos.aim.data.aberration==True:
+                if mode=='rec':
+                    i = pos.i_rec
+                    if pos.mode=='rec':
+                        t = pos.t-pos.tdel0
+                    elif pos.mode=='send':
+                        t = pos.t-pos.tdel
+                elif mode=='send':
+                    i = pos.i_send
+                    if pos.mode=='rec':
+                        t = pos.t+pos.tdel
+                    elif pos.mode=='send':
+                        t = pos.t+pos.tdel0
+        elif 'STATIC' in str(pos):
+            t = kwargs['t']
+            i = kwargs['i']
+
+        V = -pos.aim.data.vel.abs(i,t)
+        u_mag = np.linalg.norm(u)
+        c_vec = LA.unit(u)*c
+        u_new = LA.unit(c_vec+V)*u_mag
+    
+    elif aber==False:
+        u_new = u
+    
+    return u_new
+
+
 # Calculating the PAAM and telescope poiting angles
 def tele_center_calc(aim,i,t,scale=1,lim=1e-12,max_count=5,print_on=False,value=0,tele_l=False,tele_r=False,beam_l=False,beam_r=False,offset_l=False,offset_r=False):
     '''Obtains the telescope pointing angle when the telesope is pointed with the center method'''
     [i_self,i_left,i_right] = utils.i_slr(i)
     
+    lim = np.radians(5.0)
     if tele_l is False:
         tele_l=aim.tele_l_ang(i_self,t)
     elif tele_l==None:
@@ -1783,37 +1888,52 @@ def tele_center_calc(aim,i,t,scale=1,lim=1e-12,max_count=5,print_on=False,value=
     elif beam_r==None:
         beam_r=np.float64(0.0)
     
-    count=0
-    check=False
-    while check==False:
-        tele_l_old = tele_l
-        tele_r_old = tele_r
-        pos_send = values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['off'])
-        angx_send = np.sign(pos_send.xoff-value)*abs(np.arctan((pos_send.xoff-value)/pos_send.zoff))
-        tele_l = tele_l+angx_send
+    tele_l_old = tele_l
+    tele_r_old = tele_r
+    
+    pos_send = lambda tele_l: values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['off']).xoff
+    send_solve = lambda tele_l: pos_send(tele_l)-value
+    
 
-        pos_rec = values(aim,i_left,t,'r',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['off'])
-        angx_rec = np.sign(pos_rec.xoff-value)*abs(np.arctan((pos_rec.xoff-value)/pos_rec.zoff))
-        tele_r = tele_r+angx_rec
-
-        count=count+1
-
-        if count>=max_count:
-            check=True
-            mode='Maximum counts'
+    try:
+        tele_l_new = scipy.optimize.brentq(send_solve,-lim-np.radians(30.0),lim-np.radians(30.0))
+    except ValueError,e:
+        if str(e)=='f(a) and f(b) must have different signs':
+            tele_l_new=np.nan
+ 
+    if tele_l_new!=np.nan:
+        pos_rec = lambda tele_r: values(aim,i_left,t,'r',tele_angle_l=tele_l_new,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['off']).xoff
+        rec_solve = lambda tele_r: pos_rec(tele_r)-value
         
-        if tele_l_old-lim<=tele_l and tele_l<=tele_l_old+lim and tele_r_old-lim<=tele_r and tele_r<=tele_r_old+lim:
-            chek=True
-            mode='Converged'
-        if abs(angx_send)<=lim and abs(angx_rec)<=lim:
-            chek=True
-            mode='Converged'
-        if print_on:
-            print(tele_l,tele_r)
+        try:
+            tele_r_new = scipy.optimize.brentq(rec_solve,-lim+np.radians(30.0),lim+np.radians(30.0))
+            print(tele_l_new,tele_r_new)
+        except ValueError,e:
+            if str(e)=='f(a) and f(b) must have different signs':
+                tele_r_new=np.nan
+    else:
+        tele_r_new = np.nan
+        
+        
+#        count=count+1
+#
+#        if count>=max_count:
+#            check=True
+#            mode='Maximum counts'
+#        
+#        if tele_l_old-lim<=tele_l and tele_l<=tele_l_old+lim and tele_r_old-lim<=tele_r and tele_r<=tele_r_old+lim:
+#            chek=True
+#            mode='Converged'
+#        if abs(angx_send)<=lim and abs(angx_rec)<=lim:
+#            chek=True
+#            mode='Converged'
+#        if print_on:
+#            print(tele_l,tele_r)
 
-    return [[tele_l,tele_r], mode]
+#    return [[tele_l,tele_r], mode]
+    return [[tele_l_new,tele_r_new], False]
 
-def PAAM_center_calc(aim,i,t,para='yoff',scale=1,lim=1e-12,max_count=5,print_on=False,tele_l=None,tele_r=None,beam_l=None,beam_r=None,offset_l=None,offset_r=None,value=0,method='iter',margin=0.01):
+def PAAM_center_calc(aim,i,t,para='yoff_ab',scale=1,lim=1e-12,max_count=5,print_on=False,tele_l=None,tele_r=None,beam_l=None,beam_r=None,offset_l=None,offset_r=None,value=0,method='iter',margin=0.01):
     '''Obtains the PAAM pointing angle when the PAAM is pointed with the center method'''
     [i_self,i_left,i_right] = utils.i_slr(i)
     
@@ -1834,42 +1954,34 @@ def PAAM_center_calc(aim,i,t,para='yoff',scale=1,lim=1e-12,max_count=5,print_on=
     elif beam_r==None:
         beam_r=np.float64(0.0)
     
-    if method=='iter': 
-        count=0
-        check=False
-        while check==False:
-            beam_l_old = beam_l
-            beam_r_old = beam_r
-            pos_send = values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_l,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['off'])
-            angy_send = np.sign(pos_send.yoff)*abs(np.arctan(pos_send.yoff/pos_send.zoff))
-            beam_l = beam_l-angy_send
+    lim = 1.0e-3
+    beam_l_old = beam_l
+    beam_r_old = beam_r
+    pos_send = lambda beam_l: values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_l,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['off']).yoff
+    send_solve = lambda beam_l: pos_send(beam_l)-value
 
-            pos_rec = values(aim,i_left,t,'r',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['off'])
-            angy_rec = np.sign(pos_rec.yoff)*abs(np.arctan(pos_rec.yoff/pos_rec.zoff))
-            beam_r = beam_r-angy_rec
 
-            count=count+1
+    try:
+        beam_l_new = scipy.optimize.brentq(send_solve,-lim,lim)
+    except ValueError,e:
+        if str(e)=='f(a) and f(b) must have different signs':
+            beam_l_new=np.nan
 
-            if count>=max_count:
-                check=True
-                mode='Maximum counts'
-            if beam_l_old-lim<=beam_l and beam_l<=beam_l_old+lim and beam_r_old-lim<=beam_r and beam_r<=beam_r_old+lim:
-                chek=True
-                mode='Converged'
-            if abs(angy_send)<=lim and abs(angy_rec)<=lim:
-                chek=True
-                mode='Converged'
-            if print_on:
-                print(beam_l,beam_r)
+    if beam_l_new!=np.nan:
+        pos_rec = lambda beam_r: values(aim,i_left,t,'r',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l_new,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['off']).yoff
+        rec_solve = lambda beam_r: pos_rec(beam_r)-value
 
-    elif method=='solve':
-        solve_l = lambda beam_l_solve: getattr(values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_l,beam_angle_l=beam_l_solve,beam_angle_r=beam_r,ret=[para]),para) - value
-        beam_l = scipy.optimize.brentq(solve_l,-margin,margin,xtol=lim)
-        solve_r = lambda beam_r_solve: getattr(values(aim,i_left,t,'r',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r_solve,ret=[para]),para) - value
-        beam_r = scipy.optimize.brentq(solve_r,-margin,margin,xtol=lim)
-        mode='Converged'
+        try:
+            beam_r_new = scipy.optimize.brentq(rec_solve,-lim,lim)
+        except ValueError,e:
+            if str(e)=='f(a) and f(b) must have different signs':
+                beam_r_new=np.nan
+    else:
+        beam_r_new = np.nan
 
-    return [[beam_l,beam_r], mode]
+    mode='Converged'
+
+    return [[beam_l_new,beam_r_new], mode]
 
 def PAAM_wavefront_calc(aim,i,t,side,lim=1e-12):
     '''Obtains the PAAM pointing angle when the PAAM is pointed with the wavefront method'''

@@ -523,7 +523,7 @@ class AIM():
 
         return [[tele_l_coor,tele_r_coor],[tele_l_vec,tele_r_vec],[tele_l_start,tele_r_start]]
 
-    def get_beam_coor(self,i,t,tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset):
+    def get_beam_coor(self,i,t,tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset): #...only send frame
         ''' Calculating new pointing vectors and beam coordinate system '''
         if offset == False:
             offset = self.offset_tele
