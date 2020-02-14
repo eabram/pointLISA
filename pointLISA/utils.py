@@ -266,56 +266,62 @@ def send_func(OBJ,i,calc_method='Waluschka'):
 
 def relativistic_aberrations(OBJ,i,t,u,relativistic=True):
     '''Adjust vecor u by adding the angle caused by aberration'''
-    if relativistic==True:
-        V = -OBJ.vel.abs(i,t)
-        V_mag = np.linalg.norm(V)
-        u_mag = np.linalg.norm(u)
-        c_vec = LA.unit(u)*c
+    if OBJ.calc_method=='Abram':
+        if relativistic==True:
+            V = -OBJ.vel.abs(i,t)
+            V_mag = np.linalg.norm(V)
+            u_mag = np.linalg.norm(u)
+            c_vec = LA.unit(u)*c
 
-        velo = V
-        coor = methods.coor_SC(OBJ,i,t)
-        r=coor[0]
-        x_prime = LA.unit(velo)
-        n_prime = LA.unit(np.cross(velo,r))
-        r_prime = LA.unit(np.cross(n_prime,x_prime))
-        coor_velo = np.array([r_prime,n_prime,x_prime])
-        c_velo = LA.matmul(coor_velo,c_vec)
-        v = np.linalg.norm(velo)
-        den = 1.0 - ((v/(c**2))*coor_velo[2])
-        num = ((1.0-((v**2)/(c**2)))**0.5)
+            velo = V
+            coor = methods.coor_SC(OBJ,i,t)
+            r=coor[0]
+            x_prime = LA.unit(velo)
+            n_prime = LA.unit(np.cross(velo,r))
+            r_prime = LA.unit(np.cross(n_prime,x_prime))
+            coor_velo = np.array([r_prime,n_prime,x_prime])
+            c_velo = LA.matmul(coor_velo,c_vec)
+            v = np.linalg.norm(velo)
+            den = 1.0 - ((v/(c**2))*coor_velo[2])
+            num = ((1.0-((v**2)/(c**2)))**0.5)
 
-        ux_prime = (c_velo[2] + v)/den
-        ur_prime = (num*c_velo[0])/den
-        un_prime = (num*c_velo[1])/den
-        c_prime = ux_prime*x_prime + un_prime*n_prime +ur_prime*r_prime
-        u_new = LA.unit(c_prime)*u_mag
+            ux_prime = (c_velo[2] + v)/den
+            ur_prime = (num*c_velo[0])/den
+            un_prime = (num*c_velo[1])/den
+            c_prime = ux_prime*x_prime + un_prime*n_prime +ur_prime*r_prime
+            u_new = LA.unit(c_prime)*u_mag
 
-#        ux = (np.dot(c_vec,V)/(V_mag))*LA.unit(V)
-#        x = LA.unit(ux)
-#        uy = c_vec-ux
-#        y = LA.unit(uy)
-#        
-#        ux_mag = np.linalg.norm(ux)
-#        uy_mag = np.linalg.norm(uy)
-#
-#        den = (1+((ux_mag*V_mag)/(c**2)))
-#        ux_ac = (ux_mag+V_mag)/den
-#        gamma = 1.0/((1-((V_mag/c)**2))**0.5)
-#        uy_ac = uy_mag/(gamma*den)
-#        
-#        u_new = LA.unit(ux_ac*x+uy_ac*y)*u_mag
-#        #u_new = (ux_ac*x+uy_ac*y)*(u_mag/c)
+    #        ux = (np.dot(c_vec,V)/(V_mag))*LA.unit(V)
+    #        x = LA.unit(ux)
+    #        uy = c_vec-ux
+    #        y = LA.unit(uy)
+    #        
+    #        ux_mag = np.linalg.norm(ux)
+    #        uy_mag = np.linalg.norm(uy)
+    #
+    #        den = (1+((ux_mag*V_mag)/(c**2)))
+    #        ux_ac = (ux_mag+V_mag)/den
+    #        gamma = 1.0/((1-((V_mag/c)**2))**0.5)
+    #        uy_ac = uy_mag/(gamma*den)
+    #        
+    #        u_new = LA.unit(ux_ac*x+uy_ac*y)*u_mag
+    #        #u_new = (ux_ac*x+uy_ac*y)*(u_mag/c)
 
-    elif relativistic==False:
-        V = -OBJ.vel.abs(i,t)
-        u_mag = np.linalg.norm(u)
-        c_vec = LA.unit(u)*c
+        elif relativistic==False:
+            V = -OBJ.vel.abs(i,t)
+            u_mag = np.linalg.norm(u)
+            c_vec = LA.unit(u)*c
 
-        u_new = LA.unit(c_vec+V)*u_mag
-    else:
-        print('Error')
+            u_new = LA.unit(c_vec+V)*u_mag
+        else:
+            print('Error')
 
-    return u_new
+        return u_new
+
+    elif OBJ.calc_method=='Waluschka':
+
+        return u
+
 
 
 #def relativistic_aberrations2(OBJ,i,t,tdel,side,relativistic=True): #not used
