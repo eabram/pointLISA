@@ -505,7 +505,7 @@ def coor_tele(data,i,t,ang_tele):
 
     return np.array([r,n,x])
 
-def aberration_beam_coor(data,i,t,v,reverse=False):
+def aberration_beam_coor(data,i,t,v,reverse=False): # if reverse==True: SUN-->SC, if reverse==False: SC-->SUN
     if data.aberration==False:
         ret = v
     elif data.aberration==True:
@@ -518,15 +518,15 @@ def aberration_beam_coor(data,i,t,v,reverse=False):
 
     return ret
 
-def beam_coor_out(data,i,t,ang_tele,ang_paam,ang_tele_offset): # beam coordinates as seen from the Sun
+def beam_coor_out__send(data,i,t,ang_tele,ang_paam,ang_tele_offset): # beam coordinates as seen from send frame, Sun coordinate
     '''Retunrs the coordinate system of the transmitted beam (same as SC but rotated over ang_tele inplane and ang_tele outplane)'''
     [r,n,x] = coor_tele(data,i,t,ang_tele+ang_tele_offset) #Telescope coordinate system
 
     r = LA.unit(LA.rotate(r,x,ang_paam)) # Rotate r in out of plane over ang_paam
-    r_new = aberration_beam_coor(data,i,t,r)
-    n = np.cross(r_new,x)
+    #r_new = aberration_beam_coor(data,i,t,r)
+    n = np.cross(r,x)
 
-    return np.array([r_new,n,x])
+    return np.array([r,n,x])
 
 def i_slr(i):
     '''Returns [i_self,i_left,i_right]'''
