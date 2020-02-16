@@ -2072,12 +2072,11 @@ def tele_wavefront_calc(aim,i_l,t,method,scale=1,lim=1e-12,max_count=20,tele_ang
             tele_angle_r_old = tele_angle_r
             pos_l = values(aim,i_l,t_l,'l',mode='send',tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r)
             calc_l = getattr(getattr(OUTPUT(aim),'get_'+para)(pos_l),para)
-            tele_angle_r = tele_angle_r-scale*calc_l
+            tele_angle_r = tele_angle_r+scale*calc_l
 
             pos_r = values(aim,i_r,t_r+tdel,'r',mode='send',tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r)
             calc_r = getattr(getattr(OUTPUT(aim),'get_'+para)(pos_r),para)
-            tele_angle_l = tele_angle_l-scale*calc_r
-
+            tele_angle_l = tele_angle_l+scale*calc_r
             count=count+1
             lim_val = max(abs(abs(calc_l_old)-abs(calc_l)),abs(abs(calc_r_old)-abs(calc_r)))
             if print_on:
