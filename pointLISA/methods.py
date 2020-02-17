@@ -770,6 +770,7 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
 def tele_point_calc(aim,i,t,side,option,lim=False,method=False,value=0,scale=1,max_count=20,tele_l0=None,tele_r0=None,beam_l0=None,beam_r0=None,offset_l0=None,offset_r0=None,**kwargs): # Recommended to use aim0
     '''Calculates the (full control) telescope pointing angles (with the center or wavefront method)'''
     import utils
+    [i_self,i_left,i_right] = utils.i_slr(i)
     if option=='center':
         if lim==False:
             lim = aim.aimset.limit_xoff
@@ -793,8 +794,8 @@ def tele_point_calc(aim,i,t,side,option,lim=False,method=False,value=0,scale=1,m
         if side=='l':
             ang = output.get_tele_wavefront(aim,i,t,'l',method,scale=scale,lim=lim,max_count=max_count,value=value,tele_angle_l=tele_l0,tele_angle_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)
         elif side=='r':
-            ang = output.get_tele_wavefront(aim,i,t,'r',method,scale=scale,lim=lim,max_count=max_count,value=value,tele_angle_l=tele_l0,tele_angle_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)
-
+            ang = output.get_tele_wavefront(aim,i_right,t,'r',method,scale=scale,lim=lim,max_count=max_count,value=value,tele_angle_l=tele_l0,tele_angle_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)
+            
     return ang
 
 
