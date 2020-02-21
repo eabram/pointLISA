@@ -225,15 +225,15 @@ class AIM():
                 t_r_adjust=[0,0,0]
                 
                 if option=='wavefront':
-                    ret = 'angx_wf_send'
+                    ret = 'angx_wf_rec'
                     lim=self.aimset.FOV #Klopt niet want alleen in inplane i.p.v. totaal, kan ook met I ...adjust
                 elif option=='center':
-                    ret = 'xoff'
+                    ret = 'Ivalx'
                     lim=self.aimset.width/2.0
 
                 for link in range(1,4):
                     t_plot = self.data.t_all[2:-3]
-                    t_adjust,[tele_l,tele_r],i_left,i_right = methods.SS_value(self.aim0,link,t_plot[0],t_plot[-1],'solve',lim,ret=ret,print_on=False,value=value)
+                    t_adjust,[tele_l,tele_r],i_left,i_right = methods.SS_value(self,link,t_plot[0],t_plot[-1],'solve',lim,ret=ret,print_on=False,value=value,tele_l=None,tele_r=None,offset_l=False,offset_r=False)
                     f_l = lambda t: methods.get_SS_func(t_adjust,tele_l,t)
                     f_r = lambda t: methods.get_SS_func(t_adjust,tele_r,t)
                     tele_l_tot[i_left-1] = f_l

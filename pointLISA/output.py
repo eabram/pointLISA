@@ -509,9 +509,9 @@ class OUTPUT():
         while check==False:
             try:
                 if pos.mode=='send':
-                    ret = aberration_beam_coor(pos.aim.data,i_rec,pos.t+pos.tdel,pos.startend__sun,reverse=True)
+                    ret = aberration_beam_coor(pos.aim.data,pos.i_rec,pos.t+pos.tdel,pos.startend__sun,reverse=True)
                 elif pos.mode=='rec':
-                    ret = aberration_beam_coor(pos.aim.data,i_rec,pos.t-pos.tdel0,pos.startend__sun,reverse=True)
+                    ret = aberration_beam_coor(pos.aim.data,pos.i_rec,pos.t-pos.tdel0,pos.startend__sun,reverse=True)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -1139,7 +1139,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = (abs(pos.angx_wf_send)**2 +abs(pos.angy_wf_send)**2)**0.5
+                ret = (abs(pos.angx_wf_rec)**2 +abs(pos.angy_wf_rec)**2)**0.5
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -1211,6 +1211,22 @@ class OUTPUT():
                 #print(e)
                 self.add_attribute(e,pos)
         return pos
+
+    def get_Ivalx(self,pos):
+        check=False
+        while check==False:
+            try:
+                ret = (pos.I0*np.exp((-2*(pos.xoff**2))/(pos.waist**2)))*(pos.aim.data.w0_laser/pos.waist)
+
+                #ret = (abs(pos.u)**2)[0]#*np.cos(pos.angx_rec)*np.cos(pos.angy_rec)
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
+
+
     
     def get_I(self,pos):
         check=False
