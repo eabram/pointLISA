@@ -476,9 +476,21 @@ class OUTPUT():
                 self.add_attribute(e,pos)
         return pos
 
-
-
-
+    def get_startend__rec(self,pos):
+        check=False
+        while check==False:
+            try:
+                v = pos.startend__sun
+                if pos.mode=='send':
+                    ret = methods.aberration_beam_coor(pos.aim.data,pos.i_rec,pos.t+pos.tdel,v,reverse=True)
+                elif pos.mode=='rec':
+                    ret = methods.aberration_beam_coor(pos.aim.data,pos.i_rec,pos.t-pos.tdel0,v,reverse=True)            
+                setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
+                check=True
+            except AttributeError,e:
+                #print(e)
+                self.add_attribute(e,pos)
+        return pos
 
 #...hier gebleven
 
@@ -509,9 +521,9 @@ class OUTPUT():
         while check==False:
             try:
                 if pos.mode=='send':
-                    ret = aberration_beam_coor(pos.aim.data,pos.i_rec,pos.t+pos.tdel,pos.startend__sun,reverse=True)
+                    ret = methods.aberration_beam_coor(pos.aim.data,pos.i_rec,pos.t+pos.tdel,pos.startend__sun,reverse=True)
                 elif pos.mode=='rec':
-                    ret = aberration_beam_coor(pos.aim.data,pos.i_rec,pos.t-pos.tdel0,pos.startend__sun,reverse=True)
+                    ret = methods.aberration_beam_coor(pos.aim.data,pos.i_rec,pos.t-pos.tdel0,pos.startend__sun,reverse=True)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -2193,30 +2205,3 @@ def get_tele_wavefront(aim,i,t,side,method,scale=1,lim=1e-12,max_count=20,print_
 
 
     
-     
-
-#    try:
-#        ang = tele_wavefront_calc(aim.aim0,i_l,t-tdel,aim.aimset.tele_method_solve,lim=aim.aimset.limit_angx,scale=scale,max_count=max_count,print_on=print_on,tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r,beam_l=beam_l,beam_r=beam_r,offset_l=offset_l,offset_r=offset_r)
-#        aim_sel = aim.aim0
-#    except AttributeError:
-#        ang = tele_wavefront_calc(aim,i_l,t-tdel,aim.aimset.tele_method_solve,lim=aim.aimset.limit_angx,scale=scale,max_count=max_count,print_on=print_on,tele_angle_l=tele_angle_l,tele_angle_r=tele_angle_r,beam_l=beam_l,beam_r=beam_r,offset_l=offset_l,offset_r=offset_r)
-#        aim_sel=aim
-#
-#
-#    if side=='l':
-#        pos = values(aim_sel,i_l,t,'l',ksi=[0,0],mode='send',tele_angle_l=ang[0][0],tele_angle_r=ang[0][1],beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['angx_wf_send']).angx_wf_send
-#        ret=ang[0][0]
-#    elif side=='r':
-#        pos = values(aim_sel,i_r,t,'r',ksi=[0,0],mode='send',tele_angle_l=ang[0][0],tele_angle_r=ang[0][1],beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['angx_wf_send']).angx_wf_send
-#        ret=ang[0][1]
-#    
-#    if print_on:
-#        print(ret,pos)
-#
-#    
-#    if side=='l':
-#        ret = tele_l
-#    elif side=='r':
-#        ret = tele_r
-#
-#    return ret

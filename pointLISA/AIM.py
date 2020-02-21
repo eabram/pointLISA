@@ -882,16 +882,16 @@ class AIM():
             beam_r_ang = lambda i,t: 0.0
 
         elif self.PAAMout_control=='full_control':
-            tele_l0=False
-            tele_r0=False
+            tele_l0=np.radians(-30.0)
+            tele_r0=np.radians(30.0)
             ret = 'angy_arm_tele_send'
 
             beam_l_ang = lambda i,t: -getattr(output.values(self,i,t,'l',tele_angle_l=tele_l0,tele_angle_r=tele_r0,beam_angle_l=0.0,beam_angle_r=0.0,offset_l=0.0,offset_r=0.0,mode='send',ret=[ret]),ret)
             beam_r_ang = lambda i,t: -getattr(output.values(self,i,t,'r',tele_angle_l=tele_l0,tele_angle_r=tele_r0,beam_angle_l=0.0,beam_angle_r=0.0,offset_l=0.0,offset_r=0.0,mode='send',ret=[ret]),ret)
         
         elif self.PAAMout_control=='offset':
-            tele_l0=False
-            tele_r0=False
+            tele_l0=np.radians(-30.0)
+            tele_r0=np.radians(30.0)
             ret = 'angy_arm_tele_send'
             try:
                 self.t_sample
@@ -947,8 +947,8 @@ e dual axis PAAM'''
         elif self.PAAMin_control=='full_control':
             tele_l0=False
             tele_r0=False
-            beam_l0=0.0
-            beam_r0=0.0
+            beam_l0=False
+            beam_r0=False
             offset_calc={}
             ret = 'angx_arm_tele_send'
 
@@ -979,14 +979,13 @@ e dual axis PAAM'''
                     offset_l_samp[i].append(getattr(output.values(self,i,t,'l',tele_angle_l=tele_l0,tele_angle_r=tele_r0,beam_angle_l=beam_l0,beam_angle_r=beam_r0,offset_l=0.0,offset_r=0.0,mode='send',ret=[ret]),ret))
                     offset_r_samp[i].append(getattr(output.values(self,i,t,'r',tele_angle_l=tele_l0,tele_angle_r=tele_r0,beam_angle_l=beam_l0,beam_angle_r=beam_r0,offset_l=0.0,offset_r=0.0,mode='send',ret=[ret]),ret))
 
-
             offset_calc['l'] = lambda i,t: np.nanmean(offset_l_samp[i])
             offset_calc['r'] = lambda i,t: np.nanmean(offset_r_samp[i])
             offset=lambda i,t,s: offset_calc[s](i,t)
 
         else:
             raise ValueError('Please select a valid PAAM inplane pointing method (PAAMin_control)')
-
+        
         param=['offset']
         for p in param:
             try:
