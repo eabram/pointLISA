@@ -707,11 +707,6 @@ class AIM():
                 setattr(self,p,getattr(self.aimset,p))
                 pass
 
-        #self.tele_l_ang_fc = lambda i,t: self.twoPAAM_tele_aim(i,t,'l')
-        #self.tele_r_ang_fc = lambda i,t: self.twoPAAM_tele_aim(i,t,'r')
-        #self.tele_l_ang0 = lambda i,t: -np.radians(30.0)
-        #self.tele_r_ang0 = lambda i,t: np.radians(30.0)
-
         self.twoPAAM_PAAMout_aim()
         self.beam_l_ang = self.beam_l_ang_fc
         self.beam_r_ang = self.beam_r_ang_fc
@@ -724,8 +719,30 @@ class AIM():
             self.tele_r_ang = lambda i,t: self.twoPAAM_tele_aim(i,t,'r')[0]
             offset={}
             offset['l'] = lambda i,t: self.twoPAAM_tele_aim(i,t,'l')[1]
-            offset['r'] = lambda i,t: self.twoPAAMtele_aim(i,t,'r')[1]
+            offset['r'] = lambda i,t: self.twoPAAM_tele_aim(i,t,'r')[1]
             self.offset=lambda i,t,s: offset[s](i,t)
+
+        elif type(self.tele_control)==tuple: # and self.tele_control[0].options.tele_control=='SS':
+            self.tele_l_ang = lambda i,t: methods.get_tele_SS(False,False,i,t,'l',x=getattr(self.tele_control[0].l,'i'+str(i)).adjust[0][0],y=getattr(self.tele_control[0].l,'i'+str(i)).adjust[0][1])
+            self.tele_r_ang = lambda i,t: methods.get_tele_SS(False,False,i,t,'r',x=getattr(self.tele_control[0].r,'i'+str(i)).adjust[0][0],y=getattr(self.tele_control[0].r,'i'+str(i)).adjust[0][1])
+
+            t_adjust={}
+            tele_ang_adjust = {}
+            for i in range(1,4):
+                t_adjust[str(i)]={}
+                tele_ang_adjust[str(i)]={}
+                t_adjust[str(i)]['l']=getattr(self.tele_control[0].l,'i'+str(i)).adjust[0][0] 
+                t_adjust[str(i)]['r']=getattr(self.tele_control[0].r,'i'+str(i)).adjust[0][0]
+                tele_ang_adjust[str(i)]['l']=getattr(self.tele_control[0].l,'i'+str(i)).adjust[0][1] 
+                tele_ang_adjust[str(i)]['r']=getattr(self.tele_control[0].r,'i'+str(i)).adjust[0][1] 
+
+            self.t_adjust = t_adjust
+            self.tele_ang_adjust = tele_ang_adjust
+            
+            offset_calc={}
+            offset_calc['l'] = lambda i,t: self.twoPAAM_PAAMin_aim_SS(i,t,'l')
+            offset_calc['r'] = lambda i,t: self.twoPAAM_PAAMin_aim_SS(i,t,'r')
+            self.offset = lambda i,t,s: offset_calc[s](i,t)
 
         if (self.sampled == True and sampled==None) or sampled==True:
             t_sample = self.data.t_all
@@ -858,7 +875,7 @@ class AIM():
         self.t_adjust = [t_l_adjust,t_r_adjust]
         self.tele_adjust = [tele_l_tot,tele_r_tot]
         self.tele_adjust_samp=[tele_l,tele_r]
-        delat=['tele_l_ang','tele_r_ang','tele_l_ang_func','tele_r_ang_func']
+        delat=['tele_l_ang','tele_r_ang','tele_l_ang_func','tele_r_ang_func','offset']
         for d in delat:
             try:
                 delattr(self,d)
