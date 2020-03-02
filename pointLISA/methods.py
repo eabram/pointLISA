@@ -380,8 +380,7 @@ def get_wavefront_parallel(data,aim,i,t,side,PAAM_ang,ret,mode='opposite',precis
             coor_end = coor_tele(data,i_self,t,tele_ang_end)
             start = LA.unit(coor_start[0])*data.L_tele+data.putp(i_left,t-tdel)
             end = LA.unit(coor_end[0])*data.L_tele+data.putp(i_self,t-tdel0)+coor_end[1]*ksi[1]+coor_end[2]*ksi[0]
-
-        
+ 
         elif side=='r':
             tdel = data.L_rr_func_tot(i_self,t)
             if data.calc_method=='Waluschka':

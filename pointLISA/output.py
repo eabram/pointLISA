@@ -716,7 +716,8 @@ class OUTPUT():
                 #print(e)
                 self.add_attribute(e,pos)
         return pos
-      
+     
+
 #    def get_R_vec_origin(self,pos): #...look
 #        check=False
 #        while check==False:
