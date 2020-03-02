@@ -912,7 +912,7 @@ class AIM():
     def twoPAAM_tele_aim(self,i,t,s,test=False,**kwargs):
         #[self.tele_l_ang_fc,self.tele_r_ang_fc] = self.tele_control_ang_fc(option='center',value=0)
         
-        if self.tele_control=='full_control' or test=True:
+        if self.tele_control=='full_control' or test==True:
             ret = 'off'
             tele_l0 = -np.radians(30.0)
             tele_r0 = np.radians(30.0)
