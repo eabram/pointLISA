@@ -715,13 +715,17 @@ class AIM():
         self.twoPAAM_PAAMout_aim()
         self.beam_l_ang = self.beam_l_ang_fc
         self.beam_r_ang = self.beam_r_ang_fc
+        
+        if self.tele_control=='SS':
+            self.twoPAAM_tele_aim_SS()
 
-        self.tele_l_ang = lambda i,t: self.twoPAAM_tele_aim(i,t,'l')[0]
-        self.tele_r_ang = lambda i,t: self.twoPAAM_tele_aim(i,t,'r')[0]
-        offset={}
-        offset['l'] = lambda i,t: self.twoPAAM_tele_aim(i,t,'l')[1]
-        offset['r'] = lambda i,t: self.twoPAAMtele_aim(i,t,'r')[1]
-        self.offset=lambda i,t,s: offset[s](i,t)
+        elif self.tele_control=='full_control':
+            self.tele_l_ang = lambda i,t: self.twoPAAM_tele_aim(i,t,'l')[0]
+            self.tele_r_ang = lambda i,t: self.twoPAAM_tele_aim(i,t,'r')[0]
+            offset={}
+            offset['l'] = lambda i,t: self.twoPAAM_tele_aim(i,t,'l')[1]
+            offset['r'] = lambda i,t: self.twoPAAMtele_aim(i,t,'r')[1]
+            self.offset=lambda i,t,s: offset[s](i,t)
 
         if (self.sampled == True and sampled==None) or sampled==True:
             t_sample = self.data.t_all
@@ -860,10 +864,32 @@ class AIM():
                 delattr(self,d)
             except AttributeError:
                 pass
-        self.tele_l_ang_func = self.tele_l_ang_SS
-        self.tele_r_ang_func = self.tele_r_ang_SS
+        self.tele_l_ang = self.tele_l_ang_SS
+        self.tele_r_ang = self.tele_r_ang_SS
+
+        offset_calc={}
+        offset_calc['l'] = lambda i,t: self.twoPAAM_PAAMin_aim_SS(aim,i,t,'l')
+        offset_calc['r'] = lambda i,t: self.twoPAAM_PAAMin_aim_SS(aim,i,t,'r')
+        self.offset = lambda i,t,s: offset_calc[s](i,t)
 
         return 0
+
+    def twoPAAM_PAAMin_aim_SS(self,i,t,s):
+        if s=='l':
+            tdel = self.data.L_sl_func_tot(i,t)
+        elif s=='r':
+            tdel = self.data.L_sr_func_tot(i,t)
+
+        if self.data.calc_method=='Waluschka':
+            tdel0 = tdel
+        elif self.data.calc_method=='Abram':
+            tdel0 = 0.0
+
+        ret = 'off'
+        A = getattr(output.values(self,i,t+tdel0,s,tele_angle_l=False,tele_angle_r=False,beam_angle_l=False,beam_angle_r=False,offset_l=0.0,offset_r=0.0,mode='send',ret=[ret]),ret)
+        offset_calc = np.sign(A[2])*abs(np.arctan(A[2]/A[0]))
+
+        return offset_calc
 
 
     def twoPAAM_tele_aim(self,i,t,s,**kwargs):
@@ -922,7 +948,6 @@ class AIM():
             if s=='l':
                 ret = tele_l0+ang_extra_solve
                 offset = offset_l1-ang_extra_solve
-                print(tele_r0,offset_r1)
 
             elif s=='r':
                 ret = tele_r0+ang_extra_solve
