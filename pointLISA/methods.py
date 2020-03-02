@@ -618,8 +618,8 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
 
     if aim.PAAM_deg==2:
         Done=False
-        tele_l = aim.twoPAAM_tele_aim(i_left,t_adjust[-1],'l')[0]
-        tele_r = aim.twoPAAM_tele_aim(i_right,t_adjust[-1],'r')[0]
+        tele_l = aim.twoPAAM_tele_aim(i_left,t_adjust[-1],'l',test=True)[0]
+        tele_r = aim.twoPAAM_tele_aim(i_right,t_adjust[-1],'r',test=True)[0]
         tele_adjust_l.append(tele_l)
         tele_adjust_r.append(tele_r)
 
