@@ -47,6 +47,7 @@ aimset.tele_method_solve='iter' # How, when setting aimset.option_tele to 'wavef
 aimset.PAAM_method_solve='iter' # How, when setting aimset.option_PAAM to 'wavefront' the optimization is realised (currently only 'iter' (iteration with a certain convergence) is yet implemented
 aimset.sample_speed = 1 # This is either 0 or 1. When in is set to 0 more interpolation points are being sampled then when setting it to 1, however 1 will be faster
 aimset.width = 30000.0 # If aimset.tele_method is 'SS' and its method is 'step' (see methods.SS_value()) the maximum of the beamline may be away from the receiving aperture
+aimset.power = 1.0e-12 # Minimum received power
 aimset.FOV = 8.0e-6 # The Field of View, this value is used when pointing with the Step-and-Stare method
 aimset.value_center = 0.0 # If aimset.optimize_tele is set to 'center' this is the value it optimizes for 
 aimset.value_wavefront = 0.0 # If aimset.optimize_tele is set to 'wavefront' this is the value it optimizes for 

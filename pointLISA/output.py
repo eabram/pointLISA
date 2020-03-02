@@ -268,7 +268,7 @@ class OUTPUT():
                 if pos.mode=='send':
                     ret=get_coor_beam_out__send(pos.aim,pos.i_send,pos.t,pos.side,tele_angle=pos.tele_angle_start,beam_angle=pos.beam_angle_start,offset=pos.offset_start)
                 elif pos.mode=='rec':
-                    ret=get_coor_beam_out__send(pos.aim,pos.i_send,pos.t-pos.tdel,pos.invside,tele_angle=pos.tele_angle_start,beam_angle=pos.beam_angle_start)
+                    ret=get_coor_beam_out__send(pos.aim,pos.i_send,pos.t-pos.tdel,pos.invside,tele_angle=pos.tele_angle_start,beam_angle=pos.beam_angle_start,offset=pos.offset_start)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError, e:
@@ -323,7 +323,7 @@ class OUTPUT():
                 if pos.mode=='send':
                     ret=get_coor_beam_out__send(pos.aim,pos.i_send,pos.t+pos.tdel,pos.side,tele_angle=pos.tele_angle_start,beam_angle=pos.beam_angle_start,offset=pos.offset_start)
                 elif pos.mode=='rec':
-                    ret = get_coor_beam_out__send(pos.aim,pos.i_send,pos.t-pos.tdel0,pos.invside,tele_angle=pos.tele_angle_start,beam_angle=pos.beam_angle_start)
+                    ret = get_coor_beam_out__send(pos.aim,pos.i_send,pos.t-pos.tdel0,pos.invside,tele_angle=pos.tele_angle_start,beam_angle=pos.beam_angle_start,offset=pos.offset_start)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError, e:
@@ -664,7 +664,7 @@ class OUTPUT():
         while check==False:
             try:
                 vec = np.array([(pos.R**2-pos.xoff**2-pos.yoff**2)**0.5,pos.yoff,pos.xoff]) # In beam frame
-                ret = LA.matmul(np.linalg.inv(pos.coor_starttele),vec) ###...check if pos.off is in tele or beam brame
+                ret = LA.matmul(np.linalg.inv(pos.coor_startbeam__send),vec) 
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -1701,9 +1701,10 @@ def get_coor_beam_out__send(aim,i,t,side,tele_angle=False,beam_angle=False,offse
         
         if offset is False:
             offset = get_offset(aim,i,t,side)
+        elif offset==None:
+            offset=0.0
 
         ret = methods.beam_coor_out__send(aim.data,i,t,tele_angle,beam_angle,offset)
-
     return ret
 
 def get_offset(aim,i,t,side):
@@ -1826,6 +1827,7 @@ def values(inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=Fa
                 offset_r=0.0
             i_send = i_right
             i_rec = i_self
+
             
     if (mode=='send' and side=='l') or (mode=='rec' and side=='r'):
         tele_angle_start = tele_angle_l

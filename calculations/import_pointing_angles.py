@@ -8,13 +8,14 @@ import copy
 
 ### Settings ###
 # Select datafiles for importing
-folder_sel = "/20191017/_01/SS_2PAAM__20_days/"
+folder_sel = "/20200221/_04/SS_1PAAM_400_days/"
 folder_0='/home/ester/git/Results/'
 source_folder = folder_0+folder_sel
 folder=folder_0+folder_sel+'/data/'
 
 # Select which properties will be ontained
-rets=['adjust']
+#rets=['adjust']
+rets=['xoff','yoff','zoff','angx_wf_send','angy_wf_send','angx_wf_rec','angy_wf_rec','alpha','I','Ival']
 #rets=[['xoff','yoff'],['I','I0','Ival','FOVlim'],['alpha','angx_wf_send','angy_wf_send','angx_wf_rec','angy_wf_rec']]
 
 # Select for which arms and what kind of value (mode)
@@ -56,11 +57,6 @@ def get_all(input_file=None,set_stat=utils.Object(),set_din=utils.Object()):
 
     aim= pointLISA.run_din.get_pointing(data,sampled=False,set_din=set_din_copy)
     return aim, set_stat_copy, set_din_copy
-
-folder_sel = "/20191017/_01/SS_2PAAM__20_days/"
-folder_0='/home/ester/git/Results/'
-source_folder = folder_0+folder_sel
-folder=folder_0+folder_sel+'/data/'
 
 for (dirpath, dirnames, filenames_calc) in os.walk(source_folder):
     for f in filenames_calc:

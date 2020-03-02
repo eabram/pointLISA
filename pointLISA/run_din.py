@@ -44,8 +44,17 @@ def get_pointing(data,import_file=None,filename=False,set_din=utils.Object(),aim
     if data.input_file==None:
         if PAAM_deg==1:
             aim = AIM.AIM(data=data,setting = aimset_new,filename=filename,inp=False,aim0=aim0,aim_old=aim0)
-            aim.tele_aim(method=aim.aimset.tele_control,tele_ang_extra=aim.aimset.tele_ang_extra,option=aim.aimset.option_tele)
+            if aim.aimset.tele_control!='SS':
+                aim.tele_aim(method=aim.aimset.tele_control,tele_ang_extra=aim.aimset.tele_ang_extra,option=aim.aimset.option_tele)
+                option='Default'
+            else:
+                aim.tele_aim(method='no_control',tele_ang_extra=aim.aimset.tele_ang_extra,option=aim.aimset.option_tele)
+                option='SS'
             out = aim.PAAM_aim(method=aim.aimset.PAAM_control,PAAM_ang_extra=aim.aimset.PAAM_ang_extra,option=aim.aimset.option_PAAM)
+            if option=='SS':
+                aim.tele_aim(method=option,tele_ang_extra=aim.aimset.tele_ang_extra,option=aim.aimset.option_tele)
+
+
         
         elif PAAM_deg==2: 
             aim = AIM.AIM(data=data,option_tele='center',option_PAAM='center',setting=aimset_new,init=False,PAAM_deg=2)

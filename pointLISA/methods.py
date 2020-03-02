@@ -601,7 +601,7 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
     if ret=='Ivalx':
         lim = aim.data.P_min/((aim.data.D/4.0)*(np.pi**2))
         out_show = 'Ival'
-    elif ret == 'angx_wf_ang':
+    elif ret == 'angx_wf_rec':
         lim = aim.data.FOV
         out_show = 'alpha'
 
@@ -629,8 +629,8 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
         skip_l=False
         skip_r=False
         while Done==False:
-            send_l = lambda t: getattr(output.values(aim,i_left,t,'l',tele_angle_l=tele_adjust_l[-1],tele_angle_r=tele_adjust_r[-1],beam_angle_l=None,beam_angle_r=None,offset_l=offset_l,offset_r=offset_r,ret=[ret]),ret) - lim
-            send_r = lambda t: getattr(output.values(aim,i_right,t,'r',tele_angle_l=tele_adjust_l[-1],tele_angle_r=tele_adjust_r[-1],beam_angle_l=None,beam_angle_r=None,offset_l=offset_l,offset_r=offset_r,ret=[ret]),ret) - lim
+            send_l = lambda t: getattr(output.values(aim,i_left,t,'l',tele_angle_l=tele_adjust_l[-1],tele_angle_r=tele_adjust_r[-1],beam_angle_l=False,beam_angle_r=False,offset_l=offset_l,offset_r=offset_r,ret=[ret]),ret) - lim
+            send_r = lambda t: getattr(output.values(aim,i_right,t,'r',tele_angle_l=tele_adjust_l[-1],tele_angle_r=tele_adjust_r[-1],beam_angle_l=False,beam_angle_r=False,offset_l=offset_l,offset_r=offset_r,ret=[ret]),ret) - lim
             
             step=step0
             check=False
