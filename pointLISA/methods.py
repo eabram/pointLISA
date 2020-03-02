@@ -684,7 +684,6 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
 
                     print(t_adjust[-1]/t_end)
 
-
     if aim.PAAM_deg==1:
         Done=False
         A = output.tele_center_calc(aim,i_left,t_adjust[-1],scale=1,value=value,tele_l=None,tele_r=None,beam_l=None,beam_r=None,offset_l=False,offset_r=False)

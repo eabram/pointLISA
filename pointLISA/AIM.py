@@ -885,8 +885,8 @@ class AIM():
         self.tele_r_ang = self.tele_r_ang_SS
 
         offset_calc={}
-        offset_calc['l'] = lambda i,t: self.twoPAAM_PAAMin_aim_SS(aim,i,t,'l')
-        offset_calc['r'] = lambda i,t: self.twoPAAM_PAAMin_aim_SS(aim,i,t,'r')
+        offset_calc['l'] = lambda i,t: self.twoPAAM_PAAMin_aim_SS(self,i,t,'l')
+        offset_calc['r'] = lambda i,t: self.twoPAAM_PAAMin_aim_SS(self,i,t,'r')
         self.offset = lambda i,t,s: offset_calc[s](i,t)
 
         return 0
