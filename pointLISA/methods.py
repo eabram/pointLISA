@@ -599,7 +599,7 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
     [i_left,i_right,link] = pointLISA.utils.i_slr(i)
  
     if ret=='Ivalx':
-        lim = aim.data.P_min/((aim.data.D/4.0)*(np.pi**2))
+        lim = aim.data.P_min/(((aim.data.D**2)/4.0)*(np.pi))
         out_show = 'Ival'
     elif ret == 'angx_wf_rec':
         lim = aim.data.FOV
@@ -615,16 +615,81 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
     offset_l = False
     offset_r = False
     t_adjust = [t0]
+
+    if aim.PAAM_deg==2:
+        Done=False
+        tele_l = aim.twoPAAM_tele_aim(i_left,t_adjust[-1],'l')[0]
+        tele_r = aim.twoPAAM_tele_aim(i_right,t_adjust[-1],'r')[0]
+        tele_adjust_l.append(tele_l)
+        tele_adjust_r.append(tele_r)
+
+        skip_l=False
+        skip_r=False
+        while Done==False:
+            ang_l = lambda t: abs(aim.twoPAAM_tele_aim_SS_calc(i_left,t,'l',tele_adjust_l[-1])) - lim
+            ang_r = lambda t: abs(aim.twoPAAM_tele_aim_SS_calc(i_right,t,'r',tele_adjust_r[-1])) - lim
+
+            step=step0
+            check=False
+            while check==False and Done==False:
+                try:
+                    t_l_new = scipy.optimize.brentq(ang_l,t_adjust[-1]+dt,t_adjust[-1]+step,xtol=xtol,rtol=rtol)
+                    check=True
+                    if t_adjust[-1]>t_end:
+                        Done=True
+                except ValueError,e:
+                    if str(e) =='f(a) and f(b) must have different signs':
+                        if t_adjust[-1]+step>t_end:
+                            Done=True
+                            skip_l=True
+                        else:
+                            step = step*2
+                            skip_l=False
+                        pass
+
+            step=step0
+            check=False
+            while check==False and Done==False:
+                try:
+                    t_r_new = scipy.optimize.brentq(ang_r,t_adjust[-1]+dt,t_adjust[-1]+step,xtol=xtol,rtol=rtol)
+                    check=True
+                    if t_adjust[-1]>t_end:
+                        Done=True
+                except ValueError,e:
+                    if str(e) =='f(a) and f(b) must have different signs':
+                        if t_adjust[-1]+step>t_end:
+                            Done=True
+                            skip_r=True
+                        else:
+                            step = step*2
+                            skip_r=False
+                        pass
+            
+            if Done==False:
+                write=True
+                if skip_l==True and skip_r==False:
+                    t_adjust.append(t_r_new)
+                if skip_l==False and skip_r==True:
+                    t_adjust.append(t_l_new)
+                if skip_l==False and skip_r==False:
+                    t_adjust.append(np.minimum(t_l_new,t_r_new))
+                else:
+                    write=False
+
+                if write==True:
+                    tele_l = aim.twoPAAM_tele_aim(i_left,t_adjust[-1],'l')[0]
+                    tele_r = aim.twoPAAM_tele_aim(i_right,t_adjust[-1],'r')[0]
+                    tele_adjust_l.append(tele_l)
+                    tele_adjust_r.append(tele_r)
+
+                    print(t_adjust[-1]/t_end)
+
     if aim.PAAM_deg==1:
         Done=False
         A = output.tele_center_calc(aim,i_left,t_adjust[-1],scale=1,value=value,tele_l=None,tele_r=None,beam_l=None,beam_r=None,offset_l=False,offset_r=False)
         [tele_l,tele_r] = A[0]
         tele_adjust_l.append(tele_l)
         tele_adjust_r.append(tele_r)
-        #offset_l = aim.offset['l'][i_left](t_adjust[-1])
-        #offset_r = aim.offset['r'][i_left](t_adjust[-1])
-        #offset_adjust_l.append(offset_l)
-        #offset_adjust_r.append(offset_r)
         
         skip_l=False
         skip_r=False
@@ -684,175 +749,8 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
                     [tele_l,tele_r] = A[0]
                     tele_adjust_l.append(tele_l)
                     tele_adjust_r.append(tele_r)
-                    #offset_l = aim.offset['l'][i_left](t_adjust[-1])
-                    #offset_r = aim.offset['r'][i_left](t_adjust[-1])
-                    #offset_adjust_l.append(offset_l)
-                    #offset_adjust_r.append(offset_r)
 
                     print(t_adjust[-1]/t_end)
-                    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#    if method=='step':
-#        if tele_l ==False:
-#            tele_l = aim.tele_l_ang(i_left,t0)
-#        if tele_r==False:
-#            tele_r = aim.tele_r_ang(i_right,t0)
-#    
-#    t_adjust.append(t0)
-#    t_val  = t0
-#
-#    if method=='step':
-#        while t_val<t_end:
-#            t_val = t_val+step
-#
-#            func_l = getattr(output.values(aim,i_left,t_val,'l',ksi=[0,0],mode='send',tele_angle_l=tele_l,tele_angle_r=tele_r,ret=[ret]),ret)
-#            func_r = getattr(output.values(aim,i_right,t_val,'r',ksi=[0,0],mode='send',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=[ret]),ret)
-#
-#            if max(abs(func_l),abs(func_r))>=lim:
-#                t_adjust.append(t_val-step)
-#                tele_l = aim.tele_l_ang(i_left,t_val-step)
-#                tele_r = aim.tele_r_ang(i_right,t_val-step)
-#                offset_l = aim.offset['l'][i_left](t_val-step)
-#                offset_r = aim.offset['r'][i_right](t_val-step)
-#                tele_adjust_l.append(tele_l)
-#                tele_adjust_r.append(tele_r)
-#                offset_adjust_l.append(offset_l)
-#                offset_adjust_r.append(offset_r)
-#
-#    elif method=='solve':
-#        out=output.OUTPUT(aim=aim)
-#        t_val = t_adjust[-1]
-#
-#        if aim.PAAM_deg==1:
-#            tele_l = tele_point_calc(aim,i_left,t_val,'l',option,max_count=5,scale=1,value=value) 
-#            tele_r = tele_point_calc(aim,i_right,t_val,'r',option,max_count=5,scale=1,value=value) 
-#            offset_l = lambda t: False
-#            offset_r = lambda t: False
-#
-#        elif aim.PAAM_deg==2:
-#            ret = 'angx_wf_rec'
-#            ret_val = 'angx_wf_rec'
-#            #A = aim.twoPAAM_pointing(i_left,t_val,'l',out,'rec')
-#            #B = aim.twoPAAM_pointing(i_right,t_val,'r',out,'rec')
-#            #tele_l = A[0]
-#            #tele_r = B[0]
-#            tele_l0 = np.radians(-30.0)
-#            tele_r0 = np.radians(30.0)
-#            offset_l=0.0
-#            offset_r=0.0
-#            beam_l=0.0
-#            beam_r=0.0
-#            f_l0 = lambda t, tele_l,tele_r: getattr(output.values(aim,i_left,t,'l',ksi=[0,0],mode='rec',tele_angle_l=tele_l,tele_angle_r=tele_r,offset_l=offset_l,offset_r=offset_r,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=[ret]),ret)
-#            f_l1 = lambda t, tele_l,tele_r: getattr(output.values(aim,i_left,t,'l',ksi=[0,0],mode='rec',tele_angle_l=tele_l,tele_angle_r=tele_r,offset_l=offset_l,offset_r=offset_r,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=[ret_val]),ret_val)
-#            f_r0 = lambda t, tele_l,tele_r: getattr(output.values(aim,i_right,t,'r',ksi=[0,0],mode='rec',tele_angle_l=tele_l,tele_angle_r=tele_r,offset_l=offset_l,offset_r=offset_r,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=[ret]),ret)
-#            f_r1 = lambda t, tele_l,tele_r: getattr(output.values(aim,i_right,t,'r',ksi=[0,0],mode='rec',tele_angle_l=tele_l,tele_angle_r=tele_r,offset_l=offset_l,offset_r=offset_r,beam_angle_l=beam_l,beam_angle_r=beam_r,ret=[ret_val]),ret_val)
-#            tele_l_extra = f_l1(t_val,tele_l0,tele_r0)
-#            tele_r_extra = f_r1(t_val,tele_l0,tele_r0)
-#            tele_l = tele_l0+tele_l_extra
-#            tele_r = tele_r0+tele_r_extra
-#            tele_l_old = tele_l
-#            tele_r_old = tele_r
-#
-#        tele_adjust_l.append(tele_l)
-#        tele_adjust_r.append(tele_r)
-#        
-#        end=False
-#        while (t_val<t_end) and end is False:
-#            if aim.PAAM_deg==1:
-#                f_l = lambda t: abs(getattr(output.values(aim,i_left,t,'l',ksi=[0,0],mode='rec',tele_angle_l=tele_l,tele_angle_r=tele_r,offset_l=offset_l(t),offset_r=offset_r(t),ret=[ret]),ret))-lim
-#                f_r = lambda t: abs(getattr(output.values(aim,i_right,t,'r',ksi=[0,0],mode='rec',tele_angle_l=tele_l,tele_angle_r=tele_r,offset_l=offset_l(t),offset_r=offset_r(t),ret=[ret]),ret))-lim
-#            elif aim.PAAM_deg==2:
-#                f_l = lambda t: abs(f_l0(t,tele_l,tele_r))-lim
-#                f_r = lambda t: abs(f_r0(t,tele_l,tele_r))-lim
-#
-#            k=1
-#            found=False
-#            if t_val+dt*(k-1)>=t_end:
-#                #t_val=t_end
-#                end=True
-#                print('End of range')
-#                break
-#
-#            while found==False and end is False:
-#                if t_val+dt*(k-1)>=t_end:
-#                    t_val=t_end
-#                    end=True
-#                    print('End of range')
-#                    break
-#                else:
-#                    under = t_val+dt*(k-1)+1.0
-#                    upper = t_val+dt*k
-#                    if under >t_end:
-#                        end=True
-#                        break
-#                    try:
-#                        t_l = scipy.optimize.brentq(f_l,under,upper,xtol=60.0)
-#                    except ValueError,e:
-#                        if str(e)=='f(a) and f(b) must have different signs':
-#                            t_l=np.inf
-#                            pass
-#                    try:
-#                        t_r = scipy.optimize.brentq(f_r,under,upper,xtol=60.0)
-#                    except ValueError,e:
-#                        if str(e)=='f(a) and f(b) must have different signs':
-#                            t_r=np.inf
-#                            pass
-#                    if t_l!=np.inf or t_r!=np.inf:
-#                        found=True
-#                    else:
-#                        k=k+1
-#         
-#            if found==True:
-#                t_adjust.append(min(t_l,t_r))
-#                t_val = t_adjust[-1]
-#                
-#                if aim.PAAM_deg==1:
-#                    tele_l = tele_point_calc(aim,i_left,t_val,'l',option,max_count=5,scale=1,value=value) 
-#                    tele_r = tele_point_calc(aim,i_right,t_val,'r',option,max_count=5,scale=1,value=value) 
-#                elif aim.PAAM_deg==2:
-#                    tele_l_extra = f_l1(t_val,tele_l0,tele_r0)
-#                    tele_r_extra = f_r1(t_val,tele_l0,tele_r0)
-#                    
-#                    sign_l = np.sign(tele_l_extra)
-#                    sign_r = np.sign(tele_r_extra)
-#                    
-#                    tele_l_new = tele_l0+tele_l_extra
-#                    tele_l_new = tele_l_new+(scale-1)*np.sign(tele_l_new-tele_l_old)*aim.aimset.FOV
-#                    tele_r_new = tele_r0+tele_r_extra
-#                    tele_r_new = tele_r_new+(scale-1)*np.sign(tele_r_new-tele_r_old)*aim.aimset.FOV
-#
-#                    tele_l = tele_l_new
-#                    tele_r = tele_r_new
-#                    tele_l_old = tele_l_new
-#                    tele_r_old = tele_r_new
-#
-#
-#                tele_adjust_l.append(tele_l)
-#                tele_adjust_r.append(tele_r)
-#
-#                if print_on==True:
-#                    print(t_val/t_end,t_val,tele_l_extra,tele_r_extra)
-#                    #print(t_end/(3600*24.0))
-#                    print(f_l1(t_val,tele_l,tele_r),f_r1(t_val,tele_l,tele_r))
-#                    print(f_l1(t_val,tele_adjust_l[-2],tele_adjust_r[-2]),f_r1(t_val,tele_adjust_l[-2],tele_adjust_r[-2]))
-
             
     return t_adjust,[tele_adjust_l,tele_adjust_r],i_left,i_right
 

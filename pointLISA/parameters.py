@@ -31,7 +31,7 @@ FOV = np.float64(8e-6) #Field of View telescope
 #Calculations
 w0_laser = D/(2*gamma_0) # blz. 12
 k = (2*np.pi)/labda
-
+I_min = P_min/(((D**2)/4.0)*np.pi)
 home_run = os.getcwd()
 
 

@@ -720,7 +720,7 @@ class AIM():
         self.tele_r_ang = lambda i,t: self.twoPAAM_tele_aim(i,t,'r')[0]
         offset={}
         offset['l'] = lambda i,t: self.twoPAAM_tele_aim(i,t,'l')[1]
-        offset['r'] = lambda i,t: self.twoPAAM_tele_aim(i,t,'r')[1]
+        offset['r'] = lambda i,t: self.twoPAAMtele_aim(i,t,'r')[1]
         self.offset=lambda i,t,s: offset[s](i,t)
 
         if (self.sampled == True and sampled==None) or sampled==True:
@@ -786,6 +786,85 @@ class AIM():
             self.offset = lambda i,t,s: offset[s][i](t)
 
         return 0
+    
+    def twoPAAM_tele_aim_SS_calc(self,i,t,s,tele_angle):
+        tele_r0 = np.radians(30)
+        tele_l0 = -np.radians(30.0)
+        offset_l0=0.0
+        offset_r0=0.0
+        [i_self,i_left,i_right] = utils.i_slr(i)
+
+        if s=='l':
+            ret='off'
+            s_inv = 'r'
+            tdel = self.data.L_rl_func_tot(i,t)
+            if self.data.calc_method=='Waluschka':
+                tdel0 = tdel
+            elif self.data.calc_method=='Abram':
+                tdel0 = 0.0
+            A = getattr(output.values(self,i_left,t-tdel,s_inv,tele_angle_l=tele_angle,tele_angle_r=tele_r0,beam_angle_l=False,beam_angle_r=False,offset_l=offset_l0,offset_r=offset_r0,mode='send',ret=[ret]),ret)
+
+            offset_r = np.sign(A[2])*abs(np.arctan(A[2]/A[0]))
+
+            ret2 = 'angx_wf_rec'
+            B = getattr(output.values(self,i_self,t-tdel0,s,tele_angle_l=tele_angle,tele_angle_r=tele_r0,beam_angle_l=False,beam_angle_r=False,offset_l=offset_l0,offset_r=offset_r0+offset_r,mode='rec',ret=[ret2]),ret2)
+        
+        elif s=='r':
+            ret='off'
+            s_inv = 'l'
+            tdel = self.data.L_rr_func_tot(i,t)
+            if self.data.calc_method=='Waluschka':
+                tdel0 = tdel
+            elif self.data.calc_method=='Abram':
+                tdel0 = 0.0
+            A = getattr(output.values(self,i_right,t-tdel,s_inv,tele_angle_l=tele_l0,tele_angle_r=tele_angle,beam_angle_l=False,beam_angle_r=False,offset_l=offset_l0,offset_r=offset_r0,mode='send',ret=[ret]),ret)
+
+            offset_l = np.sign(A[2])*abs(np.arctan(A[2]/A[0]))
+
+            ret2 = 'angx_wf_rec'
+            B = getattr(output.values(self,i_self,t-tdel0,s,tele_angle_l=tele_l0,tele_angle_r=tele_angle,beam_angle_l=False,beam_angle_r=False,offset_l=offset_l0+offset_l,offset_r=offset_r0,mode='rec',ret=[ret2]),ret2)
+
+        return B
+
+    def twoPAAM_tele_aim_SS(self):
+        # For Step-and_Stare
+        tele_l_tot=[0,0,0]
+        tele_r_tot=[0,0,0]
+        t_l_adjust=[0,0,0]
+        t_r_adjust=[0,0,0]
+        
+        for link in range(1,4):
+            t_plot = self.data.t_all[2:-3]
+            t_adjust,[tele_l,tele_r],i_left,i_right = methods.SS_value(self,link,t_plot[0],t_plot[-1],'solve',self.aimset.FOV,ret=None,print_on=False,value=0)
+            f_l = lambda t: methods.get_SS_func(t_adjust,tele_l,t)
+            f_r = lambda t: methods.get_SS_func(t_adjust,tele_r,t)
+            tele_l_tot[i_left-1] = f_l
+            tele_r_tot[i_right-1] = f_r
+            t_l_adjust[i_left-1] = t_adjust
+            t_r_adjust[i_right-1] = t_adjust
+
+        self.t_l_adjust = lambda i,t: t_l_adjust[i-1]
+        self.t_r_adjust = lambda i,t: t_r_adjust[i-1]
+        self.tele_l_ang_SS = lambda i,t: tele_l_tot[i-1](t)
+        self.tele_r_ang_SS = lambda i,t: tele_r_tot[i-1](t)
+
+        self.tele_l_ang_func = self.tele_l_ang_SS
+        self.tele_r_ang_func = self.tele_r_ang_SS
+
+        self.t_adjust = [t_l_adjust,t_r_adjust]
+        self.tele_adjust = [tele_l_tot,tele_r_tot]
+        self.tele_adjust_samp=[tele_l,tele_r]
+        delat=['tele_l_ang','tele_r_ang','tele_l_ang_func','tele_r_ang_func']
+        for d in delat:
+            try:
+                delattr(self,d)
+            except AttributeError:
+                pass
+        self.tele_l_ang_func = self.tele_l_ang_SS
+        self.tele_r_ang_func = self.tele_r_ang_SS
+
+        return 0
+
 
     def twoPAAM_tele_aim(self,i,t,s,**kwargs):
         #[self.tele_l_ang_fc,self.tele_r_ang_fc] = self.tele_control_ang_fc(option='center',value=0)
