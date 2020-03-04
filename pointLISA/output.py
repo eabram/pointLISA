@@ -1572,17 +1572,19 @@ class OUTPUT():
                         if self.aim.PAAM_deg==1:
                             if s=='l':
                                 A = [np.array(getattr(self.aim,'t_adjust')[0][int(i_sel)-1])]
-                                A.append(np.array([self.aim.tele_l_ang(i_sel,t) for t in A[0]]))
+                                A.append(np.array(getattr(self.aim,'tele_adjust')[0][int(i_sel)-1])) 
+                                #A.append(np.array([self.aim.tele_l_ang(i_sel,t) for t in A[0]]))
                             elif s=='r':
                                 A = [np.array(getattr(self.aim,'t_adjust')[1][int(i_sel)-1])]
-                                A.append(np.array([self.aim.tele_r_ang(i_sel,t) for t in A[0]]))
+                                A.append(np.array(getattr(self.aim,'tele_adjust')[1][int(i_sel)-1])) 
+                                #A.append(np.array([self.aim.tele_r_ang(i_sel,t) for t in A[0]]))
                         elif self.aim.PAAM_deg==2:
                             if s=='l':
                                 A = [np.array(getattr(self.aim,'t_adjust')[0][int(i_sel)-1])]
-                                A.append(np.array([self.aim.tele_l_ang(i_sel,t) for t in A[0]]))
+                                A.append(np.array(getattr(self.aim,'tele_adjust')[0][int(i_sel)-1])) 
                             elif s=='r':
                                 A = [np.array(getattr(self.aim,'t_adjust')[1][int(i_sel)-1])]
-                                A.append(np.array([self.aim.tele_r_ang(i_sel,t) for t in A[0]]))
+                                A.append(np.array(getattr(self.aim,'tele_adjust')[1][int(i_sel)-1]))   
 
 #                            try:
 #                                A = [np.array(getattr(self.aim,'t_adjust')[s][int(i_sel)])]

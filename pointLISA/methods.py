@@ -601,9 +601,10 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
         lim = aim.data.P_min/(((aim.data.D**2)/4.0)*(np.pi))
         out_show = 'Ival'
     elif ret == 'angx_wf_rec':
-        lim = aim.data.FOV
+        lim = aim.aimset.FOV
         out_show = 'alpha'
 
+    print(lim)
     #t0 = aim.data.t_all[6]
     #t_end = t0+5*3600
     xtol = 1.0
@@ -633,6 +634,7 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
             while check==False and Done==False:
                 try:
                     t_l_new = scipy.optimize.brentq(ang_l,t_adjust[-1]+dt,t_adjust[-1]+step,xtol=xtol,rtol=rtol)
+                    print(ang_l(t_l_new))
                     check=True
                     if t_adjust[-1]>t_end:
                         Done=True
@@ -651,6 +653,7 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
             while check==False and Done==False:
                 try:
                     t_r_new = scipy.optimize.brentq(ang_r,t_adjust[-1]+dt,t_adjust[-1]+step,xtol=xtol,rtol=rtol)
+                    print(ang_r(t_r_new))
                     check=True
                     if t_adjust[-1]>t_end:
                         Done=True
