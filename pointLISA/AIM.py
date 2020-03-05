@@ -901,7 +901,7 @@ class AIM():
             i_start = 3
             i_end = 4
             print('Only calculating for one laserlink')
-        print('testSS: ',self.aimset.testSS)
+        
         for link in range(i_start,i_end):
             t_plot = self.data.t_all[2:-3]
             t_adjust,[tele_l,tele_r],i_left,i_right = methods.SS_value(self,link,t_plot[0],t_plot[-1],'solve',self.aimset.FOV,ret=None,print_on=False,value=0)
