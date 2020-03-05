@@ -150,7 +150,7 @@ class AIM():
         return 0
 
 
-    def tele_control_ang_fc(self,option=None,value=False):
+    def tele_control_ang_fc(self,option=None,value=False,lim=False):
         '''Obtains the telescope pointing angles for a continuous actuation (full_control)'''
         # Option 'wavefront' means poiting with the purpose of getting a zero/small tilt of the receiving wavefront
         # 'center' means pointing it to te center of the receiving telescope aperture
@@ -162,8 +162,8 @@ class AIM():
         max_count=5
         scale=1
         
-        ang_l = lambda i,t: methods.tele_point_calc(self,i,t,'l',option,max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0)
-        ang_r = lambda i,t: methods.tele_point_calc(self,i,t,'r',option,max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0)
+        ang_l = lambda i,t: methods.tele_point_calc(self,i,t,'l',option,max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0,lim=lim)
+        ang_r = lambda i,t: methods.tele_point_calc(self,i,t,'r',option,max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0,lim=lim)
         
         self.option_tele = option
         self.tele_control = 'full_control'
@@ -234,8 +234,16 @@ class AIM():
                     #lim=self.aimset.FOV #Klopt niet want alleen in inplane i.p.v. totaal, kan ook met I ...adjust
                     ret = 'Ivalx'
                     lim=self.aimset.power/(((self.data.D**2)/4.0)*np.pi)
+                
+                if self.aimset.testSS==False:
+                    i_start=1
+                    i_end=4
+                elif self.aimset.testSS==True:
+                    i_start=3
+                    i_end=4
+                print('testSS: ',self.aimset.testSS)
 
-                for link in range(1,4):
+                for link in range(i_start,i_end):
                     t_plot = self.data.t_all[2:-3]
                     t_adjust,[tele_l,tele_r],i_left,i_right = methods.SS_value(self,link,t_plot[0],t_plot[-1],'solve',lim,ret=ret,print_on=False,value=value,tele_l=None,tele_r=None,offset_l=False,offset_r=False)
                     f_l = lambda t: methods.get_SS_func(t_adjust,tele_l,t)

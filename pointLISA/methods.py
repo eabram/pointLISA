@@ -688,71 +688,200 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
 
     if aim.PAAM_deg==1:
         Done=False
-        A = output.tele_center_calc(aim,i_left,t_adjust[-1],scale=1,value=value,tele_l=None,tele_r=None,beam_l=None,beam_r=None,offset_l=False,offset_r=False)
-        [tele_l,tele_r] = A[0]
-        tele_adjust_l.append(tele_l)
-        tele_adjust_r.append(tele_r)
-        
-        skip_l=False
-        skip_r=False
-        while Done==False:
-            send_l = lambda t: getattr(output.values(aim,i_left,t,'l',tele_angle_l=tele_adjust_l[-1],tele_angle_r=tele_adjust_r[-1],beam_angle_l=False,beam_angle_r=False,offset_l=offset_l,offset_r=offset_r,ret=[ret]),ret) - lim
-            send_r = lambda t: getattr(output.values(aim,i_right,t,'r',tele_angle_l=tele_adjust_l[-1],tele_angle_r=tele_adjust_r[-1],beam_angle_l=False,beam_angle_r=False,offset_l=offset_l,offset_r=offset_r,ret=[ret]),ret) - lim
-            
-            step=step0
-            check=False
-            while check==False and Done==False:
-                try:
-                    t_l_new = scipy.optimize.brentq(send_l,t_adjust[-1]+dt,t_adjust[-1]+step,xtol=xtol,rtol=rtol)
-                    check=True
-                    if t_adjust[-1]>t_end:
-                        Done=True
-                except ValueError,e:
-                    if str(e) =='f(a) and f(b) must have different signs':
-                        if t_adjust[-1]+step>t_end:
-                            Done=True
-                            skip_l=True
-                        else:
-                            step = step*2
-                            skip_l=False
-                        pass
 
-            step=step0
-            check=False
-            while check==False and Done==False:
-                try:
-                    t_r_new = scipy.optimize.brentq(send_r,t_adjust[-1]+dt,t_adjust[-1]+step,xtol=xtol,rtol=rtol)
-                    check=True
-                    if t_adjust[-1]>t_end:
-                        Done=True
-                except ValueError,e:
-                    if str(e) =='f(a) and f(b) must have different signs':
-                        if t_adjust[-1]+step>t_end:
-                            Done=True
-                            skip_r=True
-                        else:
-                            step = step*2
-                            skip_r=False
-                        pass
+        if aim.option_tele=='wavefront':
+            ret1 = 'Ival'
+            print(ret,lim)
+            [tele_ang_l_fc,tele_ang_r_fc] = aim.tele_control_ang_fc(option='wavefront',value=0.0)
 
-            if Done==False:
-                write=True
-                if skip_l==True and skip_r==False:
-                    t_adjust.append(t_r_new)
-                if skip_l==False and skip_r==True:
-                    t_adjust.append(t_l_new)
-                if skip_l==False and skip_r==False:
-                    t_adjust.append(np.minimum(t_l_new,t_r_new))
-                else:
-                    write=False
+            tele_l = tele_ang_l_fc(i_left,t_adjust[-1])
+            tele_r = tele_ang_r_fc(i_right,t_adjust[-1])
+            tele_adjust_l.append(tele_l)
+            tele_adjust_r.append(tele_r)
+
+            skip_l0=False
+            skip_r0=False
+            skip_l1=False
+            skip_r1=False
+            while Done==False:
+                send_l = lambda t: abs(getattr(output.values(aim,i_left,t,'l',tele_angle_l=tele_adjust_l[-1],tele_angle_r=tele_adjust_r[-1],beam_angle_l=False,beam_angle_r=False,offset_l=offset_l,offset_r=offset_r,ret=[ret],mode='rec'),ret)) - lim
+                send_lI = lambda t: getattr(output.values(aim,i_left,t,'l',tele_angle_l=tele_adjust_l[-1],tele_angle_r=tele_adjust_r[-1],beam_angle_l=False,beam_angle_r=False,offset_l=offset_l,offset_r=offset_r,ret=[ret1],mode='rec'),ret1) - aim.data.I_min
+
+                send_r = lambda t: abs(getattr(output.values(aim,i_right,t,'r',tele_angle_l=tele_adjust_l[-1],tele_angle_r=tele_adjust_r[-1],beam_angle_l=False,beam_angle_r=False,offset_l=offset_l,offset_r=offset_r,ret=[ret],mode='rec'),ret)) - lim
+                send_rI = lambda t: abs(getattr(output.values(aim,i_right,t,'r',tele_angle_l=tele_adjust_l[-1],tele_angle_r=tele_adjust_r[-1],beam_angle_l=False,beam_angle_r=False,offset_l=offset_l,offset_r=offset_r,ret=[ret1],mode='rec'),ret1)) - aim.data.I_min
+
+                step=step0
+                check=False
+                while check==False and Done==False:
+                    try:
+                        t_l_new0 = scipy.optimize.brentq(send_l,t_adjust[-1]+dt,t_adjust[-1]+step,xtol=xtol,rtol=rtol)
+                        check=True
+                        if t_adjust[-1]>t_end:
+                            Done=True
+                    except ValueError,e:
+                        if str(e) =='f(a) and f(b) must have different signs':
+                            if t_adjust[-1]+step>t_end:
+                                Done=True
+                                skip_l0=True
+                            else:
+                                step = step*2
+                                skip_l0=False
+                            pass
+
+                step=step0
+                check=False
+                while check==False and Done==False:
+                    try:
+                        t_l_new1 = scipy.optimize.brentq(send_lI,t_adjust[-1]+dt,t_adjust[-1]+step,xtol=xtol,rtol=rtol)
+                        check=True
+                        if t_adjust[-1]>t_end:
+                            Done=True
+                    except ValueError,e:
+                        if str(e) =='f(a) and f(b) must have different signs':
+                            if t_adjust[-1]+step>t_end:
+                                Done=True
+                                skip_l1=True
+                            else:
+                                step = step*2
+                                skip_l1=False
+                            pass
                 
-                if write==True:
-                    A = output.tele_center_calc(aim,i_left,t_adjust[-1],scale=1,value=value,tele_l=None,tele_r=None,beam_l=None,beam_r=None,offset_l=False,offset_r=False)
-                    [tele_l,tele_r] = A[0]
-                    tele_adjust_l.append(tele_l)
-                    tele_adjust_r.append(tele_r)
+                t_l_new = min(t_l_new0,t_l_new1)
+                if skip_l0==True or skip_l1==True:
+                    skip_l=True
+                else:
+                    skip_l=False
 
-                    print(t_adjust[-1]/t_end)
+                step=step0
+                check=False
+                while check==False and Done==False:
+                    try:
+                        t_r_new0 = scipy.optimize.brentq(send_r,t_adjust[-1]+dt,t_adjust[-1]+step,xtol=xtol,rtol=rtol)
+                        check=True
+                        if t_adjust[-1]>t_end:
+                            Done=True
+                    except ValueError,e:
+                        if str(e) =='f(a) and f(b) must have different signs':
+                            if t_adjust[-1]+step>t_end:
+                                Done=True
+                                skip_r0=True
+                            else:
+                                step = step*2
+                                skip_r0=False
+                            pass
+                
+                step=step0
+                check=False
+                while check==False and Done==False:
+                    try:
+                        t_r_new1 = scipy.optimize.brentq(send_rI,t_adjust[-1]+dt,t_adjust[-1]+step,xtol=xtol,rtol=rtol)
+                        check=True
+                        if t_adjust[-1]>t_end:
+                            Done=True
+                    except ValueError,e:
+                        if str(e) =='f(a) and f(b) must have different signs':
+                            if t_adjust[-1]+step>t_end:
+                                Done=True
+                                skip_r1=True
+                            else:
+                                step = step*2
+                                skip_r1=False
+                            pass
+                
+                t_r_new = min(t_r_new0,t_r_new1)
+                if skip_r0==True or skip_r1==True:
+                    skip_r=True
+                else: 
+                    skip_r=False
+
+                if Done==False:
+                    write=True
+                    if skip_l==True and skip_r==False:
+                        t_adjust.append(t_r_new)
+                    if skip_l==False and skip_r==True:
+                        t_adjust.append(t_l_new)
+                    if skip_l==False and skip_r==False:
+                        t_adjust.append(np.minimum(t_l_new,t_r_new))
+                    else:
+                        write=False
+                    
+                    if write==True:
+                        A = output.tele_center_calc(aim,i_left,t_adjust[-1],scale=1,value=value,tele_l=None,tele_r=None,beam_l=None,beam_r=None,offset_l=False,offset_r=False)
+                        [tele_l,tele_r] = A[0]
+                        tele_adjust_l.append(tele_l)
+                        tele_adjust_r.append(tele_r)
+
+                        print(t_adjust[-1]/t_end)
+
+        elif aim.option_tele == 'center':
+            tele_l = tele_ang_l_fc(i_left,t_adjust[-1])
+            tele_r = tele_ang_r_fc(i_right,t_adjust[-1])
+
+
+            [tele_l,tele_r] = A[0]
+            tele_adjust_l.append(tele_l)
+            tele_adjust_r.append(tele_r)
+            
+            skip_l=False
+            skip_r=False
+            while Done==False:
+                send_l = lambda t: getattr(output.values(aim,i_left,t,'l',tele_angle_l=tele_adjust_l[-1],tele_angle_r=tele_adjust_r[-1],beam_angle_l=False,beam_angle_r=False,offset_l=offset_l,offset_r=offset_r,ret=[ret]),ret) - lim
+                send_r = lambda t: getattr(output.values(aim,i_right,t,'r',tele_angle_l=tele_adjust_l[-1],tele_angle_r=tele_adjust_r[-1],beam_angle_l=False,beam_angle_r=False,offset_l=offset_l,offset_r=offset_r,ret=[ret]),ret) - lim
+                
+                step=step0
+                check=False
+                while check==False and Done==False:
+                    try:
+                        t_l_new = scipy.optimize.brentq(send_l,t_adjust[-1]+dt,t_adjust[-1]+step,xtol=xtol,rtol=rtol)
+                        check=True
+                        if t_adjust[-1]>t_end:
+                            Done=True
+                    except ValueError,e:
+                        if str(e) =='f(a) and f(b) must have different signs':
+                            if t_adjust[-1]+step>t_end:
+                                Done=True
+                                skip_l=True
+                            else:
+                                step = step*2
+                                skip_l=False
+                            pass
+
+                step=step0
+                check=False
+                while check==False and Done==False:
+                    try:
+                        t_r_new = scipy.optimize.brentq(send_r,t_adjust[-1]+dt,t_adjust[-1]+step,xtol=xtol,rtol=rtol)
+                        check=True
+                        if t_adjust[-1]>t_end:
+                            Done=True
+                    except ValueError,e:
+                        if str(e) =='f(a) and f(b) must have different signs':
+                            if t_adjust[-1]+step>t_end:
+                                Done=True
+                                skip_r=True
+                            else:
+                                step = step*2
+                                skip_r=False
+                            pass
+
+                if Done==False:
+                    write=True
+                    if skip_l==True and skip_r==False:
+                        t_adjust.append(t_r_new)
+                    if skip_l==False and skip_r==True:
+                        t_adjust.append(t_l_new)
+                    if skip_l==False and skip_r==False:
+                        t_adjust.append(np.minimum(t_l_new,t_r_new))
+                    else:
+                        write=False
+                    
+                    if write==True:
+                        A = output.tele_center_calc(aim,i_left,t_adjust[-1],scale=1,value=value,tele_l=None,tele_r=None,beam_l=None,beam_r=None,offset_l=False,offset_r=False)
+                        [tele_l,tele_r] = A[0]
+                        tele_adjust_l.append(tele_l)
+                        tele_adjust_r.append(tele_r)
+
+                        print(t_adjust[-1]/t_end)
             
     return t_adjust,[tele_adjust_l,tele_adjust_r],i_left,i_right
 
