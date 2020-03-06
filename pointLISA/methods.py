@@ -814,11 +814,10 @@ def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,optio
                         print(t_adjust[-1]/t_end)
 
         elif aim.option_tele == 'center':
-            tele_l = tele_ang_l_fc(i_left,t_adjust[-1])
-            tele_r = tele_ang_r_fc(i_right,t_adjust[-1])
-
-
+            A = output.tele_center_calc(aim,i_left,t_adjust[-1],scale=1,value=value,tele_l=None,tele_r=None,beam_l=None,beam_r=None,offset_l=False,offset_r=False)
             [tele_l,tele_r] = A[0]
+ 
+            #[tele_l,tele_r] = A[0]
             tele_adjust_l.append(tele_l)
             tele_adjust_r.append(tele_r)
             
