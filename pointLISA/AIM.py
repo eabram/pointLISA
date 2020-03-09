@@ -238,9 +238,10 @@ class AIM():
                 if self.aimset.testSS==False:
                     i_start=1
                     i_end=4
-                elif self.aimset.testSS==True:
-                    i_start=3
-                    i_end=4
+                else:
+                    i_start=self.aimset.testSS
+                    i_end = i_start+1
+
                 print('testSS: ',self.aimset.testSS)
 
                 for link in range(i_start,i_end):
@@ -905,10 +906,11 @@ class AIM():
         if self.aimset.testSS==False:
             i_start = 1
             i_end = 4
-        elif self.aimset.testSS==True:
-            i_start = 3
-            i_end = 4
-            print('Only calculating for one laserlink')
+        else:
+            i_start=self.aimset.testSS
+            i_end = i_start+1
+
+        print('Only calculating for one laserlink')
         
         for link in range(i_start,i_end):
             t_plot = self.data.t_all[2:-3]
