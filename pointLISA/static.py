@@ -11,21 +11,12 @@ import utils
 
 class STAT():
     def __init__(self,input_param,para,**kwargs):
-        input_param_new = {}
-        for k in input_param.keys():
-            if '__' not in k:
-                input_param_new[k] = input_param[k]
-        del input_param
-        input_param = input_param_new
-        del input_param_new
-
         from imports import *
         for k in para:
             globals()[k] = para[k]
             setattr(self,k,para[k])
         for k in input_param.keys():
-            if '__' not in k:
-                setattr(self,k,input_param[k])
+            setattr(self,k,input_param[k])
 
         for key,value in kwargs.items():
             input_param[key] = value
@@ -197,4 +188,5 @@ class STAT():
             self.t_all
         except AttributeError:
             self.t_all = self.orbit.t
+
         return self

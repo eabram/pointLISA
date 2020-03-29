@@ -44,7 +44,7 @@ class AIM():
             
 
             if data!=False:
-                if self.data.input_file==None:
+                if self.import_file==None:
                     print('Start calculating telescope and PAAM aim')
                     self.get_offset_inplane(self.aimset.offset_tele)
                 
@@ -198,7 +198,7 @@ class AIM():
 
         print(' ')
 
-        if self.data.input_file==None:
+        if self.import_file==None:
             if method=='no_control':
                 # For no_control (no pointing)
                 print('tele_ang_extra: '+str(tele_ang_extra))
@@ -325,8 +325,8 @@ class AIM():
     
         else:
             print('Importing pointing angles from:')
-            print(self.data.input_file)
-            ret = pointLISA.read_write.read_output(filenames=self.data.input_file)
+            print(self.import_file)
+            ret = pointLISA.read_write.read_output(filenames=self.import_file)
             tele_l_ang=[]
             tele_r_ang=[]
             if method=='SS':
@@ -447,7 +447,7 @@ class AIM():
 
         # Obtaining PAAM angles for 'fc' (full_control), 'nc' (no_control) and 'SS' (step and stair)
         
-        if self.data.input_file==None:
+        if self.import_file==None:
             try:
                 self.beam_l_ang
                 print('Reading imported PAAM angles')
@@ -505,8 +505,8 @@ class AIM():
 
         else:
             print('Importing pointing angles from:')
-            print(self.data.input_file)
-            ret = pointLISA.read_write.read_output(filenames=self.data.input_file)
+            print(self.import_file)
+            ret = pointLISA.read_write.read_output(filenames=self.data.import_file)
             beam_l_ang=[]
             beam_r_ang=[]
             for i in range(1,4):

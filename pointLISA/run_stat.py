@@ -2,36 +2,22 @@ from imports import *
 import os
 
 # This runner file imports a LISA data file, obtains a STAT object whith an ORBIT attribute 
-def do_run(input_file=None,input_param={},set_stat=utils.Object,**kwargs):
+def do_run(input_file=None,set_stat=utils.Object(),**kwargs):
     para = parameters.__dict__
-    setting = settings.stat.__dict__
-    if input_file!=None:
-        setting_new = read_write.read_options(input_file).__dict__
-        for k in setting.keys():
-            try:
-                setting[k] = setting_new[k]
-            except KeyError:
-                pass
-
-    
-    input_param_new={}
+    data_set0 = utils.get_settings(settings_input=input_file,select='stat')
+        
+    input_param={}
     for key,value in kwargs.items():
-        input_param_new[key] = value
+        input_param[key] = value
     
     for k in set_stat.__dict__.keys():
-        if k not in input_param_new:
-            input_param_new[k] = getattr(set_stat,k)
+        if k not in input_param:
+            input_param[k] = getattr(set_stat,k)
 
-    for k in setting.keys():
-        if '__'  in k:
-            del setting[k]
-        else:
-            if k not in input_param_new.keys():
-                input_param_new[k] = setting[k]
+    for k in data_set0.__dict__.keys():
+        if k not in input_param.keys():
+            input_param[k] = data_set0.__dict__[k]
 
-    del input_param
-    input_param = input_param_new
-    
     for keys in input_param.keys():
         globals()[keys] = input_param[keys]
 

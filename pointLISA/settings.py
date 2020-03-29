@@ -34,7 +34,7 @@ aimset.PAAMin_control='no_control' # For a dual axis PAAM the inplane control me
 aimset.PAAMout_control='no_control' # For a dual axis PAAM the outplane control method, either 'no_control' (no telescope actuation), 'full_control' (continuously actuating) or 'SS' (Step-and-Stare)
 aimset.tele_ang_extra=False # If True an offset angle is introduced in the telescoop pointing
 aimset.PAAM_ang_extra=False # It True an offset angle is introduces in the PAAM pointing
-aimset.offset_tele='read' 
+aimset.offset_tele='0' 
 aimset.sampled=False # If True: All coordinates are sampled (and interpolated) and used for further calculations which is faster than when this is set to False, which is slower but more accurate
 aimset.aim_old=False 
 aimset.aim0=False
@@ -42,7 +42,7 @@ aimset.option_tele='center' # The telescope pointing control method either 'cent
 aimset.option_PAAM='center' # The PAAM pointing control method either 'center' or wavefront'. The PAAM will be pointed to 'center' by aiming the bemline on the center of the opposite aperture and to 'wavefront' by minimizing the angle between the receiveing wavefront and its aperture (on the opposite telescope) 
 aimset.optimize_PAAM = 'yoff' # The parameter of the PAAM control which is being optimized
 aimset.optimize_PAAM_value=np.float64(0.0) # At which aimset.optimize_PAAM has to be optimized for
-aimset.optimize_PAAM_margin=1000.0 # The optimization margin of aimset.optimize_PAAM
+aimset.optimize_PAAM_margin=10.0 # The optimization margin of aimset.optimize_PAAM
 aimset.tele_method_solve='iter' # How, when setting aimset.option_tele to 'wavefront' the optimization is realised (currently only 'iter' (iteration with a certain convergence) is yet implemented
 aimset.PAAM_method_solve='iter' # How, when setting aimset.option_PAAM to 'wavefront' the optimization is realised (currently only 'iter' (iteration with a certain convergence) is yet implemented
 aimset.sample_speed = 1 # This is either 0 or 1. When in is set to 0 more interpolation points are being sampled then when setting it to 1, however 1 will be faster
@@ -53,6 +53,7 @@ aimset.value_center = 0.0 # If aimset.optimize_tele is set to 'center' this is t
 aimset.value_wavefront = 0.0 # If aimset.optimize_tele is set to 'wavefront' this is the value it optimizes for 
 aimset.PAAM_deg = 1 # Number of rotational axis of PAAM (either 1 or 2)
 aimset.tele_SS_scale = 1 # An sclaing parameter for calulating new telescope pointing angles (1 works in can be set to a maximum of 1.9)
+aimset.import_file = None # The importet file (with pointing angles), so it does not perform the recalculation
 
 aimset.testSS=False
 

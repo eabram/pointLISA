@@ -493,3 +493,26 @@ def high_precision(p):
             y_new = scipy.fftpack.fft(y_inv)
             Y[i,:,j] = np.real(y_new)
     return Y
+
+def get_settings(settings_input=None,select='stat'):
+    ret = Object()
+    import pointLISA.settings as settings
+    import __builtin__
+    original = getattr(settings,select)
+    for k in original.__dict__.keys():
+        setattr(ret,k,original.__dict__[k])
+
+    if settings_input!=None:
+        setfile = open(settings_input,'r')
+        for line in setfile:
+            A = line.split(' ')
+            name = A[0]
+            value = A[-1].split('\n')[0]
+            if name in ret.__dict__.keys():
+                typ = str(type(ret.__dict__[name])).split("'")[1]
+                value_new = getattr(__builtin__,typ)(value)
+                delattr(ret,name)
+                setattr(ret,name,value_new)
+
+    return ret
+
