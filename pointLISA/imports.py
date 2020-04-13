@@ -26,6 +26,7 @@ import scipy.optimize
 from sympy import *
 import warnings
 warnings.filterwarnings('ignore', 'The iteration is not making good progress')
+warnings.simplefilter('ignore', np.RankWarning)
 import sympy as sp
 import random
 import yaml

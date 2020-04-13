@@ -11,38 +11,105 @@ import scipy.optimize
 
 #This file contains some (specific) calulation methods (the more general ones can be found in utils.py)
 
-def get_putp_sampled(data,method='interp1d'):
+def get_putp_fitted(data,method='interp1d'):
     '''Returns an interpolation of the spacecraft positions'''
     if 'function' in str(type(data.LISA_opt)):
         print('Not sampled because input function')
         ret = lambda i,t: data.putp
     else:
-        t_all = data.orbit.t
-        pos = []
-        for i in range(1,4):
-            pos_array=[]
-            pos_x=[]
-            pos_y=[]
-            pos_z=[]
-            for t in t_all:
-                value = data.LISA.putp(i,t)
-                if value[0]==0.0:
-                    pos_x.append(np.nan)
-                    pos_y.append(np.nan)
-                    pos_z.append(np.nan)
-                else:
-                    pos_x.append(value[0])
-                    pos_y.append(value[1])
-                    pos_z.append(value[2])
-            
-            pos_x_interp  = interpolate(t_all,pos_x,method=method)
-            pos_y_interp  = interpolate(t_all,pos_y,method=method)
-            pos_z_interp  = interpolate(t_all,pos_z,method=method)
-            pos.append([pos_x_interp,pos_y_interp,pos_z_interp])
-            
-        ret = lambda i,t: np.array([pos[i-1][0](t),pos[i-1][1](t),pos[i-1][2](t)])
+        if method=='pointLISA':
+            ret = fit_pointLISA(data)
+        elif method=='interp1d':
+            t_all = data.orbit.t
+            pos = []
+            for i in range(1,4):
+                pos_array=[]
+                pos_x=[]
+                pos_y=[]
+                pos_z=[]
+                for t in t_all:
+                    value = data.LISA.putp(i,t)
+                    if value[0]==0.0:
+                        pos_x.append(np.nan)
+                        pos_y.append(np.nan)
+                        pos_z.append(np.nan)
+                    else:
+                        pos_x.append(value[0])
+                        pos_y.append(value[1])
+                        pos_z.append(value[2])
+                
+                pos_x_interp  = interpolate(t_all,pos_x,method=method)
+                pos_y_interp  = interpolate(t_all,pos_y,method=method)
+                pos_z_interp  = interpolate(t_all,pos_z,method=method)
+                pos.append([pos_x_interp,pos_y_interp,pos_z_interp])
+                
+            ret = lambda i,t: np.array([pos[i-1][0](t),pos[i-1][1](t),pos[i-1][2](t)])
+        elif method=='LISA':
+            ret=False
 
     return ret
+
+def fit_pointLISA(data):
+    def fit_twosteps(x,y):
+        def fit_sin(x,a,b,c,d):
+            return a*np.sin(b*x+d)+c
+
+        #Guesses
+        pb = (2.0*np.pi)/(3600*24*365.25)
+        pc = np.mean(y)
+        pa = (np.max(y) - np.min(y))/2.0
+        pd=0.0
+        p0 = scipy.array([pa,pb,pc,pd])
+        popt, pcov = scipy.optimize.curve_fit(fit_sin, x, y,p0=p0)
+        y0 = np.array([fit_sin(t,popt[0],popt[1],popt[2],popt[3]) for t in x])
+        f0 = lambda t: fit_sin(t,popt[0],popt[1],popt[2],popt[3])
+
+        yrest = y-y0
+        step=10
+        select=5
+        fits=[]
+        f1_fits_tot = []
+        starts=[]
+        jstart=0
+        while jstart<=len(x)-select:
+            jend=jstart+step
+            X = x[jstart:jend]
+            Y = yrest[jstart:jend]
+            #A = scipy.interpolate.interpolate.lagrange(X,Y)
+            A = np.poly1d(np.polyfit(X,Y,step-1))
+            fits.append(A)
+            f1_fit = np.array([A(t) for t in X[0:select]])
+            f1_fits_tot.append(f1_fit)
+            starts.append(x[jstart])
+            jstart = jstart+select
+
+        def get_function(t,starts,fits):
+            for i in range(1,len(starts)):
+                if starts[i]>t:
+                    loc=i-1
+                    break
+            try:
+                return fits[loc](t)
+            except UnboundLocalError:
+                #print(t)
+                return np.nan
+
+        f1 = lambda t: get_function(t,starts,fits) +f0(t)
+
+        return f1
+    x = data.orbit.t
+    F_all=[]
+    for i in range(0,len(data.orbit.p)):
+        F=[]
+        for j in range(0,len(data.orbit.p[i][0])):
+            y = data.orbit.p[i][:,j]
+            F.append(fit_twosteps(x,y))
+        F_all.append(F)
+    
+    putp = lambda i,t: np.array([F_all[i-1][0](t),F_all[i-1][1](t),F_all[i-1][2](t)])
+    return putp
+
+
 
 
 def get_nearest_smaller_value(lst,val):
