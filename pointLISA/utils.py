@@ -135,7 +135,11 @@ def solve_L_PAA(OBJ,t,pos_OBJ,pos_left,pos_right,select='sl',calc_method='Walusc
         s4 = lambda dt: np.linalg.norm(s3(dt))
         s5 = lambda dt: s4(dt) - c*dt
 
-        res = scipy.optimize.brentq(s5,0,t_guess*4)
+        try:
+            res = scipy.optimize.brentq(s5,0,t_guess*4)
+        except ValueError,e:
+            if str(e)=='f(a) and f(b) must have different signs':
+                res=np.nan
     
     elif OBJ.test_COM_effect==True:
         if select=='sl' or select=='rl':
@@ -162,7 +166,11 @@ def solve_L_PAA(OBJ,t,pos_OBJ,pos_left,pos_right,select='sl',calc_method='Walusc
         s4 = lambda dt: np.linalg.norm(s3(dt)-com(dt))
         s5 = lambda dt: s4(dt) - c*dt
         
-        res = scipy.optimize.brentq(s5,0,t_guess*4)
+        try:
+            res = scipy.optimize.brentq(s5,0,t_guess*4)
+        except ValueError,e:
+            if str(e)=='f(a) and f(b) must have different signs':
+                res=np.nan
 
     return res
 
@@ -510,7 +518,10 @@ def get_settings(settings_input=None,select='stat'):
             value = A[-1].split('\n')[0]
             if name in ret.__dict__.keys():
                 typ = str(type(ret.__dict__[name])).split("'")[1]
-                value_new = getattr(__builtin__,typ)(value)
+                try:
+                    value_new = getattr(__builtin__,typ)(value)
+                except ValueError,e:
+                    value_new = str(value)
                 delattr(ret,name)
                 setattr(ret,name,value_new)
 

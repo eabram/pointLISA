@@ -46,7 +46,7 @@ class ORBIT():
             line_count=0
             for line in file.readlines():
                 if read_max!='all':
-                    if line_count==read_max:
+                    if line_count==read_max+20:
                         break
                 if line[0]!= '#':
                     a=line.split(' ')
@@ -67,7 +67,10 @@ class ORBIT():
                         p[1].append(np.array([a[4]*scale,a[5]*scale,a[6]*scale]))
                         p[2].append(np.array([a[7]*scale,a[8]*scale,a[9]*scale]))
                         t.append(a[0]) # ... [s]
-                    except ValueError:
+                    except ValueError,e:
+                        print(e)
+                        print(a)
+                        print()
                         read_check=False
                         pass
                     if read_check==True:

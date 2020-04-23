@@ -191,5 +191,10 @@ class STAT():
             self.t_all
         except AttributeError:
             self.t_all = self.orbit.t
+        if 'int' in str(type(self.length_calc)):
+            if self.t_all[-1]>(self.length_calc+1)*day2sec:
+                loc = pointLISA.methods.get_nearest_smaller_value(self.orbit.t,self.length_calc*day2sec)
+                self.t_all = self.orbit.t[0:loc+1]
+
 
         return self

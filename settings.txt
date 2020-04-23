@@ -1,5 +1,5 @@
 calc_method Abram
-length_calc 400
+length_calc all
 
 option_PAAM center
 option_tele center

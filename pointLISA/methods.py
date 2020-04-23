@@ -51,7 +51,7 @@ def get_putp_fitted(data,method='interp1d'):
 
 def fit_pointLISA(data):
     def fit_twosteps(x,y):
-        def fit_sin(x,a,b,c,d):
+        def fit_sin(x,a,b,c,d): #...Buiten functie zetten
             return a*np.sin(b*x+d)+c
 
         #Guesses
