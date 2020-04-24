@@ -1,16 +1,5 @@
 ##!/usr/bin/env python   
-from imports import *
-import utils
-from synthlisa import *
-import numpy as np
-import os
-from fractions import Fraction
-import math
-import datetime
-from decimal import *
-from scipy.interpolate import interp1d
-year2sec=32536000
-day2sec = year2sec/365.25
+from __init__ import *
  
 # This class creates an orbit object which containes the positions of the spacecrafts ans its corresponding syntheticLISA object
 

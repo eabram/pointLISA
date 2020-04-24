@@ -1,6 +1,4 @@
-from imports import * 
-import numpy as np
-import os
+from __init__ import * 
 
 year2sec=np.float64(32536000.0)
 day2sec=np.float64(year2sec/365.25)

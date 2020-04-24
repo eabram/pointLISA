@@ -1,17 +1,10 @@
-from imports import * 
-from pointLISA import *
-import pointLISA
-import LA
-import numpy as np
-import time
-from orbit import ORBIT 
-import utils
+##!/usr/bin/env python 
+from __init__ import *
 
 # in the STAT class an ORBIT object is used which containes the imported or constructed orbital coordinates of the spacecrafts. In STAT different vectors are being constructed and calculaded (r, n, v, u, L) as well as angles (PAA, breathing)
 
 class STAT():
     def __init__(self,input_param,para,**kwargs):
-        from imports import *
         for k in para:
             globals()[k] = para[k]
             setattr(self,k,para[k])
