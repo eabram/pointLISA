@@ -140,8 +140,11 @@ def nominal_arm(OBJ,i,t):
 
     return f(t)
 
-def LISA_obj(OBJ,type_select='cache'):
+def LISA_obj(OBJ,type_select='Default'):
     '''Creates the attribute LISA for OBJ which is a synthLISA object of a pre-setted type'''
+    if type_select=='Default':
+        type_select=OBJ.stat.LISA_opt
+
     if 'function' in str(type(type_select)):
         lisa = Object()
         lisa.putp = type_select
@@ -193,9 +196,9 @@ def get_armvec_func(OBJ,i,side):
 
 def func_pos(OBJ,i):
     '''Generate functions of the positions''' 
-    if OBJ.test_COM_effect == False:
+    if OBJ.stat.test_COM_effect == False:
         L = lambda time: np.array(OBJ.putp(i,time))
-    if OBJ.test_COM_effect == True:
+    if OBJ.stat.test_COM_effect == True:
         L = lambda time: np.array(OBJ.putp(i,time) - OBJ.COM_func(time))
     return L
 
@@ -211,7 +214,7 @@ def solve_L_PAA(OBJ,t,pos_OBJ,pos_left,pos_right,select='sl',calc_method='Walusc
     else:
         t_guess = np.linalg.norm(np.array(OBJ.putp(1,0)) - np.array(OBJ.putp(2,0)))/c
     
-    if OBJ.test_COM_effect==False:
+    if OBJ.stat.test_COM_effect==False:
         if select=='sl' or select=='rl':
             s1 = lambda x: pos_left(x)
         elif select=='sr' or select=='rr':
@@ -238,7 +241,7 @@ def solve_L_PAA(OBJ,t,pos_OBJ,pos_left,pos_right,select='sl',calc_method='Walusc
             if str(e)=='f(a) and f(b) must have different signs':
                 res=np.nan
     
-    elif OBJ.test_COM_effect==True:
+    elif OBJ.stat.test_COM_effect==True:
         if select=='sl' or select=='rl':
             s1 = lambda x: pos_left(x)
         elif select=='sr' or select=='rr':
@@ -297,36 +300,38 @@ def func_over_sc(func_tot):
 
     return f
 
-def send_func(OBJ,i,calc_method='Waluschka'):
+def send_func(OBJ,i,calc_method='Default'):
     '''Uses previous defined functions to return the vecors L, u, v, r and n'''
+    if calc_method=='Default':
+        calc_method=OBJ.stat.calc_method
     [i_OBJ,i_left,i_right] = i_slr(i)
 
     pos_left = func_pos(OBJ,i_left)
     pos_OBJ = func_pos(OBJ,i_OBJ)
     pos_right = func_pos(OBJ,i_right)
 
-    if OBJ.delay==True:
+    if OBJ.stat.delay==True:
         [L_sl,L_sr,L_rl,L_rr] = L_PAA(OBJ,pos_OBJ,pos_left,pos_right,calc_method=calc_method,i=i_OBJ)
-    elif OBJ.delay=='not ahead':
+    elif OBJ.stat.delay=='not ahead':
         L_sl = lambda t: np.linalg.norm(pos_left(t) - pos_OBJ(t))/c
         L_sr = lambda t: np.linalg.norm(pos_right(t) - pos_OBJ(t))/c
         L_rl=L_sl
         L_rr=L_sr
 
-    elif OBJ.delay=='constant':
+    elif OBJ.stat.delay=='constant':
         L_sl = lambda t: OBJ.armlength/c #...adjust
         L_sr = lambda t: OBJ.armlength/c
         L_rl=L_sl
         L_rr=L_sr
 
 
-    elif OBJ.delay==False:
+    elif OBJ.stat.delay==False:
         L_sl = lambda t: 0
         L_sr = lambda t: 0
         L_rl=L_sl
         L_rr=L_sr
     
-    if OBJ.test_COM_effect==False:
+    if OBJ.stat.test_COM_effect==False:
         if calc_method=='Abram':
             #Abram2018
             v_send_l0 = lambda t: pos_left(t+L_sl(t)) - pos_OBJ(t)
@@ -341,7 +346,7 @@ def send_func(OBJ,i,calc_method='Waluschka'):
             v_rec_l0 = lambda t: pos_OBJ(t-L_rl(t)) - pos_left(t - L_rl(t))
             v_rec_r0 = lambda t: pos_OBJ(t-L_rr(t)) - pos_right(t - L_rr(t))
 
-    elif OBJ.test_COM_effect==True:
+    elif OBJ.stat.test_COM_effect==True:
         if calc_method=='Abram':
             #Abram2018
             v_send_l0 = lambda t: pos_left(t+L_sl(t)) - pos_OBJ(t) - (OBJ.COM_func(t+L_sl(t)) - OBJ.COM_func(t))
@@ -356,22 +361,25 @@ def send_func(OBJ,i,calc_method='Waluschka'):
             v_rec_l0 = lambda t: pos_OBJ(t-L_rl(t)) - pos_left(t - L_rl(t))
             v_rec_r0 = lambda t: pos_OBJ(t-L_rr(t)) - pos_right(t - L_rr(t))
 
-    if OBJ.aberration==False:
+    if OBJ.stat.aberration==False:
         v_send_l = v_send_l0
         v_send_r = v_send_r0
         v_rec_l = v_rec_l0
         v_rec_r = v_rec_r0
-    elif OBJ.aberration==True:
-        v_send_l = lambda t: relativistic_aberrations(OBJ,i,t,v_send_l0(t),relativistic=OBJ.relativistic)
-        v_send_r = lambda t: relativistic_aberrations(OBJ,i,t,v_send_r0(t),relativistic=OBJ.relativistic)
-        v_rec_l = lambda t: relativistic_aberrations(OBJ,i,t,v_rec_l0(t),relativistic=OBJ.relativistic)
-        v_rec_r = lambda t: relativistic_aberrations(OBJ,i,t,v_rec_r0(t),relativistic=OBJ.relativistic)
+    elif OBJ.stat.aberration==True:
+        v_send_l = lambda t: relativistic_aberrations(OBJ,i,t,v_send_l0(t))
+        v_send_r = lambda t: relativistic_aberrations(OBJ,i,t,v_send_r0(t))
+        v_rec_l = lambda t: relativistic_aberrations(OBJ,i,t,v_rec_l0(t))
+        v_rec_r = lambda t: relativistic_aberrations(OBJ,i,t,v_rec_r0(t))
 
     return [[v_send_l,v_send_r,v_rec_l,v_rec_r],[L_sl,L_sr,L_rl,L_rr],[v_send_l0,v_send_r0,v_rec_l0,v_rec_r0]]
 
-def relativistic_aberrations(OBJ,i,t,u,relativistic=True):
+def relativistic_aberrations(OBJ,i,t,u,relativistic='Default'):
     '''Adjust vecor u by adding the angle caused by aberration'''
-    if OBJ.calc_method=='Abram':
+    if relativistic=='Default':
+        relativistic=OBJ.stat.relativistic
+
+    if OBJ.stat.calc_method=='Abram':
         if relativistic==True:
             V = -OBJ.vel.abs(i,t)
             V_mag = np.linalg.norm(V)
@@ -396,22 +404,6 @@ def relativistic_aberrations(OBJ,i,t,u,relativistic=True):
             c_prime = ux_prime*x_prime + un_prime*n_prime +ur_prime*r_prime
             u_new = LA.unit(c_prime)*u_mag
 
-    #        ux = (np.dot(c_vec,V)/(V_mag))*LA.unit(V)
-    #        x = LA.unit(ux)
-    #        uy = c_vec-ux
-    #        y = LA.unit(uy)
-    #        
-    #        ux_mag = np.linalg.norm(ux)
-    #        uy_mag = np.linalg.norm(uy)
-    #
-    #        den = (1+((ux_mag*V_mag)/(c**2)))
-    #        ux_ac = (ux_mag+V_mag)/den
-    #        gamma = 1.0/((1-((V_mag/c)**2))**0.5)
-    #        uy_ac = uy_mag/(gamma*den)
-    #        
-    #        u_new = LA.unit(ux_ac*x+uy_ac*y)*u_mag
-    #        #u_new = (ux_ac*x+uy_ac*y)*(u_mag/c)
-
         elif relativistic==False:
             V = -OBJ.vel.abs(i,t)
             u_mag = np.linalg.norm(u)
@@ -423,7 +415,7 @@ def relativistic_aberrations(OBJ,i,t,u,relativistic=True):
 
         return u_new
 
-    elif OBJ.calc_method=='Waluschka':
+    elif OBJ.stat.calc_method=='Waluschka':
 
         return u
 
@@ -466,8 +458,10 @@ def velocity_abs_calc(OBJ,i_select,t,hstep):
     return v
 
 
-def velocity_abs(OBJ,hstep=1.0):
+def velocity_abs(OBJ,hstep='Default'):
     '''Returns the velocity vector in a function'''
+    if hstep=='Default':
+        hstep = OBJ.stat.hstep
     hstep = np.float128(hstep)
     v_ret = lambda i,time: velocity_abs_calc(OBJ,i,time,hstep)
     try:
@@ -580,14 +574,18 @@ def get_settings(settings_input=None,select='stat'):
 
 class calculations():
     #This class contains some (specific) calulation methods (the more general ones can be found in utils.py)
-    def get_putp_fitted(self,data,method='interp1d'):
+    def get_putp_fitted(self,data,method='Default'):
         '''Returns an interpolation of the spacecraft positions'''
-        if 'function' in str(type(data.LISA_opt)):
-            print('Not sampled because input function')
-            ret = lambda i,t: data.putp(i,t)
+        if method=='Default':
+            method=data.stat.putp_mode
+
+        if 'function' in str(type(data.stat.LISA_opt)):
+            ret = False
         else:
             if method=='pointLISA':
                 ret = self.fit_pointLISA(data)
+            elif method=='LISA':
+                ret = data.LISA.putp
             elif method=='interp1d':
                 t_all = data.orbit.t
                 pos = []
@@ -607,14 +605,12 @@ class calculations():
                             pos_y.append(value[1])
                             pos_z.append(value[2])
                     
-                    pos_x_interp  = interpolate(t_all,pos_x,method=method)
-                    pos_y_interp  = interpolate(t_all,pos_y,method=method)
-                    pos_z_interp  = interpolate(t_all,pos_z,method=method)
+                    pos_x_interp  = self.interpolate(t_all,pos_x,method=method)
+                    pos_y_interp  = self.interpolate(t_all,pos_y,method=method)
+                    pos_z_interp  = self.interpolate(t_all,pos_z,method=method)
                     pos.append([pos_x_interp,pos_y_interp,pos_z_interp])
                     
                 ret = lambda i,t: np.array([pos[i-1][0](t),pos[i-1][1](t),pos[i-1][2](t)])
-            elif method=='LISA':
-                ret=False
 
         return ret
 

@@ -1,7 +1,6 @@
 from pointLISA import *
 # This runner file imports a LISA data file, obtains a STAT object whith an ORBIT attribute 
 def do_run(input_file=None,set_stat=utils.Object(),**kwargs):
-    para = parameters.__dict__
     data_set0 = utils.get_settings(settings_input=input_file,select='stat')
         
     input_param={}
@@ -52,7 +51,7 @@ def do_run(input_file=None,set_stat=utils.Object(),**kwargs):
 
         if execute == True:
             filename_save = i.split('/')[-1].split('_')[0]
-            data=static.STAT(input_param,para,filename = i).PAA_func()
+            data=static.STAT(input_param,filename = i).PAA_func()
             data.input_file = input_file
 
             filename_done.append(filename_name)
