@@ -1,19 +1,5 @@
-from pointLISA import *   
-import LA
-import pointLISA.methods as methods
-from synthlisa import *
-import numpy as np
-import matplotlib.pyplot as plt
-import os
-from fractions import Fraction
-import math
-import datetime
-from scipy.interpolate import interp1d
-from scipy.interpolate import RegularGridInterpolator
-import scipy.optimize
-from sympy import *
-from imports import *
-from parameters import *
+#from __init__ import *
+from pointLISA import *
 
 # This class contains different helper functions
 

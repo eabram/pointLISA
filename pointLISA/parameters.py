@@ -1,4 +1,5 @@
-from __init__ import * 
+#from __init__ import * 
+from pointLISA import * 
 
 year2sec=np.float64(32536000.0)
 day2sec=np.float64(year2sec/365.25)

@@ -1,5 +1,6 @@
 ##!/usr/bin/env python 
-from __init__ import *
+from pointLISA import *
+#from __init__ import *
 
 # in the STAT class an ORBIT object is used which containes the imported or constructed orbital coordinates of the spacecrafts. In STAT different vectors are being constructed and calculaded (r, n, v, u, L) as well as angles (PAA, breathing)
 
@@ -76,7 +77,7 @@ class STAT():
         print('')
         print('Importing Orbit')
         tic=time.clock()
-        Orbit=ORBIT(input_param=self.input_param)
+        Orbit=orbit.ORBIT(input_param=self.input_param)
         print(str(Orbit.linecount)+' datapoints')
         self.orbit = Orbit
         utils.LISA_obj(self,type_select=self.LISA_opt)
