@@ -1,11 +1,9 @@
 ##!/usr/bin/env python   
-#from __init__ import * 
 from pointLISA import *
 # This class creates an orbit object which containes the positions of the spacecrafts ans its corresponding syntheticLISA object
 
 class ORBIT():
     def __init__(self,input_param,**kwargs):
-        print(day2sec)
         for k in input_param.keys():
             setattr(self,k,input_param[k])
         if self.directory_imp != False:

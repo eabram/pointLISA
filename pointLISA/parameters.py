@@ -1,4 +1,3 @@
-#from __init__ import * 
 from pointLISA import * 
 
 year2sec=np.float64(32536000.0)

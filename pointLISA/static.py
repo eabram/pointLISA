@@ -6,9 +6,6 @@ from pointLISA import *
 
 class STAT():
     def __init__(self,input_param,para,**kwargs):
-        for k in para:
-            globals()[k] = para[k]
-            setattr(self,k,para[k])
         for k in input_param.keys():
             setattr(self,k,input_param[k])
 
@@ -84,7 +81,7 @@ class STAT():
         print('Done in '+str(time.clock()-tic))
         self.SC = range(1,4)
         
-        self.putp_fitted = pointLISA.methods.get_putp_fitted(self,method=self.putp_mode)
+        self.putp_fitted = calc.get_putp_fitted(self,method=self.putp_mode)
         self.COM_func = utils.COM_func(self)
 
         # Calculations
@@ -187,7 +184,7 @@ class STAT():
             self.t_all = self.orbit.t
         if 'int' in str(type(self.length_calc)):
             if self.t_all[-1]>(self.length_calc+1)*day2sec:
-                loc = pointLISA.methods.get_nearest_smaller_value(self.orbit.t,self.length_calc*day2sec)
+                loc = calc.get_nearest_smaller_value(self.orbit.t,self.length_calc*day2sec)
                 self.t_all = self.orbit.t[0:loc+1]
 
 

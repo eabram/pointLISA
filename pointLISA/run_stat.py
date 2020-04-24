@@ -1,4 +1,3 @@
-#from __init__ import * 
 from pointLISA import *
 # This runner file imports a LISA data file, obtains a STAT object whith an ORBIT attribute 
 def do_run(input_file=None,set_stat=utils.Object(),**kwargs):
