@@ -274,7 +274,6 @@ def solve_L_PAA(OBJ,t,pos_OBJ,pos_left,pos_right,select='sl',calc_method='Walusc
 
     return res
 
-
 def L_PAA(OBJ,pos_OBJ,pos_left,pos_right,calc_method='Walushka',i=False):
     '''Obtain time of flight of beam between spacecrafts'''
 

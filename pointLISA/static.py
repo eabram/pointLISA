@@ -9,8 +9,6 @@ class STAT():
         if 'function' not in str(type(self.stat.LISA_opt)):
             self.get_scale_and_time_units()
 
-        print(self.stat.scale)
-
     def get_settings(self,input_param,kwargs):
         stat = utils.Object()
 
@@ -33,8 +31,6 @@ class STAT():
                 if 'scale' == a1[k]:
                     self.stat.scale = float(a1[k+1]) 
             print(self.stat.scale)
-        else:
-            print(self.stat.scale)
         print('')
         
         if self.stat.timeunit=='Default':
@@ -48,8 +44,6 @@ class STAT():
                     print(self.stat.timeunit)
             if self.stat.timeunit!='days' and self.stat.timeunit!='seconds':
                 print('Could not obtain proper timestep')
-        else:
-            print(self.stat.timeunit)
         print('')
  
 
@@ -150,7 +144,6 @@ class STAT():
         self.u_r_out_func_tot = lambda i,t: LA.outplane(self.u_r_func_tot(i,t),self.n_func(i,t))
 
         #--- Obtaining PAA --- 
-        print('Aberration: '+str(self.stat.aberration))
         selections=['l_in','l_out','r_in','r_out']
         PAA_func_val={}
         PAA_func_val[selections[0]] = lambda i,t: utils.calc_PAA_lin(self,i,t)

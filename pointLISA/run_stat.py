@@ -61,8 +61,6 @@ def do_run(input_file=None,set_stat=utils.Object(),**kwargs):
                 data_all[filename_save] = data
                 data_all[str(count)] = data
             
-            print('test_calc: '+str(test_calc))
-    
     if len(data_all.keys())==2:
         return data_all['1']
     else:
