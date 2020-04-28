@@ -928,7 +928,7 @@ class calculations():
 
     ### Telescope pointing
 
-    def get_wavefront_parallel(data,aim,i,t,side,PAAM_ang,ret,mode='opposite',precision=0,ksi=[0,0],angles=False):
+    def get_wavefront_parallel(self,data,aim,i,t,side,PAAM_ang,ret,mode='opposite',precision=0,ksi=[0,0],angles=False):
         '''Calculates how the telescopes should rotate for a 90 degree angle between the recieving waveront and the receiving telescope'''
         [i_self,i_left,i_right] = utils.i_slr(i)
         if mode=='opposite':
@@ -1086,12 +1086,10 @@ class calculations():
 
             return ret_val
 
-    def rotate_PAA_wavefront(data,aim,SC,t,side,ret,output_full=False):
+    def rotate_PAA_wavefront(self,data,aim,SC,t,side,ret,output_full=False):
         '''Rotates the telescope angles for a straignt hit wit the receiving wavefront'''
         [i_left,i_right,link] = utils.i_slr(SC)
 
-        import scipy.optimize
-        
         f = lambda PAAM_ang,m: get_wavefront_parallel(data,aim,SC,t,side,PAAM_ang,m,mode='opposite',precision=0,ksi=[0,0],angles=False)
         ang_solve = scipy.optimize.brentq(lambda PAAM_ang: f(PAAM_ang,ret),np.float64(-0.1),np.float64(0.1))
 
@@ -1197,9 +1195,8 @@ class calculations():
         else:
             print('Please select proper interpolation method (interp1d)')
 
-    def SS_value(aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,option=False,print_on=False,value=0,offset_l=False,offset_r=False,dt=3600*100,scale=1): #set scale at maximum of <2.0
+    def SS_value(self,aim,link,t0,t_end,method,lim,ret='',tele_l=False,tele_r=False,option=False,print_on=False,value=0,offset_l=False,offset_r=False,dt=3600*100,scale=1): #set scale at maximum of <2.0
         '''Calculate the repointing time stamps and corresponfing telecsope angles'''
-        import pointLISA
 
         if option==False:
             option = aim.aimset.option_tele
@@ -1215,7 +1212,7 @@ class calculations():
 
         i = (link-2)%3
 
-        [i_left,i_right,link] = pointLISA.utils.i_slr(i)
+        [i_left,i_right,link] = i_slr(i)
      
         if ret=='Ivalx':
             lim = aim.data.P_min/(((aim.data.D**2)/4.0)*(np.pi))
@@ -1505,10 +1502,9 @@ class calculations():
         return t_adjust,[tele_adjust_l,tele_adjust_r],i_left,i_right
 
 
-    def tele_point_calc(aim,i,t,side,option,lim=False,method=False,value=0,scale=1,max_count=20,tele_l0=None,tele_r0=None,beam_l0=None,beam_r0=None,offset_l0=None,offset_r0=None,**kwargs): # Recommended to use aim0
+    def tele_point_calc(self,aim,i,t,side,option,lim=False,method=False,value=0,scale=1,max_count=20,tele_l0=None,tele_r0=None,beam_l0=None,beam_r0=None,offset_l0=None,offset_r0=None,**kwargs): # Recommended to use aim0
         '''Calculates the (full control) telescope pointing angles (with the center or wavefront method)'''
-        import utils
-        [i_self,i_left,i_right] = utils.i_slr(i)
+        [i_self,i_left,i_right] = i_slr(i)
         if option=='center':
             if lim==False:
                 lim = aim.aimset.limit_xoff

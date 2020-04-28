@@ -1,32 +1,26 @@
-from imports import * 
-import copy
+from pointLISA import * 
 
 ### This runner file uses a STAT object (data), calculates the pointig angles and other properties and writes it to a dafile
 def get_pointing(data,import_file=None,filename=False,set_din=utils.Object(),aim0=False,aim_old=False,print_on=False,**kwargs):
-    from pointLISA import *
     try:
         input_file = data.input_file
     except:
         input_file=None
 
     aimset0 = utils.get_settings(settings_input=input_file,select='aimset')
-    aimset_new={}
+    aimset = utils.Object()
+    #aimset_new={}
     
     for key,value in kwargs.items():
-        aimset_new[key] = value
+        setattr(aimset,key,value)
 
     for k in set_din.__dict__.keys():
-        if k not in aimset_new.keys():
-            aimset_new[k] = getattr(set_din,k)
+        if k not in aimset.__dict__.keys():
+            setattr(aimset,k,getattr(set_din,k))
 
     for k in aimset0.__dict__.keys():
-        if k not in aimset_new.keys():
-            aimset_new[k] = getattr(aimset0,k)
-    
-    aimset = utils.Object()
-    for k in aimset_new.keys():
-        if k in aimset0.__dict__.keys():
-            setattr(aimset,k,aimset_new[k])
+        if k not in aimset.__dict__.keys():
+            setattr(aimset,k,getattr(aimset0,k))
     
     PAAM_deg = aimset.PAAM_deg
 
