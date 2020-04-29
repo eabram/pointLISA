@@ -7,7 +7,7 @@ def get_pointing(data,import_file=None,filename=False,set_din=utils.Object(),aim
     except:
         input_file=None
 
-    aimset0 = utils.get_settings(settings_input=input_file,select='aimset')
+    aimset0 = const.get_settings(settings_input=input_file,select='aimset')
     aimset = utils.Object()
     #aimset_new={}
     

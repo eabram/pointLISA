@@ -6,6 +6,8 @@ from pointLISA import *
 class STAT():
     def __init__(self,input_param,**kwargs):
         self.stat = self.get_settings(input_param,kwargs)
+        self.param = self.get_parameters()
+
         if 'function' not in str(type(self.stat.LISA_opt)):
             self.get_scale_and_time_units()
 
@@ -20,6 +22,14 @@ class STAT():
             setattr(stat,key,value)
 
         return stat
+
+    def get_parameters(self):
+        param = utils.Object()
+
+        for p in parameter_names:
+            setattr(param,p,getattr(parameters,p))
+
+        return param
 
     def get_scale_and_time_units(self):
         if self.stat.scale=='Default':
@@ -65,11 +75,11 @@ class STAT():
         Orbit=orbit.ORBIT(input_param=self.stat.__dict__)
         print(str(Orbit.linecount)+' datapoints')
         self.orbit = Orbit
-        utils.LISA_obj(self)
+        const.LISA_obj(self)
         print('Done in '+str(time.clock()-tic))
         self.SC = range(1,4) 
         self.putp_fitted = calc.get_putp_fitted(self)
-        self.COM_func = utils.COM_func(self)
+        self.COM_func = const.COM_func(self)
 
         # Calculations
         v_l_func_tot=[]
@@ -89,11 +99,11 @@ class STAT():
         pos_func=[]
         
         #--- Obtaining Velocity
-        utils.velocity_abs(self)
-        utils.velocity_func(self)
+        const.velocity_abs(self)
+        const.velocity_func(self)
 
         for i in range(1,4):
-            [[v_l_func,v_r_func,u_l_func,u_r_func],[L_sl_func,L_sr_func,L_rl_func,L_rr_func],[v_l0_func,v_r0_func,u_l0_func,u_r0_func]] = utils.send_func(self,i)
+            [[v_l_func,v_r_func,u_l_func,u_r_func],[L_sl_func,L_sr_func,L_rl_func,L_rr_func],[v_l0_func,v_r0_func,u_l0_func,u_r0_func]] = const.send_func(self,i)
 
             v_l_func_tot.append(v_l_func)
             v_r_func_tot.append(v_r_func)
@@ -109,30 +119,30 @@ class STAT():
             L_rl_func_tot.append(L_rl_func)
             L_rr_func_tot.append(L_rr_func)
             
-            [i_self,i_left,i_right] = utils.i_slr(i)
-            v_l_stat_func_tot.append(utils.get_armvec_func(self,i_self,'l'))
-            v_r_stat_func_tot.append(utils.get_armvec_func(self,i_self,'r'))
-            pos_func.append(utils.func_pos(self,i))
+            [i_self,i_left,i_right] = const.i_slr(i)
+            v_l_stat_func_tot.append(const.get_armvec_func(self,i_self,'l'))
+            v_r_stat_func_tot.append(const.get_armvec_func(self,i_self,'r'))
+            pos_func.append(const.func_pos(self,i))
 
-        self.v_l_func_tot = utils.func_over_sc(v_l_func_tot)
-        self.v_r_func_tot = utils.func_over_sc(v_r_func_tot)
-        self.u_l_func_tot = utils.func_over_sc(u_l_func_tot)
-        self.u_r_func_tot = utils.func_over_sc(u_r_func_tot)
-        self.v_l0test_func_tot = utils.func_over_sc(v_l0test_func_tot)
-        self.v_r0test_func_tot = utils.func_over_sc(v_r0test_func_tot)
-        self.u_l0test_func_tot = utils.func_over_sc(u_l0test_func_tot)
-        self.u_r0test_func_tot = utils.func_over_sc(u_r0test_func_tot)
+        self.v_l_func_tot = const.func_over_sc(v_l_func_tot)
+        self.v_r_func_tot = const.func_over_sc(v_r_func_tot)
+        self.u_l_func_tot = const.func_over_sc(u_l_func_tot)
+        self.u_r_func_tot = const.func_over_sc(u_r_func_tot)
+        self.v_l0test_func_tot = const.func_over_sc(v_l0test_func_tot)
+        self.v_r0test_func_tot = const.func_over_sc(v_r0test_func_tot)
+        self.u_l0test_func_tot = const.func_over_sc(u_l0test_func_tot)
+        self.u_r0test_func_tot = const.func_over_sc(u_r0test_func_tot)
 
-        self.L_sl_func_tot = utils.func_over_sc(L_sl_func_tot)
-        self.L_sr_func_tot = utils.func_over_sc(L_sr_func_tot)
-        self.L_rl_func_tot = utils.func_over_sc(L_rl_func_tot)
-        self.L_rr_func_tot = utils.func_over_sc(L_rr_func_tot)
+        self.L_sl_func_tot = const.func_over_sc(L_sl_func_tot)
+        self.L_sr_func_tot = const.func_over_sc(L_sr_func_tot)
+        self.L_rl_func_tot = const.func_over_sc(L_rl_func_tot)
+        self.L_rr_func_tot = const.func_over_sc(L_rr_func_tot)
         
-        self.v_l_stat_func_tot = utils.func_over_sc(v_l_stat_func_tot)
-        self.v_r_stat_func_tot = utils.func_over_sc(v_r_stat_func_tot)
+        self.v_l_stat_func_tot = const.func_over_sc(v_l_stat_func_tot)
+        self.v_r_stat_func_tot = const.func_over_sc(v_r_stat_func_tot)
         self.n_func = lambda i,t: LA.unit(np.cross(self.v_l_stat_func_tot(i,t),self.v_r_stat_func_tot(i,t)))
-        self.r_func = lambda i,t: utils.r_calc(self.v_l_stat_func_tot(i,t),self.v_r_stat_func_tot(i,t),i)
-        self.pos_func = utils.func_over_sc(pos_func)
+        self.r_func = lambda i,t: const.r_calc(self.v_l_stat_func_tot(i,t),self.v_r_stat_func_tot(i,t),i)
+        self.pos_func = const.func_over_sc(pos_func)
 
         self.v_l_in_func_tot = lambda i,t: LA.inplane(self.v_l_func_tot(i,t),self.n_func(i,t))
         self.v_r_in_func_tot = lambda i,t: LA.inplane(self.v_r_func_tot(i,t),self.n_func(i,t))
@@ -146,12 +156,12 @@ class STAT():
         #--- Obtaining PAA --- 
         selections=['l_in','l_out','r_in','r_out']
         PAA_func_val={}
-        PAA_func_val[selections[0]] = lambda i,t: utils.calc_PAA_lin(self,i,t)
-        PAA_func_val[selections[1]] = lambda i,t: utils.calc_PAA_lout(self,i,t)
-        PAA_func_val[selections[2]] = lambda i,t: utils.calc_PAA_rin(self,i,t)
-        PAA_func_val[selections[3]] = lambda i,t: utils.calc_PAA_rout(self,i,t)
-        PAA_func_val['l_tot'] = lambda i,t: utils.calc_PAA_ltot(self,i,t)
-        PAA_func_val['r_tot'] = lambda i,t: utils.calc_PAA_rtot(self,i,t)
+        PAA_func_val[selections[0]] = lambda i,t: const.calc_PAA_lin(self,i,t)
+        PAA_func_val[selections[1]] = lambda i,t: const.calc_PAA_lout(self,i,t)
+        PAA_func_val[selections[2]] = lambda i,t: const.calc_PAA_rin(self,i,t)
+        PAA_func_val[selections[3]] = lambda i,t: const.calc_PAA_rout(self,i,t)
+        PAA_func_val['l_tot'] = lambda i,t: const.calc_PAA_ltot(self,i,t)
+        PAA_func_val['r_tot'] = lambda i,t: const.calc_PAA_rtot(self,i,t)
 
         self.PAA_func = PAA_func_val 
        
@@ -169,8 +179,8 @@ class STAT():
         except AttributeError:
             self.t_all = self.orbit.t
         if 'int' in str(type(self.stat.length_calc)):
-            if self.t_all[-1]>(self.stat.length_calc+1)*day2sec:
-                loc = calc.get_nearest_smaller_value(self.orbit.t,self.stat.length_calc*day2sec)
+            if self.t_all[-1]>(self.stat.length_calc+1)*self.param.day2sec:
+                loc = calc.get_nearest_smaller_value(self.orbit.t,self.stat.length_calc*self.param.day2sec)
                 self.t_all = self.orbit.t[0:loc+1]
 
 

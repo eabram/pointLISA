@@ -2,7 +2,7 @@ from pointLISA import *
 
 # This runner file imports a LISA data file, obtains a STAT object whith an ORBIT attribute 
 def do_run(input_file=None,set_stat=utils.Object(),**kwargs):
-    data_set0 = utils.get_settings(settings_input=input_file,select='stat')
+    data_set0 = const.get_settings(settings_input=input_file,select='stat')
         
     input_param={}
     for key,value in kwargs.items():

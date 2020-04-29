@@ -17,6 +17,8 @@ class ORBIT():
     
     def import_file(self,read_max='all'):
         '''Import the file with the spacecrafts coordinates and time stamps and creates functions and a synthLISA object or in creates functions from a inported synthLISA object'''
+        
+        from pointLISA import *
         if 'function' not in str(type(self.LISA_opt)):
             directory=self.directory_imp
             file_orb=self.filename
@@ -64,7 +66,7 @@ class ORBIT():
                     if read_check==True:
                         line_count=line_count+1
             p_first = np.array([p[0],p[1],p[2]],np.float64)
-            p = utils.high_precision(p_first)
+            p = utils.calculations_constellation().high_precision(p_first)
             if self.timeunit == 'days':
                 self.t=(np.array(t) - np.array([t[0]]*len(t)))*day2sec #... in sec, fist point at t=0
             elif self.timeunit == 'years':
