@@ -12,8 +12,6 @@ class Object(object):
 
 class linear_algebra():
     # This class contains general mathematical methods (linear algebra)
-    def __init__(self):
-        from pointLISA import *
 
     def norm(self,v):
         '''np.linalg.norm(v) function but shorter in notation'''
@@ -133,8 +131,6 @@ class linear_algebra():
 #######################################################################
 
 class calculations_constellation():
-    def __init__(self):
-        from pointLISA import *
 
     def nominal_arm(self,OBJ,i,t):
         '''Returns a functions of the normalized OBJ.orbit.L'''
@@ -579,8 +575,6 @@ class calculations_constellation():
 
 class calculations():
     #This class contains some (specific) calulation methods (the more general ones can be found in utils.py)
-    def __init__(self):
-        from pointLISA import *
 
     def get_putp_fitted(self,data,method='Default'):
         '''Returns an interpolation of the spacecraft positions'''
