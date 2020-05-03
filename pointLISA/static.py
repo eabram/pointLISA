@@ -20,7 +20,7 @@ class STAT():
         for key,value in kwargs.items():
             input_param[key] = value
             setattr(stat,key,value)
-
+	
         return stat
 
     def get_parameters(self):
