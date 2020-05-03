@@ -1,7 +1,4 @@
-from imports import *
-
-import numpy as np
-import os
+from pointLISA import * 
 
 year2sec=np.float64(32536000.0)
 day2sec=np.float64(year2sec/365.25)
@@ -12,7 +9,7 @@ labda =np.float64(1064.5*(10**-9)) # m, blz. 114
 eta_opt = np.float64(0.23) # ...look up
 eta_pd = np.float64(0.68) # A/W
 P_L = np.float64(2) # W ...verify with new LISA technical speifications
-P_min = 0.30e-9
+P_min = 1.0e-12
 #D = np.float64(0.20) # Diameter [m]
 MAGNIFICATION = np.float64(135) # Check value in Technote
 
@@ -32,7 +29,7 @@ FOV = np.float64(8e-6) #Field of View telescope
 #Calculations
 w0_laser = D/(2*gamma_0) # blz. 12
 k = (2*np.pi)/labda
-
+I_min = P_min/(((D**2)/4.0)*np.pi)
 home_run = os.getcwd()
 
 

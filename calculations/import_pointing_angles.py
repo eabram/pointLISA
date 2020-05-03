@@ -1,28 +1,31 @@
-from pointLISA import *
+from pointLISA import * 
 import pointLISA
 import os
 import shutil
 import copy
 
-#rets = ['tele_ang','PAAM_ang','xoff','yoff','zoff','r','R','angx_ab_rec','angy_ab_rec','angx_nab_rec','angy_nab_rec','angx_ab_send','angy_ab_send','angx_nab_send','angy_nab_send','angx_rec','angy_rec','angx_send','any_send','angx_wf_send','angy_wf_send','piston','z_extra','FOV_wavefront','u','power']
-#rets = [['xoff','yoff','r']]
-rets=[['xoff','yoff'],['I','I0','Ival','FOVlim'],['alpha','angx_wf_send','angy_wf_send','angx_wf_rec','angy_wf_rec']]
-#rets=[['xoff','yoff','zoff','r'],['angx_ab_rec','angy_ab_rec','angx_ab_send','angy_ab_send'],['I','I0'],'FOV_wavefront',['piston','z_extra'],['angx_wf_send','angy_wf_send','angx_wf_rec','angy_wf_rec']]
-#rets=[['Ival']]
-#rets=[['angx_wf_rec','angy_wf_rec']]
-#rets=[['offset']]
-#rets=[['xoff','yoff','offset'],['angx_wf_rec','angy_wf_rec'],['angx_wf_send','angy_wf_send']]
-#rets=[['angx_wf_rec','angy_wf_rec']]
-#rets=[['PAAM_ang','tele_ang']]
+### This file imports poiting angles (and other properties) from a file and obtains a AIM object form it
 
+### Settings ###
+# Select datafiles for importing
+folder_sel = "/20200221/_04/SS_1PAAM_400_days/"
+folder_0='/home/ester/git/Results/'
+source_folder = folder_0+folder_sel
+folder=folder_0+folder_sel+'/data/'
+
+# Select which properties will be ontained
+#rets=['adjust']
+rets=['xoff','yoff','zoff','angx_wf_send','angy_wf_send','angx_wf_rec','angy_wf_rec','alpha','I','Ival']
+#rets=[['xoff','yoff'],['I','I0','Ival','FOVlim'],['alpha','angx_wf_send','angy_wf_send','angx_wf_rec','angy_wf_rec']]
+
+# Select for which arms and what kind of value (mode)
 SC=[1,2,3]
 sides=['l','r']
-#SC=[1]
-#sides=['r']
-#mode=['center','meanvar','mean_surface']
-#mode=['meanvar','mean_surface']
 mode=['center']
 Nbins=2
+#################################################
+
+
 clear_go=False
 overwrite=True
 
@@ -52,25 +55,8 @@ def get_all(input_file=None,set_stat=utils.Object(),set_din=utils.Object()):
                 print('No option for: '+k)
                 pass
 
-    #aim0= pointLISA.run_din.get_pointing(data,tele_control='no_control',PAAM_control='no_control',sampled=False,tele_ang_extra=False,PAAM_ang_extra=False,set_din=set_din_copy,inp=False,init=True)
-    #del set_din_copy
-    #set_din_copy = copy.copy(set_din)
-    #aim= pointLISA.run_din.get_pointing(data,aim0=aim0,aim_old=aim0,sampled=False,set_din=set_din_copy,init=False)
     aim= pointLISA.run_din.get_pointing(data,sampled=False,set_din=set_din_copy)
     return aim, set_stat_copy, set_din_copy
-
-#folder_sel = '20190627/_02/'
-#folder_sel = '20190626/_01/'
-#folder_sel='20190810/_01/full_control__400_days/'#read_offset_ab_rel/'
-#folder_sel = 'Data_for_Graphs/PAAM2/full_control__400_days/read_offset_ab_rel/_option_tele_center_option_PAAM_center/'
-folder_sel = "/20191017/_01/SS_2PAAM__20_days/"
-#folder_sel='Data_for_Graphs/offset/full_control__400_days/'
-#folder_sel='Data_for_Graphs/FCread/full_control__400_days/read_offset_ab_rel/_option_tele_center_option_PAAM_center/'
-#folder_sel='/20191002/_01/NC__400_days/'
-folder_0='/home/ester/git/Results/'
-source_folder = folder_0+folder_sel
-#folder=folder_0+'test/'+folder_sel
-folder=folder_0+folder_sel+'/data/'
 
 for (dirpath, dirnames, filenames_calc) in os.walk(source_folder):
     for f in filenames_calc:
@@ -87,9 +73,6 @@ for (dirpath, dirnames, filenames_calc) in os.walk(source_folder):
             os.makedirs(folder+q+'/')
             print('')
             shutil.copy2(source_folder+new_name,folder+new_name)
-
-        
-
  
 run=True
 get_output=True
@@ -109,7 +92,6 @@ if run==True:
                     
 
     f_list.sort()
-    #f_test=[f_list[0]]
     f_test=f_list
     for f in f_test:
         #try:
@@ -120,7 +102,6 @@ if run==True:
         except NameError:
             t0 = aim.data.t_all[3]
             tend = aim.data.t_all[-3]
-            #dt = aim.data.t_all[1] - aim.data.t_all[0]
             dt = 300#aim.data.t_all[1] - aim.data.t_all[0]
             steps = 5
             t_plot = np.linspace(t0,tend,int((tend-t0)/dt)+1)
@@ -153,8 +134,3 @@ if run==True:
                                 print('')
                                 read_write.write(inp[1],aim,title=title,direct=direct,opt_date=False,opt_time=False,time='',extra_title='',include='all',exclude=[],offset=False)
                                 print(direct+title)
-                                #del inp
-
-
-
-
