@@ -24,7 +24,7 @@ class ORBIT():
 
         return lambda i,t: P(i,t) + tidal_res(i,t)
 
-    def circular_orbit(AU = 149597870700., L = 2.5*1e9,eta = (1.0/3.0)*np.pi, lack = 0.0, T_SUN = 365.25*24*3600, T_CW = 365.25*24*3600,tidal=False):
+    def circular_orbit(self,lack=0.0,tidal=False,**kwargs):
         # AU is the distance between the LISA COM and the SUN
         # L is the LISA armlength
         # eta is the inclination angle
@@ -36,7 +36,7 @@ class ORBIT():
         COM_y = lambda t: AU*np.sin((t/T_SUN)*2*np.pi-lack)
         COM = lambda t: np.array([COM_x(t),COM_y(t),0])
 
-        R = L/(3.0**0.5)
+        R = L_arm/(3.0**0.5)
         theta = lambda i,t: ((t/T_CW)*2*np.pi)+(i-1)*(2.0/3.0)*np.pi
         tri_x = lambda i,t: R*np.cos(theta(i,t))
         tri_y = lambda i,t: R*np.sin(theta(i,t))

@@ -25,9 +25,8 @@ class STAT():
 
     def get_parameters(self):
         param = utils.Object()
-
-        for p in parameter_names:
-            setattr(param,p,getattr(parameters,p))
+        for k in parameters_all.keys():
+            setattr(param,k,parameters_all[k])
 
         return param
 

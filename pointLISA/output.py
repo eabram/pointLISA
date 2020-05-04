@@ -9,11 +9,11 @@ class OUTPUT():
             self.aim = utils.Object()
             self.aim.data = kwargs['data']
 
-        ### Obtain parameters
-        for k, value in parameters.__dict__.items():
-            if '__' not in k:
-                globals()[k] = value
-                setattr(self,k,value)
+        #### Obtain parameters
+        #for k, value in parameters.__dict__.items():
+        #    if '__' not in k:
+        #        globals()[k] = value
+        #        setattr(self,k,value)
     
     def pupil(self,Nbins=2): #Aperture
         '''Creates pixels on the aperture which can be useful to examine the variation of a property over the aperture'''

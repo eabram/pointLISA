@@ -561,13 +561,14 @@ class calculations_constellation():
                 name = A[0]
                 value = A[-1].split('\n')[0]
                 if name in ret.__dict__.keys():
-                    typ = str(type(ret.__dict__[name])).split("'")[1]
-                    try:
-                        value_new = getattr(builtin,typ)(value)
-                    except ValueError,e:
-                        value_new = str(value)
                     delattr(ret,name)
-                    setattr(ret,name,value_new)
+                    try:
+                        if value!='all':                        
+                            setattr(ret,name,eval(value))
+                        else:
+                            raise NameError('All is not a function')
+                    except NameError:
+                        setattr(ret,name,str(value))
 
         return ret
 
