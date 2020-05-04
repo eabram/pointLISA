@@ -9,14 +9,17 @@ class ORBIT():
         if self.directory_imp != False:
             self.directory_imp=input_param['home']+self.directory_imp
         input_param['directory_imp'] =  self.directory_imp
-        if self.filename=='None':
-            print('Please select filename')
-        else:
-            self.import_file(read_max=self.length_calc)
-	
-    def make_function(self,**kwargs):
-        return self.circular_orbit()
 
+        if self.orbit_function==False:
+            if self.filename=='None':
+                print('Please select filename')
+            else:
+                self.import_file(read_max=self.length_calc)
+        elif self.orbit_function==True:
+            self.lisa_obj = self.circular_orbit(tidal=self.tidal)
+            self.get_output()
+
+	
     def add_tidal(self,P,scale=1.0):
         cvec = lambda i,t: LA.unit(P(i,t))*(np.linalg.norm(P(i,t))-AU)
         scale = 1.0
@@ -128,10 +131,13 @@ class ORBIT():
             lisa_obj=self.lisa_obj
             self.linecount=line_count
         else:
-            self.p=False
-            self.Dt=False
-            self.pos=False
-            self.par=False
-            self.linecount=False
-            self.t = np.linspace(0,year2sec*10.0,int((year2sec*10.0)/day2sec))
+            self.get_output()
+
+    def get_output(self):
+        self.p=False
+        self.Dt=False
+        self.pos=False
+        self.par=False
+        self.linecount=False
+        self.t = np.linspace(0,year2sec*10.0,int((year2sec*10.0)/day2sec))
 

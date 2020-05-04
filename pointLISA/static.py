@@ -72,7 +72,10 @@ class STAT():
         print('Importing Orbit')
         tic=time.clock()
         Orbit=orbit.ORBIT(input_param=self.stat.__dict__)
-        print(str(Orbit.linecount)+' datapoints')
+        try:
+            print(str(Orbit.linecount)+' datapoints')
+        except AttributeError:
+            print('Obtained orbital function')
         self.orbit = Orbit
         const.LISA_obj(self)
         print('Done in '+str(time.clock()-tic))

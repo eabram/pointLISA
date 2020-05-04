@@ -1,8 +1,9 @@
 calc_method Abram
 length_calc all
+tidal False
+orbit_function True
 
 option_PAAM center
 option_tele center
 tele_control full_control
 PAAM_control full_control
-

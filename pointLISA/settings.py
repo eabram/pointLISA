@@ -20,6 +20,8 @@ stat_test_calc = False #If True, STAT object would not be written to an object
 stat_hstep=0.01 #Time step for calculating the velocity (over hstep seconds average)
 stat_putp_mode='pointLISA' # 'interp1d' or 'pointLISA' or 'LISA'
 
+stat_tidal=0 # Include tidal effects in orbital function
+stat_orbit_function=False # Obtain orbital function instead of importing one
 stat_test_COM_effect = False
 
 ### AIM settings

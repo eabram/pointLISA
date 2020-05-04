@@ -146,13 +146,16 @@ class calculations_constellation():
     def LISA_obj(self,OBJ,type_select='Default'):
         '''Creates the attribute LISA for OBJ which is a synthLISA object of a pre-setted type'''
         if type_select=='Default':
+            if 'function' in str(type(OBJ.orbit.lisa_obj)):
+                delattr(OBJ.stat,'LISA_opt')
+                setattr(OBJ.stat,'LISA_opt',OBJ.orbit.lisa_obj)
             type_select=OBJ.stat.LISA_opt
-
+        
         if 'function' in str(type(type_select)):
             lisa = Object()
             lisa.putp = type_select
             OBJ.LISA = lisa
-
+        
         else:
             func_nominal_arm = lambda i,time: nominal_arm(OBJ,i,time)
             lisa=OBJ.orbit.lisa_obj
