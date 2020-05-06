@@ -1,8 +1,6 @@
 import pointLISA 
-from pointLISA import *
 import os
 import matplotlib.pyplot as plt
-
 
 settings_input = os.getcwd()+'/settings.txt' # Reads settings from this file
 
@@ -22,6 +20,6 @@ t = data.t_all[40]
 
 out_all=[]
 for ret in rets:
-    out_all.append(output.values(aim,i,t,side,mode='send',ret=ret))
+    out_all.append(pointLISA.calc.values(aim,i,t,side,mode='send',ret=ret))
     for r in ret:
         print(r,getattr(out_all[-1],r))

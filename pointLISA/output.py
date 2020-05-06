@@ -24,7 +24,7 @@ class OUTPUT():
         except:
             pass
 
-        D_calc=self.aim.data.D
+        D_calc=self.aim.data.param.D
 
         xlist = np.linspace(-D_calc*0.5,D_calc*0.5,Nbins+1)
         self.xlist = xlist[0:-1]+0.5*(xlist[1]-xlist[0])
@@ -36,14 +36,14 @@ class OUTPUT():
 
     def w(self,z):
         '''Beamwaist as a function of z (z=coordinate along beamline)'''
-        zR = np.pi*(self.w0_laser**2)/self.labda
+        zR = np.pi*(self.aim.data.param.w0_laser**2)/self.aim.data.param.labda
 
-        return self.w0_laser*((1+((z/zR)**2))**0.5)
+        return self.aim.data.param.w0_laser*((1+((z/zR)**2))**0.5)
 
     def R(self,z,guess=False):
         '''The radius of curvasture R as a function of z'''
         if z!=np.nan:
-            zR = np.pi*(self.w0_laser**2)/self.labda
+            zR = np.pi*(pos.aim.data.param.w0_laser**2)/self.labda
 
             if guess==False:
                 return abs(z*(1+((zR/z)**2)))
@@ -1109,7 +1109,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                if pos.alpha>pos.aim.data.FOV:#pos.waist>pos.aim.data.FOV:
+                if pos.alpha>pos.aim.data.param.FOV:#pos.waist>pos.aim.data.FOV:
                     ret=0
                 else:
                     ret=1
@@ -1124,7 +1124,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = (pos.I0*np.exp((-2*(pos.xoff**2+pos.yoff**2))/(pos.waist**2)))*(pos.aim.data.w0_laser/pos.waist)
+                ret = (pos.I0*np.exp((-2*(pos.xoff**2+pos.yoff**2))/(pos.waist**2)))*(pos.aim.data.param.w0_laser/pos.waist)
 
                 #ret = (abs(pos.u)**2)[0]#*np.cos(pos.angx_rec)*np.cos(pos.angy_rec)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
@@ -1138,7 +1138,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = (pos.I0*np.exp((-2*(pos.xoff**2))/(pos.waist**2)))*(pos.aim.data.w0_laser/pos.waist)
+                ret = (pos.I0*np.exp((-2*(pos.xoff**2))/(pos.waist**2)))*(pos.aim.data.param.w0_laser/pos.waist)
 
                 #ret = (abs(pos.u)**2)[0]#*np.cos(pos.angx_rec)*np.cos(pos.angy_rec)
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
@@ -1166,7 +1166,7 @@ class OUTPUT():
         check=False
         while check==False:
             try:
-                ret = (self.P_L*np.pi*(self.w0_laser**2))/2.0
+                ret = (pos.aim.data.param.P_L*np.pi*(pos.aim.data.param.w0_laser**2))/2.0
                 setattr(pos,inspect.stack()[0][3].split('get_')[1],ret)
                 check=True
             except AttributeError,e:
@@ -1364,7 +1364,7 @@ class OUTPUT():
             A=[]
             for x in self.xlist:
                 for y in self.ylist:
-                    if ((x**2+y**2)**0.5)>=self.aim.data.D/2.0:
+                    if ((x**2+y**2)**0.5)>=self.aim.data.param.D/2.0:
                         A.append(getattr(func(x,y),ret[0])*np.nan)
                     else:
                         A.append(getattr(func(x,y),ret[0]))

@@ -566,12 +566,16 @@ class calculations_constellation():
                 if name in ret.__dict__.keys():
                     delattr(ret,name)
                     try:
-                        if value!='all':                        
-                            setattr(ret,name,eval(value))
+                        if value!='all':
+                            try:
+                                setattr(ret,name,eval(value))
+                            except:
+                                raise NameError()
                         else:
                             raise NameError('All is not a function')
                     except NameError:
                         setattr(ret,name,str(value))
+
 
         return ret
 
@@ -1867,8 +1871,12 @@ class calculations():
                     del positions
                     positions = positions_new
                 except AttributeError,e:
-                    print(e) 
-                    setattr(positions,r,getattr(aim,r)(i,t))
+                    print(e)
+                    try:
+                        setattr(positions,r,getattr(aim,r)(i,t))
+                    except AttributeError,e:
+                        print(e)
+
         
         return positions
 
