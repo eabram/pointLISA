@@ -1736,115 +1736,134 @@ class calculations():
 
         return ret
 
-    def values(self,inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=False,beam_angle_l=False,beam_angle_r=False,offset_l=False,offset_r=False,ret=[]):
+    def values(self,inp,i,t,side,ksi=[0,0],mode='send',tele_angle_l=False,tele_angle_r=False,beam_angle_l=False,beam_angle_r=False,offset_l=False,offset_r=False,ret=[],getter=False):
         '''Runner function to obtain the output values for spacecraft i at time t'''
         [i_self,i_left,i_right] = const.i_slr(i)
         
-
-        if 'AIM' in str(inp):
-            aim = inp
-            outp = pointLISA.output.OUTPUT(aim)
-        elif 'OUTPUT' in str(inp):
-            aim = inp.aim
-            outp = inp
-        else:
-            raise ValueError
+        aim = inp
          
         if tele_angle_l==None:
             tele_angle_l = -np.radians(30.0)
         if tele_angle_r==None:
-            tele_angle_r = -np.radians(30.0)
+            tele_angle_r = np.radians(30.0)
         if beam_angle_l==None:
             beam_angle_l = 0.0
         if beam_angle_r==None:
             beam_angle_r = 0.0
 
-        if mode=='send':
-            if side=='l':
-                tdel = aim.data.L_sl_func_tot(i_self,t)
-                if aim.data.stat.calc_method=='Waluschka':
-                    tdel0=tdel
-                elif aim.data.stat.calc_method=='Abram':
-                    tdel0=0            
-                if offset_l is False:
-                    offset_l = self.get_offset(aim,i_self,t+tdel0,'l')
-                elif offset_l == None:
-                    offset_l = 0.0
-                if offset_r is False:
-                    offset_r = self.get_offset(aim,i_left,t+tdel,'r')
-                elif offset_r == None:
-                    offset_r = 0.0
+        if getter is False:
+            if mode=='send':
+                if side=='l':
+                    tdel = aim.data.L_sl_func_tot(i_self,t)
+                    if aim.data.stat.calc_method=='Waluschka':
+                        tdel0=tdel
+                    elif aim.data.stat.calc_method=='Abram':
+                        tdel0=0            
+                    if offset_l is False:
+                        offset_l = self.get_offset(aim,i_self,t+tdel0,'l')
+                    elif offset_l == None:
+                        offset_l = 0.0
+                    if offset_r is False:
+                        offset_r = self.get_offset(aim,i_left,t+tdel,'r')
+                    elif offset_r == None:
+                        offset_r = 0.0
+                    i_send = i_self
+                    i_rec = i_left
+
+                elif side=='r':
+                    tdel = aim.data.L_sr_func_tot(i_self,t)
+                    if aim.data.stat.calc_method=='Waluschka':
+                        tdel0=tdel
+                    elif aim.data.stat.calc_method=='Abram':
+                        tdel0=0
+                    if offset_l is False:
+                        offset_l = self.get_offset(aim,i_right,t+tdel,'l')
+                    elif offset_l == None:
+                        offset_l = 0.0
+                    if offset_r is False:
+                        offset_r = self.get_offset(aim,i_self,t+tdel0,'r')
+                    elif offset_r == None:
+                        offset_r = 0.0
+                    i_send = i_self
+                    i_rec = i_right
+
+            elif mode=='rec':
+                if side=='l':
+                    tdel = aim.data.L_rl_func_tot(i_self,t)
+                    if aim.data.stat.calc_method=='Waluschka':
+                        tdel0=tdel
+                    elif aim.data.stat.calc_method=='Abram':
+                        tdel0=0
+                    if offset_l is False:
+                        offset_l = self.get_offset(aim,i_self,t-tdel0,'l')
+                    elif offset_l==None:
+                        offset_l=0.0
+                    if offset_r is False:
+                        offset_r = self.get_offset(aim,i_left,t-tdel,'r')
+                    elif offset_r==None:
+                        offset_r=0.0
+                    i_send = i_left
+                    i_rec = i_self
+
+                elif side=='r':
+                    tdel = aim.data.L_rr_func_tot(i_self,t)
+                    if aim.data.stat.calc_method=='Waluschka':
+                        tdel0=tdel
+                    elif aim.data.stat.calc_method=='Abram':
+                        tdel0=0
+                    if offset_l is False:
+                        offset_l = self.get_offset(aim,i_right,t-tdel,'l')
+                    elif offset_l==None:
+                        offset_l=0.0
+                    if offset_r is False:
+                        offset_r = self.get_offset(aim,i_self,t-tdel0,'r')
+                    elif offset_r==None:
+                        offset_r=0.0
+                    i_send = i_right
+                    i_rec = i_self
+
+        elif getter is True:
+            if mode=='send':
                 i_send = i_self
-                i_rec = i_left
-
-            elif side=='r':
-                tdel = aim.data.L_sr_func_tot(i_self,t)
-                if aim.data.stat.calc_method=='Waluschka':
-                    tdel0=tdel
-                elif aim.data.stat.calc_method=='Abram':
-                    tdel0=0
-                if offset_l is False:
-                    offset_l = self.get_offset(aim,i_right,t+tdel,'l')
-                elif offset_l == None:
-                    offset_l = 0.0
-                if offset_r is False:
-                    offset_r = self.get_offset(aim,i_self,t+tdel0,'r')
-                elif offset_r == None:
-                    offset_r = 0.0
-                i_send = i_self
-                i_rec = i_right
-
-        elif mode=='rec':
-            if side=='l':
-                tdel = aim.data.L_rl_func_tot(i_self,t)
-                if aim.data.stat.calc_method=='Waluschka':
-                    tdel0=tdel
-                elif aim.data.stat.calc_method=='Abram':
-                    tdel0=0
-                if offset_l is False:
-                    offset_l = self.get_offset(aim,i_self,t-tdel0,'l')
-                elif offset_l==None:
-                    offset_l=0.0
-                if offset_r is False:
-                    offset_r = self.get_offset(aim,i_left,t-tdel,'r')
-                elif offset_r==None:
-                    offset_r=0.0
-                i_send = i_left
+                if side=='l':
+                    i_rec = i_left
+                    tdel = aim.data.L_sl_func_tot(i_self,t)
+                    side_send = 'l'
+                elif side=='r':
+                    i_rec = i_right
+                    tdel = aim.data.L_sr_func_tot(i_self,t)
+                    side_send='r'
+            elif mode=='rec':
                 i_rec = i_self
+                if side=='l':
+                    i_send = i_left
+                    tdel = aim.data.L_rl_func_tot(i_self,t)
+                    side_send = 'r'
+                elif side=='r':
+                    i_send = i_right
+                    side_send='l'
+                    tdel = aim.data.L_rr_func_tot(i_self,t)
+            if aim.data.stat.calc_method=='Waluschka':
+                tdel0=tdel
+            elif aim.data.stat.calc_method=='Abram':
+                tdel0=0
 
-            elif side=='r':
-                tdel = aim.data.L_rr_func_tot(i_self,t)
-                if aim.data.stat.calc_method=='Waluschka':
-                    tdel0=tdel
-                elif aim.data.stat.calc_method=='Abram':
-                    tdel0=0
-                if offset_l is False:
-                    offset_l = self.get_offset(aim,i_right,t-tdel,'l')
-                elif offset_l==None:
-                    offset_l=0.0
-                if offset_r is False:
-                    offset_r = self.get_offset(aim,i_self,t-tdel0,'r')
-                elif offset_r==None:
-                    offset_r=0.0
-                i_send = i_right
-                i_rec = i_self
-
+        if getter is False:                
+            if (mode=='send' and side=='l') or (mode=='rec' and side=='r'):
+                tele_angle_start = tele_angle_l
+                beam_angle_start = beam_angle_l
+                tele_angle_end = tele_angle_r
+                beam_angle_end = beam_angle_r
+                offset_start = offset_l
+                offset_end = offset_r
                 
-        if (mode=='send' and side=='l') or (mode=='rec' and side=='r'):
-            tele_angle_start = tele_angle_l
-            beam_angle_start = beam_angle_l
-            tele_angle_end = tele_angle_r
-            beam_angle_end = beam_angle_r
-            offset_start = offset_l
-            offset_end = offset_r
-            
-        elif (mode=='send' and side=='r') or (mode=='rec' and side=='l'):
-            tele_angle_start = tele_angle_r
-            beam_angle_start = beam_angle_r
-            tele_angle_end = tele_angle_l
-            beam_angle_end = beam_angle_l
-            offset_start = offset_r
-            offset_end = offset_l
+            elif (mode=='send' and side=='r') or (mode=='rec' and side=='l'):
+                tele_angle_start = tele_angle_r
+                beam_angle_start = beam_angle_r
+                tele_angle_end = tele_angle_l
+                beam_angle_end = beam_angle_l
+                offset_start = offset_r
+                offset_end = offset_l
     
         positions=Object()
         positions.method = aim.data.stat.calc_method
@@ -1856,26 +1875,27 @@ class calculations():
         positions.offset_l = offset_l
         positions.offset_r = offset_r
         
-        param = ['mode','side','i_self','i_left','i_right','t','ksi','tdel','tdel0','tele_angle_start','tele_angle_end','beam_angle_start','beam_angle_end','aim','offset_start','offset_end','i_rec','i_send']
+        param = ['mode','side','i_self','i_left','i_right','t','ksi','tdel','tdel0','aim','tele_angle_start','tele_angle_end','beam_angle_start','beam_angle_end','offset_l','offset_r','offset_start','offset_end','i_rec','i_send','getter']
         for p in param:
             try:
                 setattr(positions,p,locals()[p])
             except Exception as e:
-                print(e)
+                #print(e)
                 pass
 
         for r in ret:
             if r not in positions.__dict__.keys():
-                try:
-                    positions_new = getattr(outp,'get_'+r)(positions)
-                    del positions
-                    positions = positions_new
-                except AttributeError,e:
-                    print(e)
-                    try:
-                        setattr(positions,r,getattr(aim,r)(i,t))
-                    except AttributeError,e:
-                        print(e)
+                #try:
+                    #positions_new = getattr(outp,'get_'+r)(positions)
+                positions_new = pointLISA.output.calc_value(positions,r)
+                del positions
+                positions = positions_new
+                #except AttributeError,e:
+                #    print(e)
+                #    try:
+                #        setattr(positions,r,getattr(aim,r)(i,t))
+                #    except AttributeError,e:
+                #        print(e)
 
         
         return positions
@@ -1944,7 +1964,7 @@ class calculations():
         tele_l_old = tele_l
         tele_r_old = tele_r
         
-        pos_send = lambda tele_l: self.values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['off']).xoff
+        pos_send = lambda tele_l: self.values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['xoff']).xoff
         send_solve = lambda tele_l: pos_send(tele_l)-value
         
 
@@ -1955,7 +1975,7 @@ class calculations():
                 tele_l_new=np.nan
      
         if tele_l_new!=np.nan:
-            pos_rec = lambda tele_r: self.values(aim,i_left,t,'r',tele_angle_l=tele_l_new,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['off']).xoff
+            pos_rec = lambda tele_r: self.values(aim,i_left,t,'r',tele_angle_l=tele_l_new,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['xoff']).xoff
             rec_solve = lambda tele_r: pos_rec(tele_r)-value
             
             try:
@@ -1992,7 +2012,7 @@ class calculations():
         lim = 1.0e-3
         beam_l_old = beam_l
         beam_r_old = beam_r
-        pos_send = lambda beam_l: self.values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_l,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['off']).yoff
+        pos_send = lambda beam_l: self.values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_l,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['yoff']).yoff
         send_solve = lambda beam_l: pos_send(beam_l)-value
 
 
@@ -2003,7 +2023,7 @@ class calculations():
                 beam_l_new=np.nan
 
         if beam_l_new!=np.nan:
-            pos_rec = lambda beam_r: self.values(aim,i_left,t,'r',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l_new,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['off']).yoff
+            pos_rec = lambda beam_r: self.values(aim,i_left,t,'r',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l_new,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['yoff']).yoff
             rec_solve = lambda beam_r: pos_rec(beam_r)-value
 
             try:
@@ -2026,7 +2046,8 @@ class calculations():
             angy = lambda beam: self.values(aim,i,t,'r',mode='send',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_r=beam,ret=['angy_wf_rec']).angy_wf_rec
 
         try:
-            ret = scipy.optimize.brentq(angy,-1e-5,1e-5,xtol=lim)
+            #ret = scipy.optimize.brentq(angy,-1e-5,1e-5,xtol=lim)
+            ret = scipy.optimize.brentq(angy,-1e-1,1e-1,xtol=lim) #...solve between PAAM range (to do)
         except ValueError,e:
             if str(e)=='f(a) and f(b) must have different signs':
                 ret=np.nan
