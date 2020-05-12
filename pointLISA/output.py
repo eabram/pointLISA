@@ -21,7 +21,7 @@ def loop_over_cases(pos,case,done=False):
     try:
         pos = get_case(pos,case)
         done = True
-        print('Obtained '+case,getattr(pos,case))
+        #print('Obtained '+case,getattr(pos,case))
     except AttributeError,e:
         case = str(e).split('has no attribute ')[-1][1:-1]
         done = False
@@ -455,8 +455,11 @@ def get_case(pos,case):
                 ret = pos.t+pos.tdel
             elif pos.mode=='rec':
                 ret = pos.t
-        
-        setattr(pos,case,ret)
+        try: 
+            setattr(pos,case,ret)
+        except UnboundLocalError, e:
+            print(case)
+            raise UnboundLocalError(e)
     return pos
 
 #    def mean_var(self,i,t,side,ret,mode='mean',Nbins=False,tele_angle_l=False,tele_angle_r=False,beam_angle_l=False,beam_angle_r=False):
