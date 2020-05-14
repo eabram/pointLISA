@@ -21,7 +21,7 @@ def loop_over_cases(pos,case,done=False):
     try:
         pos = get_case(pos,case)
         done = True
-        #print('Obtained '+case,getattr(pos,case))
+        print('Obtained '+case,getattr(pos,case))
     except AttributeError,e:
         case = str(e).split('has no attribute ')[-1][1:-1]
         done = False

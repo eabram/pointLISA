@@ -43,7 +43,6 @@ for k in utils.__dict__.keys():
             globals()[k] = getattr(utils,k)
 import orbit
 import static
-import run_stat
 import output
 import AIM
 import run_din

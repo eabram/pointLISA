@@ -4,16 +4,11 @@ from pointLISA import *
 #stat = utils.Object()
 stat_scale = 'Default' #The scaling of the imported coordinates ('Default'=scale is set by the filename or equal to 1)
 stat_calc_method= 'Abram' # Use either the 'Abram' method or 'Waluschka' method
-stat_home='/home/ester/git/synthlisa/' # Home directory
-stat_directory_imp= False # If not False adding a subfolder to sta.home 
-stat_dir_orbits= '/home/ester/git/synthlisa/orbits/' # Folder with orbit files
 stat_length_calc= 400 # Length of number of imported datapoints of orbit files. 'all' is also possible
-#sta_.dir_extr= 'zzzAbram_no_abberation' #NN # This will be added to the folder name of the figures
 stat_timeunit='Default' # The timeunit of the plots (['minutes'],['days']['years'])
 stat_LISA_opt='cache' # If a LISA object from syntheticLISA will be used for further calculations (not sure if it works properly if this False)
 stat_delay=True #'Not ahead' or False
 stat_valorfunc='Function' #
-stat_select='Hallion' # Select which orbit files will be imported ('all' is all)
 stat_aberration=True #Consider the aberration angle of the incoming light 
 stat_relativistic= False #Using relativistic calculations (False = classical)
 stat_test_calc = False #If True, STAT object would not be written to an object
@@ -21,7 +16,6 @@ stat_hstep=0.01 #Time step for calculating the velocity (over hstep seconds aver
 stat_putp_mode='pointLISA' # 'interp1d' or 'pointLISA' or 'LISA'
 
 stat_tidal=0 # Include tidal effects in orbital function
-stat_orbit_function=False # Obtain orbital function instead of importing one
 stat_test_COM_effect = False
 
 ### AIM settings

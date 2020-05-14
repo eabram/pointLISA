@@ -6,19 +6,15 @@ class ORBIT():
     def __init__(self,input_param,**kwargs):
         for k in input_param.keys():
             setattr(self,k,input_param[k])
-        if self.directory_imp != False:
-            self.directory_imp=input_param['home']+self.directory_imp
-        input_param['directory_imp'] =  self.directory_imp
 
-        if self.orbit_function==False:
-            if self.filename=='None':
-                print('Please select filename')
-            else:
-                self.import_file(read_max=self.length_calc)
-        elif self.orbit_function==True:
+        if self.filename is not None:
+            self.import_file(read_max=self.length_calc)
+        elif self.filename is None:
             self.lisa_obj = self.circular_orbit(tidal=self.tidal)
             self.get_output()
-
+        LISA,putp = self.get_LISA_object()
+        self.LISA = LISA
+        self.putp = putp
 	
     def add_tidal(self,P,scale=1.0):
         cvec = lambda i,t: LA.unit(P(i,t))*(np.linalg.norm(P(i,t))-AU)
@@ -61,77 +57,91 @@ class ORBIT():
 
         else:
             return self.add_tidal(P,scale=tidal)
-  
+    
     def import_file(self,read_max='all'):
         '''Import the file with the spacecrafts coordinates and time stamps and creates functions and a synthLISA object or in creates functions from a inported synthLISA object'''
-        
-        if 'function' not in str(type(self.LISA_opt)):
-            directory=self.directory_imp
-            file_orb=self.filename
-             
-            par=['t','p1x','p1y','p1z','p2x','p2y','p2z','p3x','p3y','p3z']
-            p=[[],[],[]]
-            t=[]
-            direc=self.directory_imp
-            if directory==False:
-                file=open(file_orb,'r')
-            else:
-                file=open(direc+file_orb,'r')
-            line_num=1
-            scale=np.float(self.scale)
-            line_count=0
-            for line in file.readlines():
-                if read_max!='all':
-                    if line_count==read_max+20:
-                        break
-                if line[0]!= '#':
-                    a=line.split(' ')
-                    cleanup=False
-                    while cleanup==False:
-                        try:
-                            a.remove('')
-                        except ValueError:
-                            cleanup=True
+        if self.scale=='Default':
+            print('Getting scale by filename:')
+            a = self.filename
+            a1 = a.split('.')[0]
+            a1 = a1.split('_')
+            for k in range(0,len(a1)):
+                if 'scale' == a1[k]:
+                    self.scale = float(a1[k+1])
+            print(self.scale)
+        print('')
 
-                    b=[]
-                    read_check=True
+        if self.timeunit=='Default':
+            print('Getting timestep by filename:')
+            a = self.filename
+            a1 = a.split('.')[0]
+            a1 = a1.split('_')
+            for k in range(0,len(a1)):
+                if 'timestep' == a1[k]:
+                    self.timeunit = a1[k+1]
+                    print(self.timeunit)
+            if self.timeunit!='days' and self.timeunit!='seconds':
+                print('Could not obtain proper timestep')
+        print('')
+
+        par=['t','p1x','p1y','p1z','p2x','p2y','p2z','p3x','p3y','p3z']
+        p=[[],[],[]]
+        t=[]
+        filename=open(self.filename,'r')
+        line_num=1
+        scale=np.float(self.scale)
+        line_count=0
+        for line in filename.readlines():
+            if read_max!='all':
+                if line_count==read_max+20:
+                    break
+            if line[0]!= '#':
+                a=line.split(' ')
+                cleanup=False
+                while cleanup==False:
                     try:
-                        for j in a:
-                            b.append(np.float64(j))
-                        a=b
-			p[0].append(np.array([a[1]*scale,a[2]*scale,a[3]*scale]))
-                        p[1].append(np.array([a[4]*scale,a[5]*scale,a[6]*scale]))
-                        p[2].append(np.array([a[7]*scale,a[8]*scale,a[9]*scale]))
-                        t.append(a[0]) # ... [s]
-                    except ValueError,e:
-                        print(e)
-                        print(a)
-                        print()
-                        read_check=False
-                        pass
-                    if read_check==True:
-                        line_count=line_count+1
-            p_first = np.array([p[0],p[1],p[2]],np.float64)
-            p = utils.calculations_constellation().high_precision(p_first)
-            if self.timeunit == 'days':
-                self.t=(np.array(t) - np.array([t[0]]*len(t)))*day2sec #... in sec, fist point at t=0
-            elif self.timeunit == 'years':
-                self.t=(np.array(t) - np.array([t[0]]*len(t)))*years2sec #... in sec, fist point at t=0
-            else: #Already in seconds
-                self.t=np.array(t) - np.array([t[0]]*len(t)) #... in sec, fist point at t=0
-            Dt=self.t[1]-self.t[0] # Assuming Dt s constant
-            if 'synthlisa' in str(type(self.LISA_opt)):
-                self.lisa_obj = self.LISA_opt
-            else:
-                self.lisa_obj=SampledLISA(p[0],p[1],p[2],Dt,self.t[0],2)
-            self.p=p
-            self.Dt=Dt
-            self.pos=[self.t,p]
-            self.par=par
-            lisa_obj=self.lisa_obj
-            self.linecount=line_count
+                        a.remove('')
+                    except ValueError:
+                        cleanup=True
+
+                b=[]
+                read_check=True
+                try:
+                    for j in a:
+                        b.append(np.float64(j))
+                    a=b
+                    p[0].append(np.array([a[1]*scale,a[2]*scale,a[3]*scale]))
+                    p[1].append(np.array([a[4]*scale,a[5]*scale,a[6]*scale]))
+                    p[2].append(np.array([a[7]*scale,a[8]*scale,a[9]*scale]))
+                    t.append(a[0]) # ... [s]
+                except ValueError,e:
+                    print(e)
+                    print(a)
+                    print()
+                    read_check=False
+                    pass
+                if read_check==True:
+                    line_count=line_count+1
+        p_first = np.array([p[0],p[1],p[2]],np.float64)
+        p = self.high_precision(p_first)
+        if self.timeunit == 'days':
+            self.t=(np.array(t) - np.array([t[0]]*len(t)))*day2sec #... in sec, fist point at t=0
+        elif self.timeunit == 'years':
+            self.t=(np.array(t) - np.array([t[0]]*len(t)))*years2sec #... in sec, fist point at t=0
+        else: #Already in seconds
+            self.t=np.array(t) - np.array([t[0]]*len(t)) #... in sec, fist point at t=0
+        Dt=self.t[1]-self.t[0] # Assuming Dt is constant
+        if 'synthlisa' in str(type(self.LISA_opt)): #...kan weg
+            self.lisa_obj = self.LISA_opt
         else:
-            self.get_output()
+            self.lisa_obj=SampledLISA(p[0],p[1],p[2],Dt,self.t[0],2)
+        self.p=p
+        self.Dt=Dt
+        self.pos=[self.t,p]
+        self.par=par
+        lisa_obj=self.lisa_obj
+        self.linecount=line_count
+        filename.close()
 
     def get_output(self):
         self.p=False
@@ -140,4 +150,122 @@ class ORBIT():
         self.par=False
         self.linecount=False
         self.t = np.linspace(0,year2sec*10.0,int((year2sec*10.0)/day2sec))
+    
+    def high_precision(self,p):
+        '''Returns a high precision fit by the use of fourier components'''
+        Y = p
+        for i in range(0,len(p)):
+            y_p=[]
+            for j in range(0,len(p[i][0])):
+                y = p[i,:,j]
+                y_inv = scipy.fftpack.ifft(y)
+                y_new = scipy.fftpack.fft(y_inv)
+                Y[i,:,j] = np.real(y_new)
+        return Y
 
+    def fit_pointLISA(self):
+        '''A function to fit the imported positional data'''
+        def fit_twosteps(x,y):
+            def fit_sin(x,a,b,c,d): #...Buiten functie zetten
+                return a*np.sin(b*x+d)+c
+
+            #Guesses
+            pb = (2.0*np.pi)/(3600*24*365.25)
+            pc = np.mean(y)
+            pa = (np.max(y) - np.min(y))/2.0
+            pd=0.0
+            p0 = scipy.array([pa,pb,pc,pd])
+            popt, pcov = scipy.optimize.curve_fit(fit_sin, x, y,p0=p0)
+            y0 = np.array([fit_sin(t,popt[0],popt[1],popt[2],popt[3]) for t in x])
+            f0 = lambda t: fit_sin(t,popt[0],popt[1],popt[2],popt[3])
+
+            yrest = y-y0
+            step=10
+            select=5
+            fits=[]
+            f1_fits_tot = []
+            starts=[]
+            jstart=0
+            while jstart<=len(x)-select:
+                jend=jstart+step
+                X = x[jstart:jend]
+                Y = yrest[jstart:jend]
+                A = np.poly1d(np.polyfit(X,Y,step-1))
+                fits.append(A)
+                f1_fit = np.array([A(t) for t in X[0:select]])
+                f1_fits_tot.append(f1_fit)
+                starts.append(x[jstart])
+                jstart = jstart+select
+
+            def get_function(t,starts,fits):
+                for i in range(1,len(starts)):
+                    if starts[i]>t:
+                        loc=i-1
+                        break
+                try:
+                    return fits[loc](t)
+                except UnboundLocalError:
+                    #print(t)
+                    return np.nan
+
+            f1 = lambda t: get_function(t,starts,fits) +f0(t)
+
+            return f1
+        x = self.t
+        F_all=[]
+        for i in range(0,len(self.p)):
+            F=[]
+            for j in range(0,len(self.p[i][0])):
+                y = self.p[i][:,j]
+                F.append(fit_twosteps(x,y))
+            F_all.append(F)
+
+        putp = lambda i,t: np.array([F_all[i-1][0](t),F_all[i-1][1](t),F_all[i-1][2](t)])
+        return putp
+
+    def get_LISA_object(self):
+        '''Creates the attribute LISA with a positional attribute putp'''
+        if self.filename==None:
+            lisa = utils.Object()
+            lisa.putp = self
+            putp = self
+        else:
+            type_select = self.LISA_opt
+            print('type_select',type_select)
+            if type_select=='sampled':
+                lisa = self.lisa_obj
+                putp = lambda i,t: np.array(lisa.putp(i,t))
+            elif type_select=='py':
+                func_nominal_arm = lambda i,time: nominal_arm(self,i,time) #...klopt niet
+                lisa = PyLISA(self.lisa_obj,func_nominal_arm)
+                putp = lambda i,t: np.array(lisa.putp(i,t))
+            elif type_select=='cache':
+                func_nominal_arm = lambda i,time: nominal_arm(self,i,time) #...klopt niet
+                lisa_py = PyLISA(self.lisa_obj,func_nominal_arm)
+                lisa = CacheLISA(lisa_py)
+                putp = lambda i,t: np.array(lisa.putp(i,t))
+
+            elif type_select=='interp1d':
+                t_all = self.t
+                pos = []
+                x_interp = []
+                y_interp = []
+                z_interp = []
+                for i in range(1,4):
+                    x = self.p[i-1][:,0]
+                    y = self.p[i-1][:,1]
+                    z = self.p[i-1][:,2]
+
+                    x_interp.append(calc.interpolate(t_all,x))
+                    y_interp.append(calc.interpolate(t_all,y))
+                    z_interp.append(calc.interpolate(t_all,z))
+
+                putp = lambda i,t: np.array([x_interp[i-1](t),y_interp[i-1](t),z_interp[i-1](t)])
+                lisa = utils.Object()
+                lisa.putp = putp
+            elif type_select=='pointLISA':
+                putp = self.fit_pointLISA()
+                lisa = utils.Object()
+                lisa.putp = putp
+
+        return lisa,putp
