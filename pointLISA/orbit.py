@@ -190,7 +190,7 @@ class ORBIT():
                 jend=jstart+step
                 X = x[jstart:jend]
                 Y = yrest[jstart:jend]
-                A = np.poly1d(np.polyfit(X,Y,step-1))
+                A = np.poly1d(np.polyfit(X,Y,step-5))
                 fits.append(A)
                 f1_fit = np.array([A(t) for t in X[0:select]])
                 f1_fits_tot.append(f1_fit)

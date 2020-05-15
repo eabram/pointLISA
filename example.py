@@ -3,9 +3,10 @@ import os
 import matplotlib.pyplot as plt
 
 settings_input = os.getcwd()+'/settings.txt' # Reads settings from this file
+orbit_file = '/home/ester/git/synthlisa/orbits/new/Hallion_2pt5G_orbits_pos_uniquedays_timestep_days_scale_1000.txt'
 
 # Obtain STAT object (data, without pointing)
-data = pointLISA.run_stat.do_run(input_file=settings_input)
+data = pointLISA.static.STAT(settings=settings_input,orbit_file=orbit_file)
 
 # Obtain pointing (aim)
 aim = pointLISA.run_din.get_pointing(data) # aim object containing the function for all pointing angles
