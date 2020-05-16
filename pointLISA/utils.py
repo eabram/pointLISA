@@ -13,96 +13,98 @@ class Object(object):
 class linear_algebra():
     # This class contains general mathematical methods (linear algebra)
 
-    def norm(self,v):
-        '''np.linalg.norm(v) function but shorter in notation'''
-        return np.linalg.norm(v)
+    #def norm(self,v):
+    #    '''np.linalg.norm(v) function but shorter in notation'''
+    #    return np.linalg.norm(v)
 
     def unit(self,v):
         '''Returns the unit vector of v'''
         try:
-            if self.norm(v)==0:
+            if np.linalg.norm(v)==0:
                 return v #...adjust
                 raise ValueError
             else:
-                return v/self.norm(v)
+                return v/np.linalg.norm(v)
         except:
-            print('unit(v)')
-            print(v)
             raise ValueError
 
     def angle(self,v1,v2,dot=False):
         '''Calculates the angle between vector v1 and v2'''
-        norm_v1 = self.norm(v1)
-        norm_v2 = self.norm(v2)
+        norm_v1 = np.linalg.norm(v1)
+        norm_v2 = np.linalg.norm(v2)
         if norm_v1!=0 and norm_v2!=0:
             if dot==False:
-                sin = self.norm(np.cross(v1,v2)/(norm_v1*norm_v2))
+                sin = np.linalg.norm(np.cross(v1,v2)/(norm_v1*norm_v2))
                 return np.arcsin(sin)
             elif dot == True:
                 cos = np.dot(v1,v2)/(norm_v1*norm_v2)
                 return np.sign(np.dot(v1,v2))*np.arccos(cos)
         else:
             return np.nan
-
-    def inplane(self,v,n):
-        '''Calculates the inplane component of v (with n the normal unit vector of its outplane)'''
-        inplane_calc = v - (np.dot(v,n)/(np.linalg.norm(n)**2))*n
-        return inplane_calc
-
-    def outplane(self,v,n):
-        '''Calculates the outplane component of v (with n the normal unit vector of its outplane)'''
+    
+    def inplane_outplane(self,v,n):
         outplane_calc = (np.dot(v,n)/(np.linalg.norm(n)**2))*n
-        return outplane_calc
+        inplane_calc = v - outplane_calc
 
-    def ang_out(self,v,n):
-        '''The angle of v with its outplane'''
-        sign = np.sign(np.dot(self.outplane(v,n),n))
-        return sign*self.angle(self.inplane(v,n),v)
+        return inplane_calc.outplane_calc
 
-    def ang_in(self,v,n,r):
-        '''The angle of v with its inplane'''
-        inplane_calc = self.inplane(v,n)
-        ang_in_calc = self.angle(inplane_calc,r)
-        return ang_in_calc
+    #def inplane(self,v,n):
+    #    '''Calculates the inplane component of v (with n the normal unit vector of its outplane)'''
+    #    inplane_calc = v - (np.dot(v,n)/(np.linalg.norm(n)**2))*n
+    #    return inplane_calc
 
-    def print_component(self,v,v_in,v_out,v_arm):
-        '''Prints the normalized components'''
-        n = self.norm(v)
-        n_in = self.norm(v_in)
-        n_out = self.norm(v_out)
-        n_arm = self.norm(v_arm)
+    #def outplane(self,v,n):
+    #    '''Calculates the outplane component of v (with n the normal unit vector of its outplane)'''
+    #    outplane_calc = (np.dot(v,n)/(np.linalg.norm(n)**2))*n
+    #    return outplane_calc
 
-        print(n_in/n)
-        print((n_out**2+n_in**2+n_arm**2)/n**2)
-        print('')
+    #def ang_out(self,v,n):
+    #    '''The angle of v with its outplane'''
+    #    sign = np.sign(np.dot(self.outplane(v,n),n))
+    #    return sign*self.angle(self.inplane(v,n),v)
 
-        return 0
+    #def ang_in(self,v,n,r):
+    #    '''The angle of v with its inplane'''
+    #    inplane_calc = self.inplane(v,n)
+    #    ang_in_calc = self.angle(inplane_calc,r)
+    #    return ang_in_calc
 
-    def ang_in_out(self,v1,v2,n,r,give='all'):
-        '''Returns the inplane and/or outplane angle between v1 and v2 (with the same n and r vector)'''
-        n = self.unit(n)
-        v1_out = (np.dot(v1,n)*n)/(self.norm(n)**2)
-        v2_out = (np.dot(v2,n)*n)/(self.norm(n)**2)
+    #def print_component(self,v,v_in,v_out,v_arm):
+    #    '''Prints the normalized components'''
+    #    n = self.norm(v)
+    #    n_in = self.norm(v_in)
+    #    n_out = self.norm(v_out)
+    #    n_arm = self.norm(v_arm)
 
-        ang_out_1 = np.arcsin(self.norm(v1_out)/self.norm(v1))
-        ang_out_1 = ang_out_1 * np.sign(np.dot(v1_out,n))
-        ang_out_2 = np.arcsin(self.norm(v2_out)/self.norm(v2))
-        ang_out_2 = ang_out_2 * np.sign(np.dot(v2_out,n))
+    #    print(n_in/n)
+    #    print((n_out**2+n_in**2+n_arm**2)/n**2)
+    #    print('')
 
-        v1_in = v1 - v1_out
-        v2_in = v2 - v2_out
+    #    return 0
 
-        ang_in_1 = self.angle(v1_in,r)
-        ang_in_2 = self.angle(v2_in,r)
-        ang_in = ang_in_1 - ang_in_2
-        ang_out = ang_out_1 - ang_out_2
-
-        if give=='all':
-            return [ang_in,ang_out]
-        elif give=='in':
-            return ang_in
-        elif give=='out':
-            return ang_out
+    def ang_in_out_tot(self,v1,v2,n,r,give='tot'):
+        '''Returns the inplane and/or outplane angle between v1 and v2 (with the same n and r vector)''' 
+        if give=='tot':
+            ang_tot = self.angle(v1,v2)
+            return ang_tot
+        else:
+            n = self.unit(n)
+            v1_out = (np.dot(v1,n)*n)/(np.linalg.norm(n)**2)
+            v2_out = (np.dot(v2,n)*n)/(np.linalg.norm(n)**2)
+            if give=='inp':
+                v1_in = v1 - v1_out
+                v2_in = v2 - v2_out
+                ang_in_1 = self.angle(v1_in,r)
+                ang_in_2 = self.angle(v2_in,r)
+                ang_in = ang_in_1 - ang_in_2
+                return ang_in
+            elif give=='out':
+                ang_out_1 = np.arcsin(np.linalg.norm(v1_out)/np.linalg.norm(v1))
+                ang_out_1 = ang_out_1 * np.sign(np.dot(v1_out,n))
+                ang_out_2 = np.arcsin(np.linalg.norm(v2_out)/np.linalg.norm(v2))
+                ang_out_2 = ang_out_2 * np.sign(np.dot(v2_out,n))
+                ang_out = ang_out_1 - ang_out_2
+                return ang_out
 
     def rotate(self,v,n,ang,mag=False):
         '''Rotates v around n with angle ang'''
@@ -201,6 +203,7 @@ class calculations():
                 if val<lst[i] and val>=lst[i-1]:
                     pos = i-1
                     break
+
         try:
             return pos
         except UnboundLocalError:

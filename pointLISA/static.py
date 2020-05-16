@@ -19,53 +19,18 @@ class STAT():
 
         return param
 
+    def get_PAA(self,i,t,side,give='inp'):
+        ''' Obtains the Point-ahead angles for the components inp (inplane), out (outplane) and tot (total)'''
+        if side=='l':
+            v1 = self.v_l(i,t)
+            v2 = -self.u_l(i,t)
+        elif side=='r':
+            v1 = self.v_r(i,t)
+            v2 = -self.u_r(i,t)
+        n = self.n_func(i,t)
+        r = self.r_func(i,t)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    #PAA angles
-    def calc_PAA_ltot(self,i,t):
-        '''Returns the total PAA for the left telecope'''
-        calc_ang=LA.angle(self.v_l_func_tot(i,t),-self.u_l_func_tot(i,t))
-        return calc_ang
-
-    def calc_PAA_lin(self,i,t):
-        '''Returns the inplane PAA for the left telecope'''
-        calc_ang=LA.ang_in_out(self.v_l_func_tot(i,t),-self.u_l_func_tot(i,t),self.n_func(i,t),self.r_func(i,t),give='in')
-        return calc_ang
-
-    def calc_PAA_lout(self,i,t):
-        '''Returns the outplanr PAA for the left telecope'''
-        calc_ang=LA.ang_in_out(self.v_l_func_tot(i,t),-self.u_l_func_tot(i,t),self.n_func(i,t),self.r_func(i,t),give='out')
-        return calc_ang
-
-    def calc_PAA_rtot(self,i,t):
-        '''Returns the total PAA for the right telecope'''
-        calc_ang=LA.angle(self.v_r_func_tot(i,t),-self.u_r_func_tot(i,t))
-        return calc_ang
-
-    def calc_PAA_rin(self,i,t):
-        '''Returns the inplane PAA for the right telecope'''
-        calc_ang=LA.ang_in_out(self.v_r_func_tot(i,t),-self.u_r_func_tot(i,t),self.n_func(i,t),self.r_func(i,t),give='in')
-        return calc_ang
-
-    def calc_PAA_rout(self,i,t):
-        '''Returns the outplane PAA for the right telecope'''
-        calc_ang=LA.ang_in_out(self.v_r_func_tot(i,t),-self.u_r_func_tot(i,t),self.n_func(i,t),self.r_func(i,t),give='out')
-
-        return calc_ang
+        return LA.ang_in_out_tot(v1,v2,n,r,give=give)
 
     # Velocity
     def velocity_abs_calc(self,i_select,t,hstep):
@@ -146,22 +111,6 @@ class STAT():
 
         return 0
 
-#    def high_precision(self,p):
-#        '''Returns a high precision fit by the use of fourier components'''
-#        Y = p
-#        for i in range(0,len(p)):
-#            y_p=[]
-#            for j in range(0,len(p[i][0])):
-#                y = p[i,:,j]
-#                y_inv = scipy.fftpack.ifft(y)
-#                y_new = scipy.fftpack.fft(y_inv)
-#                Y[i,:,j] = np.real(y_new)
-#        return Y
-
-    
-
-
-
     def get_armvec_func(self,i,t,side):
         '''Obtains the functions of the distance vectors between two spacecrafts'''
         [i_self,i_left,i_right] = const.i_slr(i)
@@ -193,102 +142,48 @@ class STAT():
         self.putp = self.orbit.putp
         print('Done in '+str(time.clock()-tic))
         self.SC = range(1,4) 
-        #self.COM_func = const.COM_func(self)
 
-        # Calculations
-        v_l_func_tot=[]
-        v_r_func_tot=[]
-        u_l_func_tot=[]
-        u_r_func_tot=[]
-        #v_l0test_func_tot=[]
-        #v_r0test_func_tot=[]
-        #u_l0test_func_tot=[]
-        #u_r0test_func_tot=[]
-        L_sl_func_tot=[]
-        L_sr_func_tot=[]
-        L_rl_func_tot=[]
-        L_rr_func_tot=[]
-        v_l_stat_func_tot=[]
-        v_r_stat_func_tot=[]
+        # Calculations       
+        self.L_sl = lambda i,t: self.send_func_new(i,'l',mode='send',give='L')(t)
+        self.L_sr = lambda i,t: self.send_func_new(i,'r',mode='send',give='L')(t)
+        self.L_rl = lambda i,t: self.send_func_new(i,'l',mode='rec',give='L')(t)
+        self.L_rr = lambda i,t: self.send_func_new(i,'r',mode='rec',give='L')(t)
+        self.v_l = lambda i,t: self.send_func_new(i,'l',mode='send',give='v')(t)
+        self.v_r = lambda i,t: self.send_func_new(i,'r',mode='send',give='v')(t)
+        self.u_l = lambda i,t: self.send_func_new(i,'l',mode='rec',give='v')(t)
+        self.u_r = lambda i,t: self.send_func_new(i,'r',mode='rec',give='v')(t)
+ 
+        self.v_l_stat = lambda i,t: self.get_armvec_func(i,t,'l')
+        self.v_r_stat = lambda i,t: self.get_armvec_func(i,t,'r')
+
+        self.n_func = lambda i,t: LA.unit(np.cross(self.v_l_stat(i,t),self.v_r_stat(i,t)))
+        self.r_func = lambda i,t: (self.v_l_stat(i,t)+self.v_r_stat(i,t))/2.0
+
+        self.v_l_in = lambda i,t: LA.inplane_outplane(self.v_l(i,t),self.n_func(i,t))[0]
+        self.v_r_in = lambda i,t: LA.inplane_outplane(self.v_r(i,t),self.n_func(i,t))[0]
+        self.u_l_in = lambda i,t: LA.inplane_outplane(self.u_l(i,t),self.n_func(i,t))[0]
+        self.u_r_in = lambda i,t: LA.inplane_outplane(self.u_r(i,t),self.n_func(i,t))[0]
+        self.v_l_out = lambda i,t: LA.inplane_outplane(self.v_l(i,t),self.n_func(i,t))[1]
+        self.v_r_out = lambda i,t: LA.inplane_outplane(self.v_r(i,t),self.n_func(i,t))[1]
+        self.u_l_out = lambda i,t: LA.inplane_outplane(self.u_l(i,t),self.n_func(i,t))[1]
+        self.u_r_out = lambda i,t: LA.inplane_outplane(self.u_r(i,t),self.n_func(i,t))[1]
+
+        #--- Obtaining PAA --- 
+        PAA = utils.Object()
+        PAA.inp =  lambda i,t,s: self.get_PAA(i,t,s,give='inp')
+        PAA.out =  lambda i,t,s: self.get_PAA(i,t,s,give='out')
+        PAA.tot =  lambda i,t,s: self.get_PAA(i,t,s,give='tot')
+        self.PAA = PAA
+        
+        #--- Obtaining breathing angles ---
+        self.ang_breathing_din = lambda i, time: LA.angle(self.v_l(i,time),self.v_r(i,time))
+        self.ang_breathing_in = lambda i, time: LA.angle(self.u_l(i,time),self.u_r(i,time))
+        self.ang_breathing_stat = lambda i, time: LA.angle(self.v_l_stat(i,time),self.v_r_stat(i,time))
         
         #--- Obtaining Velocity
         self.velocity_abs()
         self.velocity_func()
 
-        for i in range(1,4):
-            [[v_l_func,v_r_func,u_l_func,u_r_func],[L_sl_func,L_sr_func,L_rl_func,L_rr_func],[v_l0_func,v_r0_func,u_l0_func,u_r0_func]] = self.send_func(i)
-
-            v_l_func_tot.append(v_l_func)
-            v_r_func_tot.append(v_r_func)
-            u_l_func_tot.append(u_l_func)
-            u_r_func_tot.append(u_r_func)
-            #v_l0test_func_tot.append(v_l0_func)
-            #v_r0test_func_tot.append(v_r0_func)
-            #u_l0test_func_tot.append(u_l0_func)
-            #u_r0test_func_tot.append(u_r0_func)
-            
-            L_sl_func_tot.append(L_sl_func)
-            L_sr_func_tot.append(L_sr_func)
-            L_rl_func_tot.append(L_rl_func)
-            L_rr_func_tot.append(L_rr_func)
-            
-            #v_l_stat_func_tot.append(const.get_armvec_func(self,i_self,'l'))
-            #v_r_stat_func_tot.append(const.get_armvec_func(self,i_self,'r'))
-        
-        self.v_l_func_tot = self.func_over_sc(v_l_func_tot)
-        self.v_r_func_tot = self.func_over_sc(v_r_func_tot)
-        self.u_l_func_tot = self.func_over_sc(u_l_func_tot)
-        self.u_r_func_tot = self.func_over_sc(u_r_func_tot)
-        #self.v_l0test_func_tot = const.func_over_sc(v_l0test_func_tot)
-        #self.v_r0test_func_tot = const.func_over_sc(v_r0test_func_tot)
-        #self.u_l0test_func_tot = const.func_over_sc(u_l0test_func_tot)
-        #self.u_r0test_func_tot = const.func_over_sc(u_r0test_func_tot)
-
-        self.L_sl_func_tot = self.func_over_sc(L_sl_func_tot)
-        self.L_sr_func_tot = self.func_over_sc(L_sr_func_tot)
-        self.L_rl_func_tot = self.func_over_sc(L_rl_func_tot)
-        self.L_rr_func_tot = self.func_over_sc(L_rr_func_tot)
-        
-        #self.v_l_stat_func_tot = const.func_over_sc(v_l_stat_func_tot)
-        #self.v_r_stat_func_tot = const.func_over_sc(v_r_stat_func_tot)
-        self.v_l_stat_func_tot = lambda i,t: self.get_armvec_func(i,t,'l')
-        self.v_r_stat_func_tot = lambda i,t: self.get_armvec_func(i,t,'r')
-
-        self.n_func = lambda i,t: LA.unit(np.cross(self.v_l_stat_func_tot(i,t),self.v_r_stat_func_tot(i,t)))
-        self.r_func = lambda i,t: (self.v_l_stat_func_tot(i,t)+self.v_r_stat_func_tot(i,t))/2.0
-        #self.r_func = lambda i,t: const.r_calc(self.v_l_stat_func_tot(i,t),self.v_r_stat_func_tot(i,t),i)
-        #self.pos_func = const.func_over_sc(pos_func)
-
-        self.v_l_in_func_tot = lambda i,t: LA.inplane(self.v_l_func_tot(i,t),self.n_func(i,t))
-        self.v_r_in_func_tot = lambda i,t: LA.inplane(self.v_r_func_tot(i,t),self.n_func(i,t))
-        self.u_l_in_func_tot = lambda i,t: LA.inplane(self.u_l_func_tot(i,t),self.n_func(i,t))
-        self.u_r_in_func_tot = lambda i,t: LA.inplane(self.u_r_func_tot(i,t),self.n_func(i,t))
-        self.v_l_out_func_tot = lambda i,t: LA.outplane(self.v_l_func_tot(i,t),self.n_func(i,t))
-        self.v_r_out_func_tot = lambda i,t: LA.outplane(self.v_r_func_tot(i,t),self.n_func(i,t))
-        self.u_l_out_func_tot = lambda i,t: LA.outplane(self.u_l_func_tot(i,t),self.n_func(i,t))
-        self.u_r_out_func_tot = lambda i,t: LA.outplane(self.u_r_func_tot(i,t),self.n_func(i,t))
-
-        #--- Obtaining PAA --- 
-        selections=['l_in','l_out','r_in','r_out']
-        PAA_func_val={}
-        PAA_func_val[selections[0]] = lambda i,t: self.calc_PAA_lin(i,t)
-        PAA_func_val[selections[1]] = lambda i,t: self.calc_PAA_lout(i,t)
-        PAA_func_val[selections[2]] = lambda i,t: self.calc_PAA_rin(i,t)
-        PAA_func_val[selections[3]] = lambda i,t: self.calc_PAA_rout(i,t)
-        PAA_func_val['l_tot'] = lambda i,t: const.calc_PAA_ltot(i,t)
-        PAA_func_val['r_tot'] = lambda i,t: const.calc_PAA_rtot(i,t)
-
-        self.PAA_func = PAA_func_val 
-       
-        self.ang_breathing_din = lambda i, time: LA.angle(self.v_l_func_tot(i,time),self.v_r_func_tot(i,time))
-        self.ang_breathing_in = lambda i, time: LA.angle(self.u_l_func_tot(i,time),self.u_r_func_tot(i,time))
-        self.ang_breathing_stat = lambda i, time: LA.angle(self.v_l_stat_func_tot(i,time),self.v_r_stat_func_tot(i,time))
-        
-        self.ang_in_l = lambda i,t: LA.ang_in(self.v_l_func_tot(i,t),self.n_func(i,t),self.r_func(i,t))
-        self.ang_in_r = lambda i,t: LA.ang_in(self.v_r_func_tot(i,t),self.n_func(i,t),self.r_func(i,t))
-        self.ang_out_l = lambda i,t: LA.ang_out(self.v_l_func_tot(i,t),self.n_func(i,t))
-        self.ang_out_r = lambda i,t: LA.ang_out(self.v_r_func_tot(i,t),self.n_func(i,t))
-        
         try:
             self.t_all
         except AttributeError:
@@ -391,12 +286,8 @@ class STAT():
 
 
 
-#    def r_calc(self,v_l,v_r,i,m=[2,2,2]):
-#        '''Returns the vector r pointing from a spacecraft towards the COMof the constellation'''
-#        [i_OBJ,i_left,i_right] = self.i_slr(i)
-#        r =  (v_l*m[i_left-1]+v_r*m[i_right-1])/(m[i_left-1]+m[i_right-1])
-#
-#        return r
+
+
 
     def send_func(self,i):
         '''Uses previous defined functions to return the vecors L, u, v, r and n'''
@@ -434,4 +325,59 @@ class STAT():
             v_rec_l = lambda t: self.relativistic_aberrations(i,t,v_rec_l0(t))
             v_rec_r = lambda t: self.relativistic_aberrations(i,t,v_rec_r0(t))
 
-        return [[v_send_l,v_send_r,v_rec_l,v_rec_r],[L_sl,L_sr,L_rl,L_rr],[v_send_l0,v_send_r0,v_rec_l0,v_rec_r0]]
+        return [[v_send_l,v_send_r,v_rec_l,v_rec_r],[L_sl,L_sr,L_rl,L_rr]]
+
+    def send_func_new(self,i,side,mode='send',give='L'):
+        '''Uses previous defined functions to return the vecors L, u, v, r and n'''
+        calc_method=self.stat.calc_method
+        [i_self,i_left,i_right] = utils.const.i_slr(i)
+
+        pos_left = lambda time: self.putp(i_left,time)
+        pos_self = lambda time: self.putp(i_self,time)
+        pos_right = lambda time: self.putp(i_right,time)
+
+        [L_sl,L_sr,L_rl,L_rr] = self.L_PAA(pos_self,pos_left,pos_right,i=i_self)
+        
+        if mode=='send':
+            if side=='l':
+                if give=='L':
+                    ret = L_sl
+                elif give=='v':
+                    if calc_method=='Abram':
+                        v_send_l0 = lambda t: pos_left(t+L_sl(t)) - pos_self(t)
+                    elif calc_method=='Waluschka':
+                        v_send_l0 = lambda t: pos_left(t+L_sl(t)) - pos_self(t+L_sl(t))
+                    ret = lambda t: self.relativistic_aberrations(i,t,v_send_l0(t))
+
+            elif side=='r':
+                if give=='L':
+                    ret = L_sr
+                elif give=='v':
+                    if calc_method=='Abram':    
+                        v_send_r0 = lambda t: pos_right(t+L_sr(t)) - pos_self(t)
+                    elif calc_method=='Waluschka':
+                        v_send_r0 = lambda t: pos_right(t+L_sr(t)) - pos_self(t+L_sr(t))
+
+                    ret = lambda t: self.relativistic_aberrations(i,t,v_send_r0(t))
+
+        if mode=='rec':
+            if side=='l':
+                if give=='L':
+                    ret = L_rl
+                elif give=='v':
+                    if calc_method=='Abram':
+                        v_rec_l0 = lambda t: pos_self(t) - pos_left(t - L_rl(t))
+                    elif calc_method=='Waluschka':
+                        v_rec_l0 = lambda t: pos_self(t-L_rl(t)) - pos_left(t - L_rl(t))
+                    ret = v_rec_l = lambda t: self.relativistic_aberrations(i,t,v_rec_l0(t))
+            elif side=='r':
+                if give=='L':
+                    ret = L_rr
+                elif give=='v':
+                    if calc_method=='Abram':
+                        v_rec_r0 = lambda t: pos_self(t) - pos_right(t - L_rr(t))
+                    elif calc_method=='Waluschka':
+                        v_rec_r0 = lambda t: pos_self(t-L_rr(t)) - pos_right(t - L_rr(t))
+                    ret = lambda t: self.relativistic_aberrations(i,t,v_rec_r0(t))
+
+        return ret

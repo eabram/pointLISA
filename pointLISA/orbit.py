@@ -178,6 +178,7 @@ class ORBIT():
             popt, pcov = scipy.optimize.curve_fit(fit_sin, x, y,p0=p0)
             y0 = np.array([fit_sin(t,popt[0],popt[1],popt[2],popt[3]) for t in x])
             f0 = lambda t: fit_sin(t,popt[0],popt[1],popt[2],popt[3])
+            #f0 = lambda t: 0
 
             yrest = y-y0
             step=10
