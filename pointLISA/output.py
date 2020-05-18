@@ -21,7 +21,7 @@ def loop_over_cases(pos,case,done=False):
     try:
         pos = get_case(pos,case)
         done = True
-        print('Obtained '+case,getattr(pos,case))
+        #print('Obtained '+case,getattr(pos,case))
     except AttributeError,e:
         case = str(e).split('has no attribute ')[-1][1:-1]
         done = False
@@ -100,7 +100,6 @@ def get_case(pos,case):
             ret=calc.get_coor_tele(pos.aim,pos.i_send,pos.t_start,pos.side_send,tele_angle=pos.tele_angle_start)
 
         elif case=='coor_startbeam__send':
-            #print(pos.t_start)
             ret=calc.get_coor_beam_out__send(pos.aim,pos.i_send,pos.t_start,pos.side_send,tele_angle=pos.tele_angle_start,beam_angle=pos.beam_angle_start,offset=pos.offset_start)
 
         elif case=='vec_startbeam__send':
@@ -190,7 +189,7 @@ def get_case(pos,case):
 
 
         elif case=='R_vec_beam__send': # in Sun coordinate system and send inertial frame!!!
-            vec = np.array([(pos.R(pos.zoff)**2-pos.xoff**2-pos.yoff**2)**0.5,pos.yoff,pos.xoff]) # In beam frame
+            vec = np.array([(pos.R(pos.zoff)**2-pos.xoff**2-pos.yoff**2)**0.5,pos.yoff,pos.xoff]) # In beam frame ...adjust: have to use piston
             ret = LA.matmul(np.linalg.inv(pos.coor_startbeam__send),vec) 
 
         elif case=='R_vec_beam__sun':

@@ -10,7 +10,7 @@ class STAT():
         self.param = self.get_parameters()
         
         self.PAA_func()
-        self.setings = settings
+        self.settings = settings
 
     def get_parameters(self):
         param = utils.Object()

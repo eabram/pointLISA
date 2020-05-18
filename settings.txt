@@ -1,7 +1,7 @@
 calc_method Abram
 length_calc all
 
-option_PAAM center
-option_tele center
+option_PAAM wavefront
+option_tele wavefront
 tele_control full_control
 PAAM_control full_control

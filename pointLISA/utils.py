@@ -48,40 +48,6 @@ class linear_algebra():
 
         return inplane_calc.outplane_calc
 
-    #def inplane(self,v,n):
-    #    '''Calculates the inplane component of v (with n the normal unit vector of its outplane)'''
-    #    inplane_calc = v - (np.dot(v,n)/(np.linalg.norm(n)**2))*n
-    #    return inplane_calc
-
-    #def outplane(self,v,n):
-    #    '''Calculates the outplane component of v (with n the normal unit vector of its outplane)'''
-    #    outplane_calc = (np.dot(v,n)/(np.linalg.norm(n)**2))*n
-    #    return outplane_calc
-
-    #def ang_out(self,v,n):
-    #    '''The angle of v with its outplane'''
-    #    sign = np.sign(np.dot(self.outplane(v,n),n))
-    #    return sign*self.angle(self.inplane(v,n),v)
-
-    #def ang_in(self,v,n,r):
-    #    '''The angle of v with its inplane'''
-    #    inplane_calc = self.inplane(v,n)
-    #    ang_in_calc = self.angle(inplane_calc,r)
-    #    return ang_in_calc
-
-    #def print_component(self,v,v_in,v_out,v_arm):
-    #    '''Prints the normalized components'''
-    #    n = self.norm(v)
-    #    n_in = self.norm(v_in)
-    #    n_out = self.norm(v_out)
-    #    n_arm = self.norm(v_arm)
-
-    #    print(n_in/n)
-    #    print((n_out**2+n_in**2+n_arm**2)/n**2)
-    #    print('')
-
-    #    return 0
-
     def ang_in_out_tot(self,v1,v2,n,r,give='tot'):
         '''Returns the inplane and/or outplane angle between v1 and v2 (with the same n and r vector)''' 
         if give=='tot':
@@ -1011,35 +977,35 @@ class calculations():
         return t_adjust,[tele_adjust_l,tele_adjust_r],i_left,i_right
 
 
-    def tele_point_calc(self,aim,i,t,side,option,lim=False,method=False,value=0,scale=1,max_count=20,tele_l0=None,tele_r0=None,beam_l0=None,beam_r0=None,offset_l0=None,offset_r0=None,**kwargs): # Recommended to use aim0
-        '''Calculates the (full control) telescope pointing angles (with the center or wavefront method)'''
-        [i_self,i_left,i_right] = const.i_slr(i)
-        if option=='center':
-            if lim==False:
-                lim = aim.aimset.limit_xoff
-            if side=='l':
-                ang = self.tele_center_calc(aim,i,t,lim=lim,value=value,tele_l=tele_l0,tele_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)[0][0]
-            elif side=='r':
-                ang = self.tele_center_calc(aim,const.i_slr(i)[2],t,lim=lim,value=value,tele_l=tele_l0,tele_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)[0][1]
-
-        elif option=='wavefront':
-            try:
-                for k, value in kwargs.items:
-                    locals()[k] = value
-            except:
-                pass
-            if method==False:
-                method = aim.aimset.tele_method_solve
-
-            if lim==False:
-                lim=aim.aimset.limit_angx
-
-            if side=='l':
-                ang = self.get_tele_wavefront(aim,i,t,'l',method,scale=scale,lim=lim,max_count=max_count,value=value,tele_angle_l=tele_l0,tele_angle_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)
-            elif side=='r':
-                ang = self.get_tele_wavefront(aim,i_right,t,'r',method,scale=scale,lim=lim,max_count=max_count,value=value,tele_angle_l=tele_l0,tele_angle_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)
-                
-        return ang
+#    def tele_point_calc(self,aim,i,t,side,option,lim=False,method=False,value=0,scale=1,max_count=20,tele_l0=None,tele_r0=None,beam_l0=None,beam_r0=None,offset_l0=None,offset_r0=None,**kwargs): # Recommended to use aim0
+#        '''Calculates the (full control) telescope pointing angles (with the center or wavefront method)'''
+#        [i_self,i_left,i_right] = const.i_slr(i)
+#        if option=='center':
+#            if lim==False:
+#                lim = aim.aimset.limit_xoff
+#            if side=='l':
+#                ang = self.tele_center_calc(aim,i,t,lim=lim,value=value,tele_l=tele_l0,tele_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)[0][0]
+#            elif side=='r':
+#                ang = self.tele_center_calc(aim,const.i_slr(i)[2],t,lim=lim,value=value,tele_l=tele_l0,tele_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)[0][1]
+#
+#        elif option=='wavefront':
+#            try:
+#                for k, value in kwargs.items:
+#                    locals()[k] = value
+#            except:
+#                pass
+#            if method==False:
+#                method = aim.aimset.tele_method_solve
+#
+#            if lim==False:
+#                lim=aim.aimset.limit_angx
+#
+#            if side=='l':
+#                ang = self.get_tele_wavefront(aim,i,t,'l',method,scale=scale,lim=lim,max_count=max_count,value=value,tele_angle_l=tele_l0,tele_angle_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)
+#            elif side=='r':
+#                ang = self.get_tele_wavefront(aim,i_right,t,'r',method,scale=scale,lim=lim,max_count=max_count,value=value,tele_angle_l=tele_l0,tele_angle_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)
+#                
+#        return ang
 
 
     def get_SS_func(self,x,y,x_check):
@@ -1252,7 +1218,7 @@ class calculations():
         if getter is False:
             if mode=='send':
                 if side=='l':
-                    tdel = aim.data.L_sl_func_tot(i_self,t)
+                    tdel = aim.data.L_sl(i_self,t)
                     if aim.data.stat.calc_method=='Waluschka':
                         tdel0=tdel
                     elif aim.data.stat.calc_method=='Abram':
@@ -1269,7 +1235,7 @@ class calculations():
                     i_rec = i_left
 
                 elif side=='r':
-                    tdel = aim.data.L_sr_func_tot(i_self,t)
+                    tdel = aim.data.L_sr(i_self,t)
                     if aim.data.stat.calc_method=='Waluschka':
                         tdel0=tdel
                     elif aim.data.stat.calc_method=='Abram':
@@ -1287,7 +1253,7 @@ class calculations():
 
             elif mode=='rec':
                 if side=='l':
-                    tdel = aim.data.L_rl_func_tot(i_self,t)
+                    tdel = aim.data.L_rl(i_self,t)
                     if aim.data.stat.calc_method=='Waluschka':
                         tdel0=tdel
                     elif aim.data.stat.calc_method=='Abram':
@@ -1304,7 +1270,7 @@ class calculations():
                     i_rec = i_self
 
                 elif side=='r':
-                    tdel = aim.data.L_rr_func_tot(i_self,t)
+                    tdel = aim.data.L_rr(i_self,t)
                     if aim.data.stat.calc_method=='Waluschka':
                         tdel0=tdel
                     elif aim.data.stat.calc_method=='Abram':
@@ -1325,22 +1291,22 @@ class calculations():
                 i_send = i_self
                 if side=='l':
                     i_rec = i_left
-                    tdel = aim.data.L_sl_func_tot(i_self,t)
+                    tdel = aim.data.L_sl(i_self,t)
                     side_send = 'l'
                 elif side=='r':
                     i_rec = i_right
-                    tdel = aim.data.L_sr_func_tot(i_self,t)
+                    tdel = aim.data.L_sr(i_self,t)
                     side_send='r'
             elif mode=='rec':
                 i_rec = i_self
                 if side=='l':
                     i_send = i_left
-                    tdel = aim.data.L_rl_func_tot(i_self,t)
+                    tdel = aim.data.L_rl(i_self,t)
                     side_send = 'r'
                 elif side=='r':
                     i_send = i_right
                     side_send='l'
-                    tdel = aim.data.L_rr_func_tot(i_self,t)
+                    tdel = aim.data.L_rr(i_self,t)
             if aim.data.stat.calc_method=='Waluschka':
                 tdel0=tdel
             elif aim.data.stat.calc_method=='Abram':
@@ -1437,55 +1403,6 @@ class calculations():
 
 
     # Calculating the PAAM and telescope poiting angles
-    def tele_center_calc(self,aim,i,t,scale=1,lim=1e-12,max_count=5,print_on=False,value=0,tele_l=False,tele_r=False,beam_l=False,beam_r=False,offset_l=False,offset_r=False):
-        '''Obtains the telescope pointing angle when the telesope is pointed with the center method'''
-        [i_self,i_left,i_right] = const.i_slr(i)
-        
-        lim = np.radians(5.0)
-        if tele_l is False:
-            tele_l=aim.tele_l_ang(i_self,t)
-        elif tele_l==None:
-            tele_l=np.radians(np.float64(-30.0))
-        if tele_r is False:
-            tele_r=aim.tele_r_ang(i_left,t)
-        elif tele_r==None:
-            tele_r=np.radians(np.float64(30.0))
-        if beam_l is False:
-            beam_l=aim.beam_l_ang(i_self,t)
-        elif beam_l==None:
-            beam_l=np.float64(0.0)
-        if beam_r is False:
-            beam_r=aim.beam_r_ang(i_self,t)
-        elif beam_r==None:
-            beam_r=np.float64(0.0)
-        
-        tele_l_old = tele_l
-        tele_r_old = tele_r
-        
-        pos_send = lambda tele_l: self.values(aim,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['xoff']).xoff
-        send_solve = lambda tele_l: pos_send(tele_l)-value
-        
-
-        try:
-            tele_l_new = scipy.optimize.brentq(send_solve,-lim-np.radians(30.0),lim-np.radians(30.0))
-        except ValueError,e:
-            if str(e)=='f(a) and f(b) must have different signs':
-                tele_l_new=np.nan
-     
-        if tele_l_new!=np.nan:
-            pos_rec = lambda tele_r: self.values(aim,i_left,t,'r',tele_angle_l=tele_l_new,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['xoff']).xoff
-            rec_solve = lambda tele_r: pos_rec(tele_r)-value
-            
-            try:
-                tele_r_new = scipy.optimize.brentq(rec_solve,-lim+np.radians(30.0),lim+np.radians(30.0))
-            except ValueError,e:
-                if str(e)=='f(a) and f(b) must have different signs':
-                    tele_r_new=np.nan
-        else:
-            tele_r_new = np.nan
-            
-        return [[tele_l_new,tele_r_new], False]
-
     def PAAM_center_calc(self,aim,i,t,para='yoff_ab',scale=1,lim=1e-12,max_count=5,print_on=False,tele_l=None,tele_r=None,beam_l=None,beam_r=None,offset_l=None,offset_r=None,value=0,method='iter',margin=0.01):
         '''Obtains the PAAM pointing angle when the PAAM is pointed with the center method'''
         [i_self,i_left,i_right] = const.i_slr(i)
@@ -1550,93 +1467,6 @@ class calculations():
             if str(e)=='f(a) and f(b) must have different signs':
                 ret=np.nan
         return ret
-
-
-
-    def tele_wavefront_calc(self,aim,i_l,t,scale=1,lim=1e-12,max_count=5,print_on=False,value=0,tele_l=False,tele_r=False,beam_l=False,beam_r=False,offset_l=False,offset_r=False):
-        '''Obtains the telescope pointing angle when the telesope is pointed with the center method'''
-        [i_self,i_left,i_right] = const.i_slr(i_l)
-
-        lim = np.radians(5.0)
-        if tele_l is False:
-            tele_l=aim.tele_l_ang(i_self,t)
-        elif tele_l==None:
-            tele_l=np.radians(np.float64(-30.0))
-        if tele_r is False:
-            tele_r=aim.tele_r_ang(i_left,t)
-        elif tele_r==None:
-            tele_r=np.radians(np.float64(30.0))
-        if beam_l is False:
-            beam_l=aim.beam_l_ang(i_self,t)
-        elif beam_l==None:
-            beam_l=np.float64(0.0)
-        if beam_r is False:
-            beam_r=aim.beam_r_ang(i_self,t)
-        elif beam_r==None:
-            beam_r=np.float64(0.0)
-        
-        tele_l_old = tele_l
-        tele_r_old = tele_r
-        
-        par = 'angx_wf_rec'
-
-        pos_l = getattr(self.values(aim,i_self,t,'l',mode='rec',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=[par]),par)
-        tele_l_new = tele_l-pos_l
-        
-        pos_r = getattr(self.values(aim,i_left,t,'r',mode='rec',tele_angle_l=tele_l_new,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=[par]),par)
-        tele_r_new = tele_r-pos_r
-        
-        return [[tele_l_new,tele_r_new], [pos_l,pos_r]]
-
-
-    def get_tele_wavefront(self,aim,i,t,side,method,scale=1,lim=1e-12,max_count=20,print_on=False,value=0.0,tele_angle_l=None,tele_angle_r=None,beam_l=None,beam_r=None,offset_l=False,offset_r=False): 
-        '''Gets all telescope pointing angles along one arm for the wavefront method'''
-        if side=='l':
-            i_l = i
-            tdel=0
-        elif side=='r':
-            i_l = const.i_slr(i)[2]
-            i_r = i
-            tdel = aim.data.L_rr_func_tot(i_r,t)
-        
-        tele_l_old = 0.0
-        tele_r_old = 0.0
-        if tele_angle_l==None:
-            tele_l = np.radians(-30.0)
-        else:
-            tele_l = tele_angle_l
-        if tele_angle_r==None:
-            tele_r = np.radians(30.0)
-        else:
-            tele_r = tele_angle_r
-
-        
-        count=0
-        while count<max_count:
-            [[tele_l_new,tele_r_new],con] = self.tele_wavefront_calc(aim,i,t,tele_l=tele_l,tele_r=tele_r,beam_l=beam_l,beam_r=beam_r,offset_l=offset_l,offset_r=offset_r)
-            count = count+1
-            if count>= max_count:
-                mode = 'Maximum iteration limit has been reached'
-                tele_l = tele_l_new
-                tele_r = tele_r_new           
-                if print_on:
-                    print(mode)
-                break
-            elif max(con)<1.0e-9: #max(tele_l_new-tele_l,tele_r_new-tele_r)<1.0e9:
-                mode = 'Result is converged'
-                tele_l = tele_l_new
-                tele_r = tele_r_new
-                if print_on:
-                    print(mode)
-                break
-            tele_l = tele_l_new
-            tele_r = tele_r_new
-            
-        if side=='l':
-            return tele_l
-
-        elif side=='r':
-            return tele_r
 
 #######################################################################
 
