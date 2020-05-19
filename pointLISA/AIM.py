@@ -160,7 +160,7 @@ class AIM():
                 beam_r = self.beam_r_ang(i_send,t_start)
                 offset_l = self.offset['l'][i_rec] #...adjust
                 offset_r = self.offset['r'][i_send] #...adjust
-            
+
         if side=='l':
             tele_send = tele_l
             tele_rec = tele_r
@@ -211,12 +211,62 @@ class AIM():
                 return np.sign(R_vec_tele_rec[1])*abs(np.arctan(R_vec_tele_rec[1]/R_vec_tele_rec[0]))
             else:
                 raise ValueError('Please select a proper output parameter')
+    
+    def get_beam_angle(self,i,t,side,beam_l0 = 0.0,beam_r0 = 0.0,conv_lim=1e-9,loop=1,option=None):
+        if option==None:
+            option = self.aimset.option_PAAM
+
+        lim = np.radians(20.0)
+        [i_send,i_rec,t_start,t_end,mode] = self.get_selections(i,t,side,'send')
+        beam_l_new = [beam_l0]
+        beam_r_new = [beam_r0]
+        conv = [1.0]
+        done = False
+        l = 0
+        while done is False or l<loop:
+            if side=='l':
+                try:
+                    tele_l
+                except NameError:
+                    tele_l = self.tele_l_ang(i_send,t_start)
+                    tele_r = self.tele_r_ang(i_rec,t_end)
+                if option=='center':
+                    pos_send = lambda beam_l: self.get_output(i_send,t_start,'l',tele_l = tele_l,tele_r=tele_r,beam_l=beam_l,beam_r = 0.0,solve=True,ret='yoff')
+                elif option=='wavefront':
+                    pos_send = lambda beam_l: self.get_output(i_send,t_start,'l',tele_l = tele_l,tele_r=tele_r,beam_l=beam_l,beam_r = 0.0,solve=True,ret='angy_wf_rec')
+                beam_l_new.append(scipy.optimize.brentq(pos_send,-lim+beam_l0,lim+beam_l0))
+                conv.append(abs(beam_l_new[-1]-beam_l_new[-2]))
+            elif side=='r':
+                try:
+                    tele_l
+                except NameError:
+                    tele_l = self.tele_l_ang(i_rec,t_end)
+                    tele_r = self.tele_r_ang(i_send,t_start)
+                if option=='center':
+                    pos_send = lambda beam_r: self.get_output(i_send,t_start,'r',tele_l=tele_l,tele_r=tele_r,beam_l=0.0,beam_r = beam_r,solve=True,ret='yoff')
+                elif option=='wavefront':
+                    pos_send = lambda beam_r: self.get_output(i_send,t_start,'r',tele_l=tele_l,tele_r=tele_r,beam_l=0.0,beam_r = beam_r,solve=True,ret='angy_wf_rec')
+
+                beam_r_new.append(scipy.optimize.brentq(pos_send,-lim+beam_r0,lim+beam_r0))
+                conv.append(abs(beam_r_new[-1]-beam_r_new[-2]))
+            if conv <=conv_lim or (conv[-1]-conv[-2])/conv[-2]<0.01:
+                done = True
+            l = l+1
+
+        if side=='l':
+            #print(pos_rec(tele_l_new[-1]))
+            ret = beam_l_new[-1]
+        elif side=='r':
+            #print(pos_rec(tele_r_new[-1]))
+            ret = beam_r_new[-1]
+
+        return ret
 
     def get_tele_angle(self,i,t,side,tele_l0 = np.radians(-30.0),tele_r0 = np.radians(30.0),conv_lim=1e-9,loop=1,option=None):
         if option==None:
             option = self.aimset.option_tele
 
-        lim = np.radians(25.0)
+        lim = np.radians(20.0)
         [i_send,i_rec,t_start,t_end,mode] = self.get_selections(i,t,side,'send')
         tele_l_new = [tele_l0]
         tele_r_new = [tele_r0]
@@ -536,26 +586,38 @@ class AIM():
 
 
 
-    def PAAM_control_ang_fc(self,option='center',tele_l_ang=False,tele_r_ang=False):
+    def PAAM_control_ang_fc(self,option=None,tele_l_ang=False,tele_r_ang=False):
         '''Obtains the PAAM pointing angles for a continuous actuation (full_control)'''
+        if option==None:
+            option = self.aimset.option_PAAM
         print('PAAM pointing strategy: '+option)
 
-        if tele_l_ang==False:
-            tele_l_ang = self.tele_l_ang
-        if tele_r_ang==False:
-            tele_r_ang = self.tele_r_ang
+        max_count=1 #...adjust for better optimization
 
-        if option=='center':
-            ang_l = lambda i,t: calc.PAAM_center_calc(self,i,t,tele_l=tele_l_ang(i,t),tele_r=tele_r_ang(const.i_slr(i)[1],t),lim=self.aimset.limit_yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.aimset.optimize_PAAM_margin)[0][0]
-            ang_r = lambda i,t: calc.PAAM_center_calc(self,const.i_slr(i)[2],t,tele_l=tele_l_ang(const.i_slr(i)[2],t),tele_r=tele_r_ang(i,t),lim=self.aimset.limit_yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.aimset.optimize_PAAM_margin)[0][1]
+        ang_l = lambda i,t: self.get_beam_angle(i,t,'l',loop=max_count)
+        ang_r = lambda i,t: self.get_beam_angle(i,t,'r',loop=max_count)
 
-        elif option=='wavefront':
-            ang_l = lambda i,t: calc.PAAM_wavefront_calc(self,i,t,'l',lim=self.aimset.limit_angy,tele_l=self.tele_l_ang(i,t),tele_r=self.tele_r_ang(const.i_slr(i)[1],t))
-            ang_r = lambda i,t: calc.PAAM_wavefront_calc(self,i,t,'r',lim=self.aimset.limit_angy,tele_l=self.tele_l_ang(const.i_slr(i)[2],t),tele_r=self.tele_r_ang(i,t))
-
-        self.aimset.PAAM_control = 'full_control'
         self.aimset.option_PAAM = option
+        self.aimset.PAAM_control = 'full_control'
+
         return [ang_l,ang_r]
+
+#        if tele_l_ang==False:
+#            tele_l_ang = self.tele_l_ang
+#        if tele_r_ang==False:
+#            tele_r_ang = self.tele_r_ang
+#
+#        if option=='center':
+#            ang_l = lambda i,t: calc.PAAM_center_calc(self,i,t,tele_l=tele_l_ang(i,t),tele_r=tele_r_ang(const.i_slr(i)[1],t),lim=self.aimset.limit_yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.aimset.optimize_PAAM_margin)[0][0]
+#            ang_r = lambda i,t: calc.PAAM_center_calc(self,const.i_slr(i)[2],t,tele_l=tele_l_ang(const.i_slr(i)[2],t),tele_r=tele_r_ang(i,t),lim=self.aimset.limit_yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.aimset.optimize_PAAM_margin)[0][1]
+#
+#        elif option=='wavefront':
+#            ang_l = lambda i,t: calc.PAAM_wavefront_calc(self,i,t,'l',lim=self.aimset.limit_angy,tele_l=self.tele_l_ang(i,t),tele_r=self.tele_r_ang(const.i_slr(i)[1],t))
+#            ang_r = lambda i,t: calc.PAAM_wavefront_calc(self,i,t,'r',lim=self.aimset.limit_angy,tele_l=self.tele_l_ang(const.i_slr(i)[2],t),tele_r=self.tele_r_ang(i,t))
+#
+#        self.aimset.PAAM_control = 'full_control'
+#        self.aimset.option_PAAM = option
+#        return [ang_l,ang_r]
 
 
     def PAAM_aim(self,method=False,dt=3600*24,tau=1,mode='overdamped',PAAM_ang_extra=False,option=False):
