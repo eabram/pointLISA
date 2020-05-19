@@ -119,80 +119,6 @@ class AIM():
 
 
 ################# TELESCOPE POINTING #################
-
-#    def tele_point_calc(self,i,t,side,option,lim=False,method=False,value=0,scale=1,max_count=20,tele_l0=None,tele_r0=None,beam_l0=None,beam_r0=None,offset_l0=None,offset_r0=None,**kwargs):
-#        '''Calculates the (full control) telescope pointing angles (with the center or wavefront method)'''
-#        [i_self,i_left,i_right] = const.i_slr(i)
-#        if option=='center':
-#            if lim==False:
-#                lim = self.aimset.limit_xoff
-#            if side=='l':
-#                ang = self.tele_center_calc(i,t,lim=lim,value=value,tele_l=tele_l0,tele_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)[0][0]
-#            elif side=='r':
-#                ang = self.tele_center_calc(const.i_slr(i)[2],t,lim=lim,value=value,tele_l=tele_l0,tele_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)[0][1]
-#
-#        elif option=='wavefront':
-#            if method==False:
-#                method = self.aimset.tele_method_solve
-#            if lim==False:
-#                lim=self.aimset.limit_angx
-#
-#            if side=='l':
-#                ang = self.get_tele_wavefront(i,t,'l',method,scale=scale,lim=lim,max_count=max_count,value=value,tele_angle_l=tele_l0,tele_angle_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)
-#            elif side=='r':
-#                ang = self.get_tele_wavefront(i_right,t,'r',method,scale=scale,lim=lim,max_count=max_count,value=value,tele_angle_l=tele_l0,tele_angle_r=tele_r0,beam_l=beam_l0,beam_r=beam_r0,offset_l=offset_l0,offset_r=offset_r0)
-#
-#        return ang
-#
-#    def tele_center_calc(self,i,t,scale=1,lim=1e-12,max_count=5,value=0,tele_l=False,tele_r=False,beam_l=False,beam_r=False,offset_l=False,offset_r=False):
-#        '''Obtains the telescope pointing angle when the telesope is pointed with the center method'''
-#        [i_self,i_left,i_right] = const.i_slr(i)
-#
-#        lim = np.radians(5.0)
-#        if tele_l is False:
-#            tele_l=self.tele_l_ang(i_self,t)
-#        elif tele_l==None:
-#            tele_l=np.radians(np.float64(-30.0))
-#        if tele_r is False:
-#            tele_r=self.tele_r_ang(i_left,t)
-#        elif tele_r==None:
-#            tele_r=np.radians(np.float64(30.0))
-#        if beam_l is False:
-#            beam_l=self.beam_l_ang(i_self,t)
-#        elif beam_l==None:
-#            beam_l=np.float64(0.0)
-#        if beam_r is False:
-#            beam_r=self.beam_r_ang(i_self,t)
-#        elif beam_r==None:
-#            beam_r=np.float64(0.0)
-#
-#        tele_l_old = tele_l
-#        tele_r_old = tele_r
-#
-#        pos_send = lambda tele_l: calc.values(self,i_self,t,'l',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['xoff']).xoff
-#        send_solve = lambda tele_l: pos_send(tele_l)-value
-#
-#        try:
-#            tele_l_new = scipy.optimize.brentq(send_solve,-lim-np.radians(30.0),lim-np.radians(30.0))
-#        except ValueError,e:
-#            if str(e)=='f(a) and f(b) must have different signs':
-#                tele_l_new=np.nan
-#
-#        if tele_l_new!=np.nan:
-#            pos_rec = lambda tele_r: calc.values(self,i_left,t,'r',tele_angle_l=tele_l_new,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=['xoff']).xoff
-#            rec_solve = lambda tele_r: pos_rec(tele_r)-value
-#
-#            try:
-#                tele_r_new = scipy.optimize.brentq(rec_solve,-lim+np.radians(30.0),lim+np.radians(30.0))
-#            except ValueError,e:
-#                if str(e)=='f(a) and f(b) must have different signs':
-#                    tele_r_new=np.nan
-#        else:
-#            tele_r_new = np.nan
-#        
-#        #print(pos_send(tele_l_new),pos_rec(tele_r_new))
-#        return [[tele_l_new,tele_r_new], False]
-
     def get_selections(self,i,t,side,mode='send'):
         [i_self,i_left,i_right] = utils.const.i_slr(i)
         if mode=='send':
@@ -286,35 +212,11 @@ class AIM():
             else:
                 raise ValueError('Please select a proper output parameter')
 
+    def get_tele_angle(self,i,t,side,tele_l0 = np.radians(-30.0),tele_r0 = np.radians(30.0),conv_lim=1e-9,loop=1,option=None):
+        if option==None:
+            option = self.aimset.option_tele
 
-    def get_tele_center(self,i,t,side,tele_l0 = np.radians(-30.0),tele_r0 = np.radians(30.0),conv_lim=1e-9,loop=1):
-        lim = np.radians(5)   
-        [i_send,i_rec,t_start,t_end,mode] = self.get_selections(i,t,side,'send')
-        tele_l_new = [tele_l0]
-        tele_r_new = [tele_r0]
-        conv = [1.0]
-        done = False
-        l = 0
-        while done is False or l<loop:
-            pos_send = lambda tele_l: self.get_output(i_send,t_start,'l',tele_l=tele_l,tele_r = tele_r_new[-1],solve=True)
-            tele_l_new.append(scipy.optimize.brentq(pos_send,-lim+tele_l0,lim+tele_l0))
-            pos_rec = lambda tele_r: self.get_output(i_rec,t_end,'r',tele_l=tele_l_new[-1],tele_r = tele_r,solve=True)
-            tele_r_new.append(scipy.optimize.brentq(pos_rec,-lim+tele_r0,lim+tele_r0))
-            conv.append(max(abs(tele_l_new[-1]-tele_l_new[-2]),abs(tele_r_new[-1]-tele_r_new[-2])))
-            #print(conv[-1])
-            if conv <=conv_lim or (conv[-1]-conv[-2])/conv[-2]<0.01:
-                done = True
-            l = l+1
-                
-        if side=='l':
-            ret = tele_l_new[-1]
-        elif side=='r':
-            ret = tele_r_new[-1]
-        
-        return ret
-
-    def get_tele_wavefront(self,i,t,side,tele_l0 = np.radians(-30.0),tele_r0 = np.radians(30.0),conv_lim=1e-9,loop=1):
-        lim = np.radians(20.0)
+        lim = np.radians(25.0)
         [i_send,i_rec,t_start,t_end,mode] = self.get_selections(i,t,side,'send')
         tele_l_new = [tele_l0]
         tele_r_new = [tele_r0]
@@ -323,16 +225,28 @@ class AIM():
         l = 0
         while done is False or l<loop:
             if side=='l':
-                pos_send = lambda tele_r: self.get_output(i_send,t_start,'l',tele_l=tele_l_new[-1],tele_r = tele_r,solve=True,ret='angx_wf_rec')
-                tele_r_new.append(scipy.optimize.brentq(pos_send,-lim+tele_r0,lim+tele_r0))
-                pos_rec = lambda tele_l: self.get_output(i_rec,t_end,'r',tele_l=tele_l,tele_r = tele_r_new[-1],solve=True,ret='angx_wf_rec')
-                tele_l_new.append(scipy.optimize.brentq(pos_rec,-lim+tele_l0,lim+tele_l0))
+                if option=='center':
+                    pos_send = lambda tele_l: self.get_output(i_send,t_start,'l',tele_l=tele_l,tele_r = tele_r_new[-1],solve=True)
+                    tele_l_new.append(scipy.optimize.brentq(pos_send,-lim+tele_l0,lim+tele_l0))
+                    pos_rec = lambda tele_r: self.get_output(i_rec,t_end,'r',tele_l=tele_l_new[-1],tele_r = tele_r,solve=True)
+                    tele_r_new.append(scipy.optimize.brentq(pos_rec,-lim+tele_r0,lim+tele_r0))
+                elif option=='wavefront':
+                    pos_send = lambda tele_r: self.get_output(i_send,t_start,'l',tele_l=tele_l_new[-1],tele_r = tele_r,solve=True,ret='angx_wf_rec')
+                    tele_r_new.append(scipy.optimize.brentq(pos_send,-lim+tele_r0,lim+tele_r0))
+                    pos_rec = lambda tele_l: self.get_output(i_rec,t_end,'r',tele_l=tele_l,tele_r = tele_r_new[-1],solve=True,ret='angx_wf_rec')
+                    tele_l_new.append(scipy.optimize.brentq(pos_rec,-lim+tele_l0,lim+tele_l0))
                 conv.append(max(abs(tele_l_new[-1]-tele_l_new[-2]),abs(tele_r_new[-1]-tele_r_new[-2])))
             elif side=='r':
-                pos_send = lambda tele_l: self.get_output(i_send,t_start,'r',tele_l=tele_l,tele_r = tele_r_new[-1],solve=True,ret='angx_wf_rec')
-                tele_l_new.append(scipy.optimize.brentq(pos_send,-lim+tele_l0,lim+tele_l0))
-                pos_rec = lambda tele_r: self.get_output(i_rec,t_end,'l',tele_l=tele_l_new[-1],tele_r = tele_r,solve=True,ret='angx_wf_rec')
-                tele_r_new.append(scipy.optimize.brentq(pos_rec,-lim+tele_r0,lim+tele_r0))
+                if option=='center':
+                    pos_send = lambda tele_r: self.get_output(i_send,t_start,'r',tele_l=tele_l_new[-1],tele_r = tele_r,solve=True)
+                    tele_r_new.append(scipy.optimize.brentq(pos_send,-lim+tele_r0,lim+tele_r0))
+                    pos_rec = lambda tele_l: self.get_output(i_rec,t_end,'l',tele_l=tele_l,tele_r = tele_r_new[-1],solve=True)
+                    tele_l_new.append(scipy.optimize.brentq(pos_rec,-lim+tele_l0,lim+tele_l0))
+                elif option=='wavefront':
+                    pos_send = lambda tele_l: self.get_output(i_send,t_start,'r',tele_l=tele_l,tele_r = tele_r_new[-1],solve=True,ret='angx_wf_rec')
+                    tele_l_new.append(scipy.optimize.brentq(pos_send,-lim+tele_l0,lim+tele_l0))
+                    pos_rec = lambda tele_r: self.get_output(i_rec,t_end,'l',tele_l=tele_l_new[-1],tele_r = tele_r,solve=True,ret='angx_wf_rec')
+                    tele_r_new.append(scipy.optimize.brentq(pos_rec,-lim+tele_r0,lim+tele_r0))
                 conv.append(max(abs(tele_l_new[-1]-tele_l_new[-2]),abs(tele_r_new[-1]-tele_r_new[-2])))
             #print(conv[-1])
             if conv <=conv_lim or (conv[-1]-conv[-2])/conv[-2]<0.01:
@@ -348,95 +262,6 @@ class AIM():
 
         return ret
 
-
-
-
-#    def get_tele_wavefront(self,i,t,side,method,scale=1,lim=1e-12,max_count=20,print_on=False,value=0.0,tele_angle_l=None,tele_angle_r=None,beam_l=None,beam_r=None,offset_l=False,offset_r=False):
-#        '''Gets all telescope pointing angles along one arm for the wavefront method'''
-#        if side=='l':
-#            i_l = i
-#            tdel=0
-#        elif side=='r':
-#            i_l = const.i_slr(i)[2]
-#            i_r = i
-#            tdel = self.data.L_rr(i_r,t)
-#
-#        tele_l_old = 0.0
-#        tele_r_old = 0.0
-#        if tele_angle_l==None:
-#            tele_l = np.radians(-30.0)
-#        else:
-#            tele_l = tele_angle_l
-#        if tele_angle_r==None:
-#            tele_r = np.radians(30.0)
-#        else:
-#            tele_r = tele_angle_r
-#
-#        count=0
-#        while count<max_count:
-#            [[tele_l_new,tele_r_new],con] = self.tele_wavefront_calc(i,t,tele_l=tele_l,tele_r=tele_r,beam_l=beam_l,beam_r=beam_r,offset_l=offset_l,offset_r=offset_r)
-#            count = count+1
-#            if count>= max_count:
-#                mode = 'Maximum iteration limit has been reached'
-#                tele_l = tele_l_new
-#                tele_r = tele_r_new
-#                if print_on:
-#                    print(mode)
-#                break
-#            elif max(con)<1.0e-9: #max(tele_l_new-tele_l,tele_r_new-tele_r)<1.0e9:
-#                mode = 'Result is converged'
-#                tele_l = tele_l_new
-#                tele_r = tele_r_new
-#                if print_on:
-#                    print(mode)
-#                break
-#            tele_l = tele_l_new
-#            tele_r = tele_r_new
-#
-#        if side=='l':
-#            return tele_l
-#
-#        elif side=='r':
-#            return tele_r
-#
-#    def tele_wavefront_calc(self,i_l,t,scale=1,lim=1e-12,max_count=5,print_on=False,value=0,tele_l=False,tele_r=False,beam_l=False,beam_r=False,offset_l=False,offset_r=False):
-#        '''Obtains the telescope pointing angle when the telesope is pointed with the center method'''
-#        [i_self,i_left,i_right] = const.i_slr(i_l)
-#
-#        lim = np.radians(5.0)
-#        if tele_l is False:
-#            tele_l=self.tele_l_ang(i_self,t)
-#        elif tele_l==None:
-#            tele_l=np.radians(np.float64(-30.0))
-#        if tele_r is False:
-#            tele_r=self.tele_r_ang(i_left,t)
-#        elif tele_r==None:
-#            tele_r=np.radians(np.float64(30.0))
-#        if beam_l is False:
-#            beam_l=self.beam_l_ang(i_self,t)
-#        elif beam_l==None:
-#            beam_l=np.float64(0.0)
-#        if beam_r is False:
-#            beam_r=self.beam_r_ang(i_self,t)
-#        elif beam_r==None:
-#            beam_r=np.float64(0.0)
-#
-#        tele_l_old = tele_l
-#        tele_r_old = tele_r
-#
-#        par = 'angx_wf_rec'
-#
-#        pos_l = getattr(calc.values(self,i_self,t,'l',mode='rec',tele_angle_l=tele_l,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=[par]),par)
-#        tele_l_new = tele_l-pos_l
-#
-#        pos_r = getattr(calc.values(self,i_left,t,'r',mode='rec',tele_angle_l=tele_l_new,tele_angle_r=tele_r,beam_angle_l=beam_l,beam_angle_r=beam_r,offset_l=offset_l,offset_r=offset_r,ret=[par]),par)
-#        tele_r_new = tele_r-pos_r
-#
-#        return [[tele_l_new,tele_r_new], [pos_l,pos_r]]
-
-
-
-
     def tele_control_ang_fc(self,option=None,value=False,lim=False):
         '''Obtains the telescope pointing angles for a continuous actuation (full_control)'''
         # Option 'wavefront' means poiting with the purpose of getting a zero/small tilt of the receiving wavefront
@@ -446,18 +271,11 @@ class AIM():
 
         print('Telescope pointing strategy: '+option)
         
-        max_count=1
+        max_count=1 #...adjust for better optimization
         
-        if option=='center':
-            ang_l = lambda i,t: self.get_tele_center(i,t,'l',loop=max_count)
-            ang_r = lambda i,t: self.get_tele_center(i,t,'r',loop=max_count)
-        elif option=='wavefront':
-            ang_l = lambda i,t: self.get_tele_wavefront(i,t,'l',loop=max_count)
-            ang_r = lambda i,t: self.get_tele_wavefront(i,t,'r',loop=max_count)
-
-        #ang_l = lambda i,t: self.tele_point_calc(i,t,'l',option,max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0,lim=lim)
-        #ang_r = lambda i,t: self.tele_point_calc(i,t,'r',option,max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0,lim=lim)
-        
+        ang_l = lambda i,t: self.get_tele_angle(i,t,'l',loop=max_count)
+        ang_r = lambda i,t: self.get_tele_angle(i,t,'r',loop=max_count)
+ 
         self.aimset.option_tele = option
         self.aimset.tele_control = 'full_control'
 
