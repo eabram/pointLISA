@@ -135,7 +135,7 @@ class ORBIT():
         if 'synthlisa' in str(type(self.LISA_opt)): #...kan weg
             self.lisa_obj = self.LISA_opt
         else:
-            self.lisa_obj=SampledLISA(p[0],p[1],p[2],Dt,self.t[0],2)
+            self.lisa_obj=SampledLISA(p[0],p[1],p[2],Dt,self.t[0],2) #1==lin_int, -1==lin_extr, 2==Lagrange, -2==derivative interpolator, 0==nearest
         self.p=p
         self.Dt=Dt
         self.pos=[self.t,p]

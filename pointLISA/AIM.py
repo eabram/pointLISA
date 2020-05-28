@@ -8,7 +8,15 @@ class AIM():
             if '__'!=k[0:2]:
                 setattr(self,k,getattr(CALC(),k))
         if data!=None:
+            for k in kwargs.keys():
+                if k in setting.__dict__.keys():
+                    delattr(setting,k)
+                    setattr(setting,k,kwargs[k])
             self.aimset = setting
+            if self.aimset.aim_object!=None:
+                self.aimset.tele_control='AIM_object'
+                self.aimset.PAAM_control='AIM_object'
+                self.aimset.offset_tele='AIM_object'
             self.data = data
             
             if data!=False:
@@ -17,23 +25,20 @@ class AIM():
                     self.get_offset_inplane()
             else:
                 pass #...adjust
+        
                 
 
     def get_offset_inplane(self,**kwargs):
         '''This function obtains the offset between the inplane telescope alignment and the transmitting beam (offset)'''
         print('Getting initial offset angles')
-        if self.aimset.PAAM_deg==1:
+        if self.aimset.offset_tele=='AIM_object':
+            self.offset = self.aimset.aim_object.offset
+        elif self.aimset.PAAM_deg==1:
             if self.aimset.offset_tele==False:
                 offset = lambda i,t,side: 0
             elif self.aimset.offset_tele==True:
                 offset = lambda i,t,side: (2*np.pi*self.data.param.L_arm)/(c*year2sec)
-
-        
-        elif self.aimset.PAAM_deg==2:
-            print('Two axis PAAM selected')
-            offset=lambda i,t,side: 0
-
-        self.offset = offset
+            self.offset = offset
 
         return 0
 
@@ -57,17 +62,23 @@ class AIM():
                 t_start = t_end - self.data.L_rl(i_rec,t_end)
             elif side=='r':
                 i_send = i_right
-                t_start = t_end + self.data.L_rr(i_rec,t_end)
+                t_start = t_end - self.data.L_rr(i_rec,t_end)
         
         return [i_send,i_rec,t_start,t_end,mode]
 
-    def get_output(self,i,t,side,mode='send',tele_l=np.radians(-30.0),tele_r=np.radians(30.0),beam_l=0.0,beam_r=0.0,solve=False,ret='xoff'):
+    def get_output(self,i,t,side,mode='send',tele_l=np.radians(-30.0),tele_r=np.radians(30.0),beam_l=0.0,beam_r=0.0,solve=False,ret='xoff',tele_SS_l=False,tele_SS_r=False):
         [i_send,i_rec,t_start,t_end,mode] = self.get_selections(i,t,side,mode)
         
         if solve is False:
             if (side=='l' and mode=='send') or (side=='r' and mode=='rec'):
-                tele_l = self.tele_l_ang(i_send,t_start)
-                tele_r = self.tele_r_ang(i_rec,t_end)
+                if tele_SS_l!=False:
+                    tele_l = tele_SS_l
+                else:
+                    tele_l = self.tele_l_ang(i_send,t_start)
+                if tele_SS_r!=False:
+                    tele_r = tele_SS_r
+                else:
+                    tele_r = self.tele_r_ang(i_rec,t_end)
                 beam_l = self.beam_l_ang(i_send,t_start)
                 beam_r = self.beam_r_ang(i_rec,t_end)
             elif (side=='r' and mode=='send') or (side=='l' and mode=='rec'):
@@ -75,27 +86,7 @@ class AIM():
                 tele_r = self.tele_r_ang(i_send,t_start)
                 beam_l = self.beam_l_ang(i_rec,t_end)
                 beam_r = self.beam_r_ang(i_send,t_start)
-        
-        else:
-            if (side=='l' and mode=='send') or (side=='r' and mode=='rec'):
-                if callable(tele_l):
-                    tele_l = tele_l(i_send,t_start)
-                if callable(tele_r):
-                    tele_r = tele_r(i_rec,t_end)
-                if callable(beam_l):
-                    beam_l = beam_l(i_send,t_start)
-                if callable(beam_r):
-                    beam_r = beam_r(i_rec,t_end)
-            elif (side=='r' and mode=='send') or (side=='l' and mode=='rec'):
-                if callable(tele_l):
-                    tele_l = tele_l(i_rec,t_end)
-                if callable(tele_r):
-                    tele_r = tele_r(i_send,t_start)
-                if callable(beam_l):
-                    beam_l = beam_l(i_rec,t_end)
-                if callable(beam_r):
-                    beam_r = beam_r(i_send,t_start)
-
+               
         if (side=='l' and mode=='send') or (side=='r' and mode=='rec'):
             tele_send = tele_l
             tele_rec = tele_r
@@ -142,9 +133,13 @@ class AIM():
                     return (I0*np.exp((-2*(off[2]**2))/(waist**2)))*(self.data.param.w0_laser/waist)
     
         else:
-            [zoff,yoff,xoff] = off
+            zoff = off[0]
+            yoff = off[1]
+            xoff = off[2]
+
             zR = np.pi*(self.data.param.w0_laser**2)/self.data.param.labda
-            R = abs(zoff*(1+((zR/zoff)**2)))
+            R=zoff
+            #R = abs(zoff*(1+((zR/zoff)**2)))
             vec = np.array([(R**2-xoff**2-yoff**2)**0.5,yoff,xoff]) # In beam frame ...adjust: have to use piston
             coor_startbeam__send = self.beam_coor_out__send(self.data,i_send,t_start,tele_send,beam_send,offset_send)
             R_vec_beam__send = LA.matmul(np.linalg.inv(coor_startbeam__send),vec)
@@ -157,8 +152,10 @@ class AIM():
                 return np.sign(R_vec_tele_rec[2])*abs(np.arctan(R_vec_tele_rec[2]/R_vec_tele_rec[0]))
             elif ret=='angy_wf_rec':
                 return np.sign(R_vec_tele_rec[1])*abs(np.arctan(R_vec_tele_rec[1]/R_vec_tele_rec[0]))
-            elif ret=='ang_wf_rec':
-                return np.arctan(((R_vec_tele_rec[1]**2+R_vec_tele_rec[2]**2)**0.5)/R_vec_tele_rec[0])
+            elif ret=='alpha':
+                return abs(np.arctan(((R_vec_tele_rec[1]**2+R_vec_tele_rec[2]**2)**0.5)/R_vec_tele_rec[0]))
+            elif ret=='aberration_effect':
+                return LA.angle(R_vec_beam__send,R_vec_beam__rec)
             else:
                 raise ValueError('Please select a proper output parameter')
     
@@ -228,7 +225,7 @@ class AIM():
             lim = [self.data.param.I_min,self.aimset.FOV]
 
         t0 = self.data.t_all[0]
-        tstop = self.data.t_all[2]-10.0
+        tstop = self.data.t_all[2]-10.0 #...adjust: self.data.t_all[-1] -10.0
 
         tele_l_SS = {}
         tele_r_SS = {}
@@ -399,7 +396,7 @@ class AIM():
 
             elif 'SS' in method:
                 # For Step-and_Stare
-                [self.tele_l_ang_func,self.tele_r_ang_func,self.adjust_l,self.adjust_r] = get_tele_SS()
+                [self.tele_l_ang_func,self.tele_r_ang_func,self.adjust_l,self.adjust_r] = self.get_tele_SS()
 
             elif type(method)==list and method[0]=='Imported pointing': #...to do
                 # Import (previously obtained) angles
@@ -439,6 +436,10 @@ class AIM():
                 self.t_adjust = t_adjust
                 self.tele_ang_adjust = tele_ang_adjust
                 self.tele_adjust = tele_ang_adjust
+
+            elif self.aimset.tele_control=='AIM_object':
+                self.tele_l_ang_func = self.aimset.aim_object.tele_l_ang
+                self.tele_r_ang_func = self.aimset.aim_object.tele_r_ang
 
             else:
                 raise ValueError('Please select valid telescope pointing method')
@@ -586,6 +587,9 @@ class AIM():
                 ang_r_SS = lambda i,t: ang_fc_r(i,t-(t%dt))
                 print('Taken '+method+' step response for PAAM SS control with tau='+str(tau)+' sec')
                 mode='overdamped'
+            elif method=='AIM_object':
+                ang_l=self.aimset.aim_object.beam_l_ang
+                ang_r=self.aimset.aim_object.beam_r_ang
 
             self.beam_l_ang = ang_l
             self.beam_r_ang = ang_r
@@ -609,107 +613,66 @@ class AIM():
 
         return self
  
-#    def get_tele_coor(self,i,t,tele_l_ang,tele_r_ang):
-#        ''' Calculating new pointing vectors and telescope coordinate system '''
-#        tele_l_coor = calc.coor_tele(self.data,i,t,tele_l_ang(i,t))
-#        tele_r_coor = calc.coor_tele(self.data,i,t,tele_r_ang(i,t))
-#        tele_l_vec = LA.unit(tele_l_coor[0])*self.data.param.L_tele
-#        tele_r_vec = LA.unit(tele_r_coor[0])*self.data.param.L_tele
-#        tele_l_start = tele_l_vec+np.array(self.data.putp(i,t))
-#        tele_r_start = tele_r_vec+np.array(self.data.putp(i,t))
-#
-#        return [[tele_l_coor,tele_r_coor],[tele_l_vec,tele_r_vec],[tele_l_start,tele_r_start]]
-#
-#    def get_beam_coor(self,i,t,tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset): #...only send frame
-#        ''' Calculating new pointing vectors and beam coordinate system '''
-#        if offset == False:
-#            offset = self.aimset.offset_tele
-#
-#        offset_l = calc.get_offset(self,i,t,'l')
-#        offset_r = calc.get_offset(self,i,t,'r')
-#
-#        beam_l_coor = calc.beam_coor_out(self.data,i,t,tele_l_ang(i,t),beam_l_ang(i,t),offset_l)
-#        beam_r_coor = calc.beam_coor_out(self.data,i,t,tele_r_ang(i,t),beam_r_ang(i,t),offset_r)
-#
-#        # Calculating the Transmitted beam direction and position of the telescope aperture
-#        beam_l_direction = beam_l_coor[0]
-#        beam_r_direction = beam_r_coor[0]
-#        beam_l_start = self.data.param.L_tele*beam_l_direction+np.array(self.data.putp(i,t)) #...kan weg
-#        beam_r_start = self.data.param.L_tele*beam_r_direction+np.array(self.data.putp(i,t)) #...kan weg
-#
-#        return [[beam_l_coor,beam_r_coor],[beam_l_direction,beam_r_direction],[beam_l_start,beam_r_start]]
-#
-#    def get_coordinate_systems(self,iteration_val=False,option='self'):
-#        '''Make functions of the coordinate vectors and systems'''
-#        if iteration_val==False:
-#            tele_l_ang = self.tele_l_ang
-#            tele_r_ang = self.tele_r_ang
-#            beam_l_ang = self.beam_l_ang
-#            beam_r_ang = self.beam_r_ang
-#            offset = self.aimset.offset_tele
-#        else:
-#            [[tele_l_ang,tele_r_ang],[beam_l_ang,beam_r_ang]] = self.get_functions_from_sampling(self.get_sampled_pointing(option=option))
-#
-#        self.tele_l_coor = lambda i,t: self.get_tele_coor(i,t,tele_l_ang,tele_r_ang)[0][0]
-#        self.tele_r_coor = lambda i,t: self.get_tele_coor(i,t,tele_l_ang,tele_r_ang)[0][1]
-#        self.tele_l_vec = lambda i,t: self.get_tele_coor(i,t,tele_l_ang,tele_r_ang)[1][0]
-#        self.tele_r_vec = lambda i,t: self.get_tele_coor(i,t,tele_l_ang,tele_r_ang)[1][1]
-#        self.tele_l_start = lambda i,t: self.get_tele_coor(i,t,tele_l_ang,tele_r_ang)[2][0] 
-#        self.tele_r_start = lambda i,t: self.get_tele_coor(i,t,tele_l_ang,tele_r_ang)[2][1] 
-#
-#
-#        self.beam_l_coor = lambda i,t: self.get_beam_coor(i,t,tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset)[0][0]
-#        self.beam_r_coor = lambda i,t: self.get_beam_coor(i,t,tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset)[0][1]
-#        self.beam_l_direction = lambda i,t: self.get_beam_coor(i,t,tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset)[1][0]
-#        self.beam_r_direction = lambda i,t: self.get_beam_coor(i,t,tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset)[1][1]
-#        self.beam_l_start = lambda i,t: self.get_beam_coor(i,t,tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset)[2][0] #...kan weg
-#        self.beam_r_start = lambda i,t: self.get_beam_coor(i,t,tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset)[2][1] #...kan weg
-#
-#        self.tele_l_ang_calc = tele_l_ang
-#        self.tele_r_ang_calc = tele_r_ang
-#        self.beam_l_ang_calc = beam_l_ang
-#        self.beam_r_ang_calc = beam_r_ang
-#
-#        return 0 
-   
-    def twoPAAM_calc(self,i,t,side):
-        '''Calculates the two PAAM pointing angles for a dual axis PAAM'''
-        max_count=5
-        scale=1
-        value = self.aimset.value_center
 
-        [i_self,i_left,i_right] = const.i_slr(i)
-        if side=='l':
-            if self.aimset.tele_control=='full_control':
-                Dt = self.data.L_sl(i_self,t)
-                ang_in_l = calc.tele_point_calc(self,i,t,'l','center',max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0,offset_l0=0.0,offset_r0=0.0)
-                ang_in_r = calc.tele_point_calc(self,const.i_slr(i)[1],t+Dt,'r','center',max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0,offset_l0=0.0,offset_r0=0.0)
-            elif self.aimset.tele_control=='no_control':
-                ang_in_l = np.radians(-30.0)
-                ang_in_r = np.radians(30.0)
+    def twoPAAM_fc(self):
+        kwargs = {'PAAM_deg':1,'tele_control':'full_control','PAAM_control':'full_control','option_tele':'center','option_PAAM':'center'}
+        aimset = const.get_settings(settings_input=self.data.settings,select='aimset',kwargs=kwargs)
+        aim_dummy = AIM(input_file=None,data=self.data,setting = aimset,filename=False)
+        aim_dummy.tele_aim()
+        aim_dummy.PAAM_aim()
 
-            if self.aimset.PAAM_control=='full_control':
-                ang_out = calc.PAAM_center_calc(self,i,t,tele_l=ang_in_l,tele_r=ang_in_r,lim=self.aimset.limit_yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.aimset.optimize_PAAM_margin,beam_l=0.0,beam_r=0.0,offset_l=0.0,offset_r=0.0)[0][0]
-            elif self.aimset.PAAM_control=='no_control':
-                ang_out = 0.0
+        add_l = lambda i,t: aim_dummy.get_output(i,t,'l',mode='rec',ret='angx_wf_rec')
+        add_r = lambda i,t: aim_dummy.get_output(i,t,'r',mode='rec',ret='angx_wf_rec')
 
-            return [ang_in_l,ang_out]
+        offset={}
+        self.tele_l_ang = lambda i,t: aim_dummy.tele_l_ang(i,t)-add_l(i,t)
+        offset['l'] = lambda i,t: add_l(i,t) +aim_dummy.offset(i,t,'l')
+        self.tele_r_ang = lambda i,t: aim_dummy.tele_r_ang(i,t)-add_r(i,t)
+        offset['r'] = lambda i,t: add_r(i,t)+aim_dummy.offset(i,t,'r')
+        self.beam_l_ang = aim_dummy.beam_l_ang
+        self.beam_r_ang = aim_dummy.beam_r_ang
+        self.offset=lambda i,t,s: offset[s](i,t)
+        return 0
 
-        elif side=='r':
-            if self.aimset.tele_control=='full_control':
-                Dt = self.data.L_sr(i_self,t)
-                ang_in_l = calc.tele_point_calc(self,const.i_slr(i)[2],t+Dt,'l','center',max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0,offset_l0=0.0,offset_r0=0.0)
-                ang_in_r = calc.tele_point_calc(self,i,t,'r','center',max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0,offset_l0=0.0,offset_r0=0.0)
-            elif self.aimset.tele_control=='no_control':
-                ang_in_l=np.radians(-30.0)
-                ang_in_r=np.radians(30.0)
 
-            if self.aimset.PAAM_control=='full_control':
-                ang_out = calc.PAAM_center_calc(self,const.i_slr(i)[2],t,tele_l=ang_in_l,tele_r=ang_in_r,lim=self.aimset.limit_yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.aimset.optimize_PAAM_margin,beam_l=0.0,beam_r=0.0,offset_l=0.0,offset_r=0.0)[0][1]
-            elif self.aimset.PAAM_control=='no_control':
-                ang_out = 0.0
-
-            return [ang_in_r,ang_out]
+#    def twoPAAM_calc(self,i,t,side):
+#        '''Calculates the two PAAM pointing angles for a dual axis PAAM'''
+#        max_count=5
+#        scale=1
+#        value = self.aimset.value_center
+#
+#        [i_self,i_left,i_right] = const.i_slr(i)
+#        if side=='l':
+#            if self.aimset.tele_control=='full_control':
+#                Dt = self.data.L_sl(i_self,t)
+#                ang_in_l = calc.tele_point_calc(self,i,t,'l','center',max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0,offset_l0=0.0,offset_r0=0.0)
+#                ang_in_r = calc.tele_point_calc(self,const.i_slr(i)[1],t+Dt,'r','center',max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0,offset_l0=0.0,offset_r0=0.0)
+#            elif self.aimset.tele_control=='no_control':
+#                ang_in_l = np.radians(-30.0)
+#                ang_in_r = np.radians(30.0)
+#
+#            if self.aimset.PAAM_control=='full_control':
+#                ang_out = calc.PAAM_center_calc(self,i,t,tele_l=ang_in_l,tele_r=ang_in_r,lim=self.aimset.limit_yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.aimset.optimize_PAAM_margin,beam_l=0.0,beam_r=0.0,offset_l=0.0,offset_r=0.0)[0][0]
+#            elif self.aimset.PAAM_control=='no_control':
+#                ang_out = 0.0
+#
+#            return [ang_in_l,ang_out]
+#
+#        elif side=='r':
+#            if self.aimset.tele_control=='full_control':
+#                Dt = self.data.L_sr(i_self,t)
+#                ang_in_l = calc.tele_point_calc(self,const.i_slr(i)[2],t+Dt,'l','center',max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0,offset_l0=0.0,offset_r0=0.0)
+#                ang_in_r = calc.tele_point_calc(self,i,t,'r','center',max_count=max_count,scale=scale,value=value,tele_l0=np.radians(-30.0),tele_r0=np.radians(30.0),beam_l0=0.0,beam_r0=0.0,offset_l0=0.0,offset_r0=0.0)
+#            elif self.aimset.tele_control=='no_control':
+#                ang_in_l=np.radians(-30.0)
+#                ang_in_r=np.radians(30.0)
+#
+#            if self.aimset.PAAM_control=='full_control':
+#                ang_out = calc.PAAM_center_calc(self,const.i_slr(i)[2],t,tele_l=ang_in_l,tele_r=ang_in_r,lim=self.aimset.limit_yoff,method=self.aimset.PAAM_method_solve,para=self.aimset.optimize_PAAM,value=self.aimset.optimize_PAAM_value,margin=self.aimset.optimize_PAAM_margin,beam_l=0.0,beam_r=0.0,offset_l=0.0,offset_r=0.0)[0][1]
+#            elif self.aimset.PAAM_control=='no_control':
+#                ang_out = 0.0
+#
+#            return [ang_in_r,ang_out]
     
     def twoPAAM_angles(self,sampled=None,**kwargs):
         '''Runner function for obtaineing the dual axis PAAM poiting angles and accompanying objects'''

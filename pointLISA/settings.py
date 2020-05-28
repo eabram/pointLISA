@@ -44,7 +44,7 @@ aimset_value_wavefront = 0.0 # If aimset.optimize_tele is set to 'wavefront' thi
 aimset_PAAM_deg = 1 # Number of rotational axis of PAAM (either 1 or 2)
 aimset_tele_SS_scale = 1 # An sclaing parameter for calulating new telescope pointing angles (1 works in can be set to a maximum of 1.9)
 aimset_import_file = None # The importet file (with pointing angles), so it does not perform the recalculation
-
+aimset_aim_object = None
 aimset_testSS=False
 
 ### Limits/accuracies

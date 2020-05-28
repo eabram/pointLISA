@@ -17,7 +17,7 @@ def get_pointing(data,import_file=None,filename=False,**kwargs):
     print('check')
     if data.stat.filename==None:
         if PAAM_deg==1:
-            aim = AIM.AIM(import_file=import_file,data=data,setting = aimset,filename=filename,inp=False,aim0=aim0,aim_old=aim0)
+            aim = AIM.AIM(import_file=import_file,data=data,setting = aimset,filename=filename)
             if aim.aimset.tele_control!='SS':
                 aim.tele_aim()
                 option='Default'
