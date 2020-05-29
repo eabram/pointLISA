@@ -46,7 +46,7 @@ class linear_algebra():
         outplane_calc = (np.dot(v,n)/(np.linalg.norm(n)**2))*n
         inplane_calc = v - outplane_calc
 
-        return inplane_calc.outplane_calc
+        return inplane_calc,outplane_calc
 
     def ang_in_out_tot(self,v1,v2,n,r,give='tot'):
         '''Returns the inplane and/or outplane angle between v1 and v2 (with the same n and r vector)''' 
