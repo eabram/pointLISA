@@ -66,7 +66,7 @@ class AIM():
         
         return [i_send,i_rec,t_start,t_end,mode]
 
-    def get_output(self,i,t,side,mode='send',tele_l=np.radians(-30.0),tele_r=np.radians(30.0),beam_l=0.0,beam_r=0.0,solve=False,ret='xoff',tele_SS_l=False,tele_SS_r=False):
+    def get_value(self,i,t,side,mode='send',tele_l=np.radians(-30.0),tele_r=np.radians(30.0),beam_l=0.0,beam_r=0.0,solve=False,ret='xoff',tele_SS_l=False,tele_SS_r=False):
         [i_send,i_rec,t_start,t_end,mode] = self.get_selections(i,t,side,mode)
         
         try:
@@ -171,24 +171,17 @@ class AIM():
                     R_vec_beam__sun = self.aberration_beam_coor(self.data,i_send,t_start,R_vec_beam__send,reverse=False)
                     R_vec_beam__rec = self.aberration_beam_coor(self.data,i_rec,t_end,R_vec_beam__sun,reverse=True)
                     R_vec_tele_rec = LA.matmul(coor_endtele__sun,R_vec_beam__rec)
-                    if ret=='R_vec_tele_rec':
-                        return R_vec_tele_rec
-                    if ret=='angx_wf_rec':
-                        return np.sign(R_vec_tele_rec[2])*abs(np.arctan(R_vec_tele_rec[2]/R_vec_tele_rec[0]))
-                    elif ret=='angy_wf_rec':
-                        return np.sign(R_vec_tele_rec[1])*abs(np.arctan(R_vec_tele_rec[1]/R_vec_tele_rec[0]))
-                    elif ret=='alpha':
-                        return abs(np.arctan(((R_vec_tele_rec[1]**2+R_vec_tele_rec[2]**2)**0.5)/R_vec_tele_rec[0]))
-                    elif ret=='aberration_effect':
-                        return LA.angle(R_vec_beam__send,R_vec_beam__rec)
-                    elif ret=='piston':
-                        return piston
-                    elif ret=='R':
-                        return R
-                    elif ret=='all':
+                    angx_wf_rec =  np.sign(R_vec_tele_rec[2])*abs(np.arctan(R_vec_tele_rec[2]/R_vec_tele_rec[0]))
+                    angy_wf_rec = np.sign(R_vec_tele_rec[1])*abs(np.arctan(R_vec_tele_rec[1]/R_vec_tele_rec[0]))
+                    alpha = abs(np.arctan(((R_vec_tele_rec[1]**2+R_vec_tele_rec[2]**2)**0.5)/R_vec_tele_rec[0]))
+                    
+                    if ret=='all':
                         return locals()
                     else:
-                        raise ValueError('Please select a proper output parameter')
+                        try:
+                            return locals()[ret]
+                        except NameError:
+                            raise ValueError('Please select a proper output parameter')
         except RuntimeError, e:
             if 'Failed to converge after 100 iterations' in str(e):
                 return np.nan
@@ -214,9 +207,9 @@ class AIM():
                     tele_l = self.tele_l_ang(i_send,t_start)
                     tele_r = self.tele_r_ang(i_rec,t_end)
                 if option=='center':
-                    pos_send = lambda beam_l: self.get_output(i_send,t_start,'l',tele_l = tele_l,tele_r=tele_r,beam_l=beam_l,beam_r = 0.0,solve=True,ret='yoff')
+                    pos_send = lambda beam_l: self.get_value(i_send,t_start,'l',tele_l = tele_l,tele_r=tele_r,beam_l=beam_l,beam_r = 0.0,solve=True,ret='yoff')
                 elif option=='wavefront':
-                    pos_send = lambda beam_l: self.get_output(i_send,t_start,'l',tele_l = tele_l,tele_r=tele_r,beam_l=beam_l,beam_r = 0.0,solve=True,ret='angy_wf_rec')
+                    pos_send = lambda beam_l: self.get_value(i_send,t_start,'l',tele_l = tele_l,tele_r=tele_r,beam_l=beam_l,beam_r = 0.0,solve=True,ret='angy_wf_rec')
                 beam_l_new.append(scipy.optimize.brentq(pos_send,-lim+beam_l0,lim+beam_l0))
                 conv.append(abs(beam_l_new[-1]-beam_l_new[-2]))
             elif side=='r':
@@ -226,9 +219,9 @@ class AIM():
                     tele_l = self.tele_l_ang(i_rec,t_end)
                     tele_r = self.tele_r_ang(i_send,t_start)
                 if option=='center':
-                    pos_send = lambda beam_r: self.get_output(i_send,t_start,'r',tele_l=tele_l,tele_r=tele_r,beam_l=0.0,beam_r = beam_r,solve=True,ret='yoff')
+                    pos_send = lambda beam_r: self.get_value(i_send,t_start,'r',tele_l=tele_l,tele_r=tele_r,beam_l=0.0,beam_r = beam_r,solve=True,ret='yoff')
                 elif option=='wavefront':
-                    pos_send = lambda beam_r: self.get_output(i_send,t_start,'r',tele_l=tele_l,tele_r=tele_r,beam_l=0.0,beam_r = beam_r,solve=True,ret='angy_wf_rec')
+                    pos_send = lambda beam_r: self.get_value(i_send,t_start,'r',tele_l=tele_l,tele_r=tele_r,beam_l=0.0,beam_r = beam_r,solve=True,ret='angy_wf_rec')
 
                 beam_r_new.append(scipy.optimize.brentq(pos_send,-lim+beam_r0,lim+beam_r0))
                 conv.append(abs(beam_r_new[-1]-beam_r_new[-2]))
@@ -284,11 +277,11 @@ class AIM():
                 if t[-1]>=tstop:
                     run=False
                     break
-                pos_send = lambda t: abs(self.get_output(i_send,t,'l','send',tele_l = tele_l[-1],tele_r=tele_r[-1],beam_l=False,beam_r=False,solve=True,ret=ret[0])) - lim[0]
-                pos_rec = lambda t: abs(self.get_output(i_rec,t,'r','send',tele_l = tele_l[-1],tele_r=tele_r[-1],beam_l=False,beam_r=False,solve=True,ret=ret[0])) - lim[0]
+                pos_send = lambda t: abs(self.get_value(i_send,t,'l','send',tele_l = tele_l[-1],tele_r=tele_r[-1],beam_l=False,beam_r=False,solve=True,ret=ret[0])) - lim[0]
+                pos_rec = lambda t: abs(self.get_value(i_rec,t,'r','send',tele_l = tele_l[-1],tele_r=tele_r[-1],beam_l=False,beam_r=False,solve=True,ret=ret[0])) - lim[0]
                 if len(ret)==2:
-                    pos_send2 = lambda t: abs(self.get_output(i_send,t,'l','send',tele_l = tele_l[-1],tele_r=tele_r[-1],beam_l=False,beam_r=False,solve=True,ret=ret[1])) - lim[1]
-                    pos_rec2 = lambda t: abs(self.get_output(i_rec,t,'r','send',tele_l = tele_l[-1],tele_r=tele_r[-1],beam_l=False,beam_r=False,solve=True,ret=ret[1])) - lim[1]
+                    pos_send2 = lambda t: abs(self.get_value(i_send,t,'l','send',tele_l = tele_l[-1],tele_r=tele_r[-1],beam_l=False,beam_r=False,solve=True,ret=ret[1])) - lim[1]
+                    pos_rec2 = lambda t: abs(self.get_value(i_rec,t,'r','send',tele_l = tele_l[-1],tele_r=tele_r[-1],beam_l=False,beam_r=False,solve=True,ret=ret[1])) - lim[1]
 
                 dt=3600
                 solved=False
@@ -353,26 +346,26 @@ class AIM():
         while done is False or l<loop:
             if side=='l':
                 if option=='center':
-                    pos_send = lambda tele_l: self.get_output(i_send,t_start,'l',tele_l=tele_l,tele_r = tele_r_new[-1],solve=True)
+                    pos_send = lambda tele_l: self.get_value(i_send,t_start,'l',tele_l=tele_l,tele_r = tele_r_new[-1],solve=True)
                     tele_l_new.append(scipy.optimize.brentq(pos_send,-lim+tele_l0,lim+tele_l0))
-                    pos_rec = lambda tele_r: self.get_output(i_rec,t_end,'r',tele_l=tele_l_new[-1],tele_r = tele_r,solve=True)
+                    pos_rec = lambda tele_r: self.get_value(i_rec,t_end,'r',tele_l=tele_l_new[-1],tele_r = tele_r,solve=True)
                     tele_r_new.append(scipy.optimize.brentq(pos_rec,-lim+tele_r0,lim+tele_r0))
                 elif option=='wavefront':
-                    pos_send = lambda tele_r: self.get_output(i_send,t_start,'l',tele_l=tele_l_new[-1],tele_r = tele_r,solve=True,ret='angx_wf_rec')
+                    pos_send = lambda tele_r: self.get_value(i_send,t_start,'l',tele_l=tele_l_new[-1],tele_r = tele_r,solve=True,ret='angx_wf_rec')
                     tele_r_new.append(scipy.optimize.brentq(pos_send,-lim+tele_r0,lim+tele_r0))
-                    pos_rec = lambda tele_l: self.get_output(i_rec,t_end,'r',tele_l=tele_l,tele_r = tele_r_new[-1],solve=True,ret='angx_wf_rec')
+                    pos_rec = lambda tele_l: self.get_value(i_rec,t_end,'r',tele_l=tele_l,tele_r = tele_r_new[-1],solve=True,ret='angx_wf_rec')
                     tele_l_new.append(scipy.optimize.brentq(pos_rec,-lim+tele_l0,lim+tele_l0))
                 conv.append(max(abs(tele_l_new[-1]-tele_l_new[-2]),abs(tele_r_new[-1]-tele_r_new[-2])))
             elif side=='r':
                 if option=='center':
-                    pos_send = lambda tele_r: self.get_output(i_send,t_start,'r',tele_l=tele_l_new[-1],tele_r = tele_r,solve=True)
+                    pos_send = lambda tele_r: self.get_value(i_send,t_start,'r',tele_l=tele_l_new[-1],tele_r = tele_r,solve=True)
                     tele_r_new.append(scipy.optimize.brentq(pos_send,-lim+tele_r0,lim+tele_r0))
-                    pos_rec = lambda tele_l: self.get_output(i_rec,t_end,'l',tele_l=tele_l,tele_r = tele_r_new[-1],solve=True)
+                    pos_rec = lambda tele_l: self.get_value(i_rec,t_end,'l',tele_l=tele_l,tele_r = tele_r_new[-1],solve=True)
                     tele_l_new.append(scipy.optimize.brentq(pos_rec,-lim+tele_l0,lim+tele_l0))
                 elif option=='wavefront':
-                    pos_send = lambda tele_l: self.get_output(i_send,t_start,'r',tele_l=tele_l,tele_r = tele_r_new[-1],solve=True,ret='angx_wf_rec')
+                    pos_send = lambda tele_l: self.get_value(i_send,t_start,'r',tele_l=tele_l,tele_r = tele_r_new[-1],solve=True,ret='angx_wf_rec')
                     tele_l_new.append(scipy.optimize.brentq(pos_send,-lim+tele_l0,lim+tele_l0))
-                    pos_rec = lambda tele_r: self.get_output(i_rec,t_end,'l',tele_l=tele_l_new[-1],tele_r = tele_r,solve=True,ret='angx_wf_rec')
+                    pos_rec = lambda tele_r: self.get_value(i_rec,t_end,'l',tele_l=tele_l_new[-1],tele_r = tele_r,solve=True,ret='angx_wf_rec')
                     tele_r_new.append(scipy.optimize.brentq(pos_rec,-lim+tele_r0,lim+tele_r0))
                 conv.append(max(abs(tele_l_new[-1]-tele_l_new[-2]),abs(tele_r_new[-1]-tele_r_new[-2])))
             #print(conv[-1])
@@ -668,8 +661,8 @@ class AIM():
         aim_dummy.tele_aim()
         aim_dummy.PAAM_aim()
 
-        add_l = lambda i,t: aim_dummy.get_output(i,t,'l',mode='rec',ret='angx_wf_rec')
-        add_r = lambda i,t: aim_dummy.get_output(i,t,'r',mode='rec',ret='angx_wf_rec')
+        add_l = lambda i,t: aim_dummy.get_value(i,t,'l',mode='rec',ret='angx_wf_rec')
+        add_r = lambda i,t: aim_dummy.get_value(i,t,'r',mode='rec',ret='angx_wf_rec')
 
         offset={}
         tele_l_ang = lambda i,t: aim_dummy.tele_l_ang(i,t)-add_l(i,t)
