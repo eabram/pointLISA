@@ -8,13 +8,9 @@ def get_pointing(data,import_file=None,filename=False,**kwargs):
         input_file=None
 
     aimset = const.get_settings(settings_input=setting_file,select='aimset',kwargs=kwargs)
-    
+ 
     PAAM_deg = aimset.PAAM_deg
 
-    sampled=False
-    count=0
-
-    print('check')
     if data.stat.filename==None:
         if PAAM_deg==1:
             aim = AIM.AIM(import_file=import_file,data=data,setting = aimset,filename=filename)
@@ -31,7 +27,7 @@ def get_pointing(data,import_file=None,filename=False,**kwargs):
 
         
         elif PAAM_deg==2: 
-            aim = AIM.AIM(import_file=import_file,data=data,option_tele='center',option_PAAM='center',setting=aimset,init=False,PAAM_deg=2)
+            aim = AIM.AIM(import_file=import_file,data=data,option_tele='center',option_PAAM='center',setting=aimset,filename=filename)
             aim.twoPAAM_angles()
             print('Under construction')
             
@@ -42,9 +38,13 @@ def get_pointing(data,import_file=None,filename=False,**kwargs):
         print(aimset.tele_control)
         print('PAAM:')
         print(aimset.PAAM_control)
-
-        aim = AIM.AIM(data=data,setting=aimset,filename=filename,inp=False)
-        aim.tele_aim()
-        out = aim.PAAM_aim()
+        
+        if PAAM_deg==1:
+            aim = AIM.AIM(data=data,setting=aimset,filename=filename,inp=False)
+            aim.tele_aim()
+            out = aim.PAAM_aim()
+        elif PAAM_deg==2:
+            aim = AIM.AIM(data=data,option_tele='center',option_PAAM='center',setting=aimset,filename=filename)
+            aim.twoPAAM()
 
     return aim

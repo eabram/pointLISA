@@ -69,105 +69,131 @@ class AIM():
     def get_output(self,i,t,side,mode='send',tele_l=np.radians(-30.0),tele_r=np.radians(30.0),beam_l=0.0,beam_r=0.0,solve=False,ret='xoff',tele_SS_l=False,tele_SS_r=False):
         [i_send,i_rec,t_start,t_end,mode] = self.get_selections(i,t,side,mode)
         
-        if solve is False:
-            if (side=='l' and mode=='send') or (side=='r' and mode=='rec'):
-                if tele_SS_l!=False:
-                    tele_l = tele_SS_l
-                else:
-                    tele_l = self.tele_l_ang(i_send,t_start)
-                if tele_SS_r!=False:
-                    tele_r = tele_SS_r
-                else:
-                    tele_r = self.tele_r_ang(i_rec,t_end)
-                beam_l = self.beam_l_ang(i_send,t_start)
-                beam_r = self.beam_r_ang(i_rec,t_end)
-            elif (side=='r' and mode=='send') or (side=='l' and mode=='rec'):
-                tele_l = self.tele_l_ang(i_rec,t_end)
-                tele_r = self.tele_r_ang(i_send,t_start)
-                beam_l = self.beam_l_ang(i_rec,t_end)
-                beam_r = self.beam_r_ang(i_send,t_start)
-               
-        if (side=='l' and mode=='send') or (side=='r' and mode=='rec'):
-            tele_send = tele_l
-            tele_rec = tele_r
-            beam_send = beam_l
-            beam_rec = beam_r
-            offset_send = self.offset(i_send,t_start,'l')
-            offset_rec = self.offset(i_rec,t_end,'r')
-        elif (side=='r' and mode=='send') or (side=='l' and mode=='rec'):
-            tele_send = tele_r
-            tele_rec = tele_l
-            beam_send = beam_r
-            beam_rec = beam_l
-            offset_send = self.offset(i_send,t_start,'r')
-            offset_rec = self.offset(i_rec,t_end,'l')
-        
         try:
-            return locals()[ret]
-        except KeyError:
-            coor_startbeam__send = self.beam_coor_out__send(self.data,i_send,t_start,tele_send,beam_send,offset_send)
-            coor_starttele__sun = self.coor_tele(self.data,i_send,t_start,tele_send)
-            coor_endtele__sun = self.coor_tele(self.data,i_rec,t_end,tele_rec)
-            start = coor_starttele__sun[0]*self.data.param.L_tele+self.data.putp(i_send,t_start)
-            end = coor_endtele__sun[0]*self.data.param.L_tele+self.data.putp(i_rec,t_end)
-            startend__sun = end - start
-            arm__send = self.aberration_beam_coor(self.data,i_send,t_start,startend__sun,reverse=True)
-            off = LA.matmul(coor_startbeam__send,arm__send)
-            if ret=='off':
-                return off
-            elif ret=='xoff':
-                return off[2]
-            elif ret=='yoff':
-                return off[1]
-            elif ret=='zoff':
-                return off[0]
-            elif ret=='r':
-                return (off[1]**2+off[2]**2)**0.5
-            elif 'Ival' in ret or ret=='waist':
-                zR = np.pi*(self.data.param.w0_laser**2)/self.data.param.labda
-                waist = self.data.param.w0_laser*((1+((off[0]/zR)**2))**0.5)
-                if ret=='waist':
-                    return waist
-                else:
-                    I0 = (self.data.param.P_L*np.pi*(self.data.param.w0_laser**2))/2.0
-                    if ret=='Ival':
-                        return (I0*np.exp((-2*(off[2]**2+off[1]**2))/(waist**2)))*(self.data.param.w0_laser/waist)
-                    elif ret=='Ivalx':
-                        return (I0*np.exp((-2*(off[2]**2))/(waist**2)))*(self.data.param.w0_laser/waist)
-        
-            else:
-                zoff = off[0]
-                yoff = off[1]
-                xoff = off[2]
-                
-                zR = (np.pi*(self.data.param.w0_laser**2))/self.data.param.labda
-                R_func = lambda dz: (zoff+dz)*(1+((zR/(zoff+dz))**2))
-                f_solve = lambda dz: R_func(dz) - ((R_func(dz)**2-xoff**2-yoff**2)**0.5)- dz
-                dz = scipy.optimize.brentq(f_solve,-zoff*0.1,zoff*0.1,xtol=1e-64)
-                piston = zoff+dz
-                R = R_func(dz)
-                vec = np.array([(R**2-xoff**2-yoff**2)**0.5,yoff,xoff])
+            if solve is False:
+                if (side=='l' and mode=='send') or (side=='r' and mode=='rec'):
+                    if tele_SS_l!=False:
+                        tele_l = tele_SS_l
+                    else:
+                        tele_l = self.tele_l_ang(i_send,t_start)
+                    if tele_SS_r!=False:
+                        tele_r = tele_SS_r
+                    else:
+                        tele_r = self.tele_r_ang(i_rec,t_end)
+                    beam_l = self.beam_l_ang(i_send,t_start)
+                    beam_r = self.beam_r_ang(i_rec,t_end)
+                elif (side=='r' and mode=='send') or (side=='l' and mode=='rec'):
+                    tele_l = self.tele_l_ang(i_rec,t_end)
+                    tele_r = self.tele_r_ang(i_send,t_start)
+                    beam_l = self.beam_l_ang(i_rec,t_end)
+                    beam_r = self.beam_r_ang(i_send,t_start)
+                   
+            if (side=='l' and mode=='send') or (side=='r' and mode=='rec'):
+                tele_send = tele_l
+                tele_rec = tele_r
+                beam_send = beam_l
+                beam_rec = beam_r
+                try:
+                    offset_send = self.offset(i_send,t_start,'l')
+                    offset_rec = self.offset(i_rec,t_end,'r')
+                except AttributeError:
+                    offset_send = 0.0
+                    offset_rec = 0.0
+            elif (side=='r' and mode=='send') or (side=='l' and mode=='rec'):
+                tele_send = tele_r
+                tele_rec = tele_l
+                beam_send = beam_r
+                beam_rec = beam_l
+                try:
+                    offset_send = self.offset(i_send,t_start,'r')
+                    offset_rec = self.offset(i_rec,t_end,'l')
+                except AttributeError:
+                    offset_send = 0.0
+                    offset_rec = 0.0
+
+            
+            try:
+                return locals()[ret]
+            except KeyError:
                 coor_startbeam__send = self.beam_coor_out__send(self.data,i_send,t_start,tele_send,beam_send,offset_send)
-                R_vec_beam__send = LA.matmul(np.linalg.inv(coor_startbeam__send),vec)
-                R_vec_beam__sun = self.aberration_beam_coor(self.data,i_send,t_start,R_vec_beam__send,reverse=False)
-                R_vec_beam__rec = self.aberration_beam_coor(self.data,i_rec,t_end,R_vec_beam__sun,reverse=True)
-                R_vec_tele_rec = LA.matmul(coor_endtele__sun,R_vec_beam__rec)
-                if ret=='R_vec_tele_rec':
-                    return R_vec_tele_rec
-                if ret=='angx_wf_rec':
-                    return np.sign(R_vec_tele_rec[2])*abs(np.arctan(R_vec_tele_rec[2]/R_vec_tele_rec[0]))
-                elif ret=='angy_wf_rec':
-                    return np.sign(R_vec_tele_rec[1])*abs(np.arctan(R_vec_tele_rec[1]/R_vec_tele_rec[0]))
-                elif ret=='alpha':
-                    return abs(np.arctan(((R_vec_tele_rec[1]**2+R_vec_tele_rec[2]**2)**0.5)/R_vec_tele_rec[0]))
-                elif ret=='aberration_effect':
-                    return LA.angle(R_vec_beam__send,R_vec_beam__rec)
-                elif ret=='piston':
-                    return piston
-                elif ret=='R':
-                    return R
+                coor_starttele__sun = self.coor_tele(self.data,i_send,t_start,tele_send)
+                coor_endtele__sun = self.coor_tele(self.data,i_rec,t_end,tele_rec)
+                start = coor_starttele__sun[0]*self.data.param.L_tele+self.data.putp(i_send,t_start)
+                end = coor_endtele__sun[0]*self.data.param.L_tele+self.data.putp(i_rec,t_end)
+                startend__sun = end - start
+                arm__send = self.aberration_beam_coor(self.data,i_send,t_start,startend__sun,reverse=True)
+                off = LA.matmul(coor_startbeam__send,arm__send)
+                if ret=='off':
+                    return off
+                elif ret=='xoff':
+                    return off[2]
+                elif ret=='yoff':
+                    return off[1]
+                elif ret=='zoff':
+                    return off[0]
+                elif ret=='r':
+                    return (off[1]**2+off[2]**2)**0.5
+                elif ret=='arm__rec':
+                    arm__rec = self.aberration_beam_coor(self.data,i_rec,t_end,startend__sun,reverse=True)
+                    return arm__rec
+                elif ret=='coor_endtele__sun':
+                    return coor_endtele__sun
+                elif ret=='alpha_for_full_control_center_method':
+                    arm__rec = self.aberration_beam_coor(self.data,i_rec,t_end,startend__sun,reverse=True)
+                    return LA.angle(arm__rec,coor_endtele__sun[0])
+
+                elif 'Ival' in ret or ret=='waist':
+                    zR = np.pi*(self.data.param.w0_laser**2)/self.data.param.labda
+                    waist = self.data.param.w0_laser*((1+((off[0]/zR)**2))**0.5)
+                    if ret=='waist':
+                        return waist
+                    else:
+                        I0 = (self.data.param.P_L*np.pi*(self.data.param.w0_laser**2))/2.0
+                        if ret=='Ival':
+                            return (I0*np.exp((-2*(off[2]**2+off[1]**2))/(waist**2)))*(self.data.param.w0_laser/waist)
+                        elif ret=='Ivalx':
+                            return (I0*np.exp((-2*(off[2]**2))/(waist**2)))*(self.data.param.w0_laser/waist)
+            
                 else:
-                    raise ValueError('Please select a proper output parameter')
+                    zoff = off[0]
+                    yoff = off[1]
+                    xoff = off[2]
+                    
+                    zR = (np.pi*(self.data.param.w0_laser**2))/self.data.param.labda
+                    R_func = lambda dz: (zoff+dz)*(1+((zR/(zoff+dz))**2))
+                    f_solve = lambda dz: R_func(dz) - ((R_func(dz)**2-xoff**2-yoff**2)**0.5)- dz
+                    dz = scipy.optimize.brentq(f_solve,-zoff*0.1,zoff*0.1,xtol=1e-64)
+                    piston = zoff+dz
+                    R = R_func(dz)
+                    vec = np.array([(R**2-xoff**2-yoff**2)**0.5,yoff,xoff])
+                    coor_startbeam__send = self.beam_coor_out__send(self.data,i_send,t_start,tele_send,beam_send,offset_send)
+                    R_vec_beam__send = LA.matmul(np.linalg.inv(coor_startbeam__send),vec)
+                    R_vec_beam__sun = self.aberration_beam_coor(self.data,i_send,t_start,R_vec_beam__send,reverse=False)
+                    R_vec_beam__rec = self.aberration_beam_coor(self.data,i_rec,t_end,R_vec_beam__sun,reverse=True)
+                    R_vec_tele_rec = LA.matmul(coor_endtele__sun,R_vec_beam__rec)
+                    if ret=='R_vec_tele_rec':
+                        return R_vec_tele_rec
+                    if ret=='angx_wf_rec':
+                        return np.sign(R_vec_tele_rec[2])*abs(np.arctan(R_vec_tele_rec[2]/R_vec_tele_rec[0]))
+                    elif ret=='angy_wf_rec':
+                        return np.sign(R_vec_tele_rec[1])*abs(np.arctan(R_vec_tele_rec[1]/R_vec_tele_rec[0]))
+                    elif ret=='alpha':
+                        return abs(np.arctan(((R_vec_tele_rec[1]**2+R_vec_tele_rec[2]**2)**0.5)/R_vec_tele_rec[0]))
+                    elif ret=='aberration_effect':
+                        return LA.angle(R_vec_beam__send,R_vec_beam__rec)
+                    elif ret=='piston':
+                        return piston
+                    elif ret=='R':
+                        return R
+                    elif ret=='all':
+                        return locals()
+                    else:
+                        raise ValueError('Please select a proper output parameter')
+        except RuntimeError, e:
+            if 'Failed to converge after 100 iterations' in str(e):
+                return np.nan
+            else:
+                raise RuntimeError(str(e))
     
     def get_beam_angle(self,i,t,side,beam_l0 = 0.0,beam_r0 = 0.0,conv_lim=1e-9,loop=1,option=None):
         if option==None:
@@ -224,15 +250,19 @@ class AIM():
             val = y[len(A)-1]
             return np.float64(val)
 
-        if solve_for=='power': #...Ivalx voor SS werkt alleen bij center (als wavefrot dan Ivaly ook lage waarde (dus yoff hoog)
-            ret = ['Ivalx']
-            lim = [self.data.param.I_min]
-        elif solve_for=='wavefrontangle':
-            ret=['angx_wf_rec']
-            lim = [self.aimset.FOV]
-        elif solve_for=='both':
-            ret=['Ivalx','angx_wf_rec']
-            lim = [self.data.param.I_min,self.aimset.FOV]
+        if self.aimset.PAAM_deg==1:
+            if solve_for=='power': #...Ivalx voor SS werkt alleen bij center (als wavefrot dan Ivaly ook lage waarde (dus yoff hoog)
+                ret = ['Ivalx']
+                lim = [self.data.param.I_min]
+            elif solve_for=='wavefrontangle':
+                ret=['angx_wf_rec']
+                lim = [self.aimset.FOV/2.0]
+            elif solve_for=='both':
+                ret=['Ivalx','angx_wf_rec']
+                lim = [self.data.param.I_min,self.aimset.FOV/2.0]
+        elif self.aimset.PAAM_deg==2:
+            ret=['alpha_for_full_control_center_method']
+            lim = [self.aimset.FOV/2.0]
 
         t0 = self.data.t_all[0]
         tstop = self.data.t_all[2]-10.0 #...adjust: self.data.t_all[-1] -10.0
@@ -300,7 +330,6 @@ class AIM():
                 tele_r.append(np.nan)
 
             t_reset = t
-
             tele_l[0] = np.nan
             tele_r[0] = np.nan
             tele_l_SS[i_send] = [t_reset,tele_l]
@@ -665,23 +694,39 @@ class AIM():
         if self.aimset.tele_control=='no_control':
             self.tele_l_ang = lambda i,t: np.radians(-30.0) 
             self.tele_r_ang = lambda i,t: np.radians(30.0)
-            offset['l'] = lambda i,t: aim_dummy.tele_l_ang(i,t) - self.tele_l_ang(i,t) + aim_dummy.offset(i,t,'l')
-            offset['r'] = lambda i,t: aim_dummy.tele_r_ang(i,t) - self.tele_r_ang(i,t) + aim_dummy.offset(i,t,'r')
+            if self.aimset.PAAMin_control=='full_control':
+                offset['l'] = lambda i,t: aim_dummy.tele_l_ang(i,t) - self.tele_l_ang(i,t) + aim_dummy.offset(i,t,'l')
+                offset['r'] = lambda i,t: aim_dummy.tele_r_ang(i,t) - self.tele_r_ang(i,t) + aim_dummy.offset(i,t,'r')
+            elif self.aimset.PAAMin_control=='no_control':
+                offset['l'] = lambda i,t: aim_dummy.offset(i,t,'l')
+                offset['r'] = lambda i,t: aim_dummy.offset(i,t,'r')
             self.offset = lambda i,t,s: offset[s](i,t)
 
         elif self.aimset.tele_control=='full_control':
             self.tele_l_ang = tele_l_ang_fc
             self.tele_r_ang = tele_r_ang_fc
-            self.offset = lambda i,t,s: offset_fc[s](i,t)
+            if self.aimset.PAAMin_control=='full_control':
+                self.offset = lambda i,t,s: offset_fc[s](i,t)
+            elif self.aimset.PAAMin_control=='no_control':
+                self.offset = aim_dummy.offset
 
         elif self.aimset.tele_control=='SS':
-            pass #...adjust
+            [tele_l_ang_SS,tele_r_ang_SS,self.adjust_l,self.adjust_r] = self.get_tele_SS()
+            self.tele_l_ang = tele_l_ang_SS
+            self.tele_r_ang = tele_r_ang_SS
+            if self.aimset.PAAMin_control=='full_control':
+                offset={}
+                offset['l'] = lambda i,t: aim_dummy.tele_l_ang(i,t) - self.tele_l_ang(i,t) + aim_dummy.offset(i,t,'l')
+                offset['r'] = lambda i,t: aim_dummy.tele_r_ang(i,t) - self.tele_r_ang(i,t) + aim_dummy.offset(i,t,'r')
+                self.offset = lambda i,t,s: offset[s](i,t)
+            elif self.aimset.PAAMin_control=='no_control':
+                self.offset = aim_dummy.offset
 
-        if self.aimset.PAAM_control=='no_control':
+        if self.aimset.PAAMout_control=='no_control':
             self.beam_l_ang = lambda i,t: 0.0
             self.beam_r_ang = lambda i,t: 0.0
 
-        elif self.aimset.PAAM_control=='full_control':
+        elif self.aimset.PAAMout_control=='full_control':
             self.beam_l_ang = beam_l_ang_fc
             self.beam_r_ang = beam_r_ang_fc
 
