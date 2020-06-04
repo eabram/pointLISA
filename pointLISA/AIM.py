@@ -2,29 +2,36 @@ from pointLISA import *
 # This class obtaines the pointing of the PAAM and telescope
 
 class AIM():
-    def __init__(self,data=None,setting=utils.Object(),filename=False,**kwargs):        
+    def __init__(self,data=None,**kwargs):        
         # Get settings and parameters
         for k in CALC.__dict__.keys():
             if '__'!=k[0:2]:
                 setattr(self,k,getattr(CALC(),k))
         if data!=None:
-            for k in kwargs.keys():
-                if k in setting.__dict__.keys():
-                    delattr(setting,k)
-                    setattr(setting,k,kwargs[k])
-            self.aimset = setting
+            setting_file = data.settings
+            aimset = const.get_settings(settings_input=setting_file,select='aimset',kwargs=kwargs)
+            self.aimset = aimset
             if self.aimset.aim_object!=None:
                 self.aimset.tele_control='AIM_object'
                 self.aimset.PAAM_control='AIM_object'
                 self.aimset.offset_tele='AIM_object'
             self.data = data
             
-            if data!=False:
-                if self.aimset.import_file==None:
-                    print('Start calculating telescope and PAAM aim')
+            if self.aimset.import_file==None:
+                print('Start calculating telescope and PAAM aim')
+                if self.aimset.PAAM_deg==1:
+                    print('Single axis PAAM')
                     self.get_offset_inplane()
-            else:
-                pass #...adjust
+                    self.tele_aim()
+                    self.PAAM_aim()
+                elif self.aimset.PAAM_deg==2:
+                    print('Dual axis PAAM')
+                    self.aimset.option_tele='center'
+                    self.aimset.option_PAAM='center'
+                    self.twoPAAM()
+
+        else:
+            pass #...adjust
         
                 
 
@@ -597,10 +604,10 @@ class AIM():
             ang_l = lambda i,t: -0.5*self.data.PAA.out(i,t,'l')
             ang_r = lambda i,t: 0.5*self.data.PAA.out(i,t,'r')
 
-        max_count=1 #...adjust for better optimization
-
-        ang_l = lambda i,t: self.get_beam_angle(i,t,'l',loop=max_count)
-        ang_r = lambda i,t: self.get_beam_angle(i,t,'r',loop=max_count)
+        else:
+            max_count=1 #...adjust for better optimization
+            ang_l = lambda i,t: self.get_beam_angle(i,t,'l',loop=max_count)
+            ang_r = lambda i,t: self.get_beam_angle(i,t,'r',loop=max_count)
 
         self.aimset.option_PAAM = option
         self.aimset.PAAM_control = 'full_control'
@@ -679,7 +686,7 @@ class AIM():
         kwargs = {'PAAM_deg':1,'option_tele':'center','option_PAAM':'center','tele_control':'full_control','PAAM_control':'full_control'}
         kwargs['solve_method'] = self.aimset.solve_method
         aimset_dummy = const.get_settings(settings_input=self.data.settings,select='aimset',kwargs=kwargs)
-        aim_dummy = AIM(input_file=None,data=self.data,setting = aimset_dummy,filename=False)
+        aim_dummy = AIM(input_file=None,data=self.data,setting = aimset_dummy)
         self.aim_dummy = aim_dummy
 
         [tele_l_ang_fc,tele_r_ang_fc,beam_l_ang_fc,beam_r_ang_fc,offset_fc] = self.twoPAAM_fc(aim_dummy)
