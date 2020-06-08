@@ -11,7 +11,7 @@ orbit_file = os.getcwd()+'/orbits/Hallion_2pt5G_orbits_pos_uniquedays_timestep_d
 data = pointLISA.static.STAT(settings=settings,orbit_file=orbit_file,length_calc=2) # STAT object with length 2 datapoints
 
 # Obtaining AIM object (dynamic)
-aim = pointLISA.AIM.AIM(data)
+aim = pointLISA.AIM.AIM(data,tele_control='SS')
 
 # Obtaining figures
 t_plot = np.linspace(aim.data.t_all[0],aim.data.t_all[-1],100*len(aim.data.t_all)+1)

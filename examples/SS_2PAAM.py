@@ -12,7 +12,7 @@ data = pointLISA.static.STAT(settings=settings,orbit_file=orbit_file,length_calc
 
 # Obtaining AIM object (dynamic)
 #aim = pointLISA.AIM.AIM(data,tele_control='SS')
-aim = pointLISA.AIM.AIM(data,PAAM_deg=2)
+aim = pointLISA.AIM.AIM(data,PAAM_deg=2,tele_control='SS')
 
 # Obtaining figures
 t_plot = np.linspace(aim.data.t_all[0],aim.data.t_all[-1],100*len(aim.data.t_all)+1)
