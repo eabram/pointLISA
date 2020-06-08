@@ -273,7 +273,7 @@ class AIM():
             lim = [self.aimset.FOV/2.0]
 
         t0 = self.data.t_all[0]
-        tstop = self.data.t_all[2]-10.0 #...adjust: self.data.t_all[-1] -10.0
+        tstop = self.data.t_all[-1]-10.0 #...adjust: self.data.t_all[-1] -10.0
 
         tele_l_SS = {}
         tele_r_SS = {}

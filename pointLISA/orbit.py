@@ -94,7 +94,7 @@ class ORBIT():
         line_count=0
         for line in filename.readlines():
             if read_max!='all':
-                if line_count==read_max+20:
+                if line_count==read_max:
                     break
             if line[0]!= '#':
                 a=line.split(' ')
@@ -299,10 +299,10 @@ class ORBIT():
 
                 putp = lambda i,t: np.array([x_interp[i-1](t),y_interp[i-1](t),z_interp[i-1](t)])
                 lisa = utils.Object()
-                lisa.putp = putp
+                #lisa.putp = putp
             elif type_select=='pointLISA':
                 putp = self.fit_pointLISA()
                 lisa = utils.Object()
-                lisa.putp = putp
+                #lisa.putp = putp
 
         return lisa,putp
