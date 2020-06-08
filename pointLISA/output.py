@@ -59,6 +59,7 @@ def loop_over_cases(pos,case,done=False):
 
 def get_case(pos,case):
     #print('Getting: '+case)
+    ret = 0
     if case not in pos.__dict__.keys():
         if case=='waist': #Beamwaist as a function of z (z=coordinate along beamline)
             z = pos.zoff
