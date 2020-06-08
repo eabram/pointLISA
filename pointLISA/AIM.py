@@ -168,10 +168,18 @@ class AIM():
                     
                     zR = (np.pi*(self.data.param.w0_laser**2))/self.data.param.labda
                     R_func = lambda dz: (zoff+dz)*(1+((zR/(zoff+dz))**2))
-                    f_solve = lambda dz: R_func(dz) - ((R_func(dz)**2-xoff**2-yoff**2)**0.5)- dz
-                    dz = scipy.optimize.brentq(f_solve,-zoff*0.1,zoff*0.1,xtol=1e-64)
+                    #R_func = lambda piston: (piston)*(1+((zR/(piston))**2))
+                    f_solve = lambda dz: abs((R_func(dz) - ((R_func(dz)**2-xoff**2-yoff**2)**0.5)- dz))
+                    #f_solve = lambda piston: R_func(piston) - ((R_func(piston)**2-xoff**2-yoff**2)**0.5)- (piston-zoff)
+                    #dz = scipy.optimize.brentq(f_solve,-zoff*1.9,zoff*2.0)
+                    dz = scipy.optimize.minimize(f_solve,0.0).x[0]
+                    #piston = scipy.optimize.minimize(f_solve,zoff).x[0]
                     piston = zoff+dz
-                    R = R_func(dz)
+                    R_precise = R_func(dz)
+                    #R_precise = R_func(piston)
+                    check = R_precise/zoff
+                    R = R_precise
+                    #R = zoff
                     vec = np.array([(R**2-xoff**2-yoff**2)**0.5,yoff,xoff])
                     coor_startbeam__send = self.beam_coor_out__send(self.data,i_send,t_start,tele_send,beam_send,offset_send)
                     R_vec_beam__send = LA.matmul(np.linalg.inv(coor_startbeam__send),vec)
@@ -602,7 +610,7 @@ class AIM():
         method = self.aimset.solve_method
         if method=='fast' and option=='center':
             ang_l = lambda i,t: -0.5*self.data.PAA.out(i,t,'l')
-            ang_r = lambda i,t: 0.5*self.data.PAA.out(i,t,'r')
+            ang_r = lambda i,t: -0.5*self.data.PAA.out(i,t,'r')
 
         else:
             max_count=1 #...adjust for better optimization

@@ -79,6 +79,9 @@ def get_case(pos,case):
             v = pos.vec_startbeam__sun
             ret = pos.aim.aberration_beam_coor(pos.aim.data,pos.i_rec,pos.t_end,v,reverse=True)
         
+        elif case=='aberration_effect':
+            ret = LA.angle(pos.vec_startbeam__rec,pos.vec_startbeam__send)
+
         elif case=='coor_end':
             ret = pos.coor_endtele__sun
 
