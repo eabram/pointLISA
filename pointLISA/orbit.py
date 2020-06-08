@@ -179,6 +179,8 @@ class ORBIT():
             popt, pcov = scipy.optimize.curve_fit(fit_sin, x, y,p0=p0)
             y0 = np.array([fit_sin(t,popt[0],popt[1],popt[2],popt[3]) for t in x])
             f0 = lambda t: fit_sin(t,popt[0],popt[1],popt[2],popt[3])
+            
+            #y0 = [0]*len(y0)
             #f0 = lambda t: 0
 
             yrest = y-y0
@@ -188,11 +190,33 @@ class ORBIT():
             f1_fits_tot = []
             starts=[]
             jstart=0
+            residuals=[]
+            rcond=[]
             while jstart<=len(x)-select:
                 jend=jstart+step
                 X = x[jstart:jend]
                 Y = yrest[jstart:jend]
-                A = np.poly1d(np.polyfit(X,Y,step-5))
+                order = [5]
+                loop=True
+                while loop is True:
+                    polyfit0 = np.polyfit(X,Y,order[-1],full=True)
+                    try:
+                        if polyfit0[1][0]>2500:
+                            order.append(order[-1] +1)
+                            loop = True
+                        else:
+                            loop=False
+                    except IndexError:
+                        order.append(order[-1] - 1)
+                        loop=True
+                    try:
+                        if order[-1]==order[-3]:
+                            loop=False
+                    except IndexError:
+                        pass
+                residuals.append(polyfit0[1])
+                rcond.append(polyfit0[4])
+                A = np.poly1d(polyfit0[0])
                 fits.append(A)
                 f1_fit = np.array([A(t) for t in X[0:select]])
                 f1_fits_tot.append(f1_fit)
@@ -212,17 +236,28 @@ class ORBIT():
 
             f1 = lambda t: get_function(t,starts,fits) +f0(t)
 
-            return f1
+            return f1,residuals,rcond
         x = self.t
         F_all=[]
+        residuals_all=[]
+        rcond_all=[]
         for i in range(0,len(self.p)):
             F=[]
+            residuals=[]
+            rcond=[]
             for j in range(0,len(self.p[i][0])):
                 y = self.p[i][:,j]
-                F.append(fit_twosteps(x,y))
+                calc = fit_twosteps(x,y)
+                F.append(calc[0])
+                residuals.append(calc[1])
+                rcond.append(calc[2])
             F_all.append(F)
+            residuals_all.append(residuals)
+            rcond_all.append(rcond)
 
         putp = lambda i,t: np.array([F_all[i-1][0](t),F_all[i-1][1](t),F_all[i-1][2](t)])
+        self.residuals = residuals_all
+        self.rcond = rcond_all
         return putp
 
     def get_LISA_object(self):
