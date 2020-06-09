@@ -3,6 +3,8 @@ from pointLISA import *
 
 class ALIGNMENT():
     def __init__(self,data=None,**kwargs):        
+        print('##############################')
+        tic = time.clock()
         # Get settings and parameters
         for k in CALC.__dict__.keys():
             if '__'!=k[0:2]:
@@ -20,18 +22,22 @@ class ALIGNMENT():
             if self.alignmentset.import_file==None:
                 print('Start calculating telescope and PAAM alignment')
                 if self.alignmentset.PAAM_deg==1:
-                    print('Single axis PAAM')
+                    print('Single axis PAAM selected')
                     self.get_offset_inplane()
                     self.tele_alignment()
                     self.PAAM_alignment()
                 elif self.alignmentset.PAAM_deg==2:
-                    print('Dual axis PAAM')
+                    print('Dual axis PAAM selected')
                     self.alignmentset.option_tele='center'
                     self.alignmentset.option_PAAM='center'
                     self.twoPAAM()
 
         else:
             pass #...adjust
+        print('')
+        print('Done in '+str(time.clock()-tic) + ' seconds')
+        print('##############################')
+        print('')
         
                 
 
@@ -433,8 +439,6 @@ class ALIGNMENT():
         except:
             print('The telescope control method is: user defined')
 
-        print(' ')
-
         if self.alignmentset.import_file==None:
             if method=='no_control':
                 # For no_control (no pointing)
@@ -493,8 +497,7 @@ class ALIGNMENT():
         method=self.alignmentset.PAAM_control
         option = self.alignmentset.option_PAAM
         print('The PAAM control method is: ' +method)
-        print(' ')
-
+        
         # Obtaining PAAM angles for 'fc' (full_control), 'nc' (no_control) and 'SS' (step and stare)
         
         if self.alignmentset.import_file==None:
@@ -615,9 +618,9 @@ class CALC():
         return np.array([r,n,x])
 
     def aberration_beam_coor(self,data,i,t,v,reverse=False): # if reverse==True: SUN-->SC, if reverse==False: SC-->SUN
-        if data.stat.aberration==False:
+        if data.constellationset.aberration==False:
             ret = v
-        elif data.stat.aberration==True:
+        elif data.constellationset.aberration==True:
             V = data.vel.abs(i,t)
             if reverse==True:
                 V=-V

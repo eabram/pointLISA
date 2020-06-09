@@ -8,19 +8,19 @@ settings = os.getcwd()+'/settings/settings_c.txt'
 orbit_file = os.getcwd()+'/orbits/Hallion_2pt5G_orbits_pos_uniquedays_timestep_days_scale_1000.txt'
 
 # Obtaining STAT object (static)
-data = pointLISA.static.STAT(settings=settings,orbit_file=orbit_file) # STAT object with default values
-data_pl = pointLISA.static.STAT(settings=settings,orbit_file=orbit_file,LISA_opt='pointLISA') #STAT object with changed setting (LISA_opt is the interpolation method)
+data = pointLISA.CONSTELLATION.CONSTELLATION(settings=settings,orbit_file=orbit_file) # STAT object with default values
+data_pl = pointLISA.CONSTELLATION.CONSTELLATION(settings=settings,orbit_file=orbit_file,interpolation_method='pointLISA') #STAT object with changed setting (LISA_opt is the interpolation method)
 
 # Obtaining AIM object (dynamic)
-aim = pointLISA.AIM.AIM(data)
-aim_pl = pointLISA.AIM.AIM(data_pl)
+alignment = pointLISA.ALIGNMENT.ALIGNMENT(data)
+alignment_pl = pointLISA.ALIGNMENT.ALIGNMENT(data_pl)
 
 # Obtaining figures
-t_plot = aim.data.t_all[5:-10]
+t_plot = alignment.data.t_all[5:-10]
 SC=1 # Spacecraft number
 
-L = np.array([aim.data.L_sl(SC,t) for t in t_plot]) # Photon traveling time when exeting de left telescope on spacecraft SC
-L_pl = np.array([aim_pl.data.L_sl(SC,t) for t in t_plot])
+L = np.array([alignment.data.L_sl(SC,t) for t in t_plot]) # Photon traveling time when exeting de left telescope on spacecraft SC
+L_pl = np.array([alignment_pl.data.L_sl(SC,t) for t in t_plot])
 
 f,ax = plt.subplots(2,1,figsize=(5,10))
 ax[0].plot(t_plot/pointLISA.day2sec,L,label='syntheticLISA fit')
@@ -35,7 +35,7 @@ ax[1].set_ylabel('Time (seconds)')
 f.subplots_adjust(left=0.2, bottom=None, right=None, top=None, wspace=0.3, hspace=0.3)
 f.show()
 
-t_plot = aim.data.t_all[5:20]
+t_plot = alignment.data.t_all[5:20]
 side='l'
 mode='send'
 cases = ['tele_send','beam_send','xoff','yoff','angx_wf_rec','angy_wf_rec']
@@ -49,8 +49,8 @@ for j in range(0,len(cases)):
 
 ret = {}
 ret_fast = {}
-A = [pointLISA.output.get_output(aim,SC,t,side,mode,cases) for t in t_plot]
-B = [pointLISA.output.get_output(aim_pl,SC,t,side,mode,cases) for t in t_plot]
+A = [pointLISA.output.get_output(alignment,SC,t,side,mode,cases) for t in t_plot]
+B = [pointLISA.output.get_output(alignment_pl,SC,t,side,mode,cases) for t in t_plot]
 
 for case in cases:
     print(case)
@@ -82,8 +82,3 @@ for j in range(0,len(ax)):
 
 f.subplots_adjust(left=0.2, bottom=None, right=None, top=None, wspace=0.3, hspace=1.5)
 f.show()
-
-
-
-
-

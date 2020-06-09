@@ -116,9 +116,6 @@ class ORBIT():
                     p[2].append(np.array([a[7]*scale,a[8]*scale,a[9]*scale]))
                     t.append(a[0]) # ... [s]
                 except ValueError,e:
-                    print(e)
-                    print(a)
-                    print()
                     read_check=False
                     pass
                 if read_check==True:
@@ -231,7 +228,6 @@ class ORBIT():
                 try:
                     return fits[loc](t)
                 except UnboundLocalError:
-                    #print(t)
                     return np.nan
 
             f1 = lambda t: get_function(t,starts,fits) +f0(t)
@@ -268,7 +264,7 @@ class ORBIT():
             putp = self
         else:
             type_select = self.interpolation_method
-            print('type_select',type_select)
+            print('Interpolation method: ' + self.interpolation_method)
             if type_select=='sampled':
                 lisa = self.lisa_obj
                 putp = lambda i,t: np.array(lisa.putp(i,t))
