@@ -22,7 +22,7 @@ D = np.float64(0.300) # blz. 12 Optical quality criterion of a truncated laser b
 gamma_0 = np.float64(1.12) # blz. 12 
 L_tele = np.float64(1) # meter telecope length
 E0 = np.float64(1) #...Adjust
-FOV = np.float64(8e-6) #Field of View telescope
+FOV = np.float64(8.0e-6) #Field of View telescope
 #Calculations
 w0_laser = D/(2*gamma_0) # blz. 12
 k = (2*np.pi)/labda

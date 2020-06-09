@@ -1,7 +1,7 @@
 from pointLISA import * 
 # This class obtaines the pointing of the PAAM and telescope
 
-class AIM():
+class ALIGNMENT():
     def __init__(self,data=None,**kwargs):        
         # Get settings and parameters
         for k in CALC.__dict__.keys():
@@ -9,25 +9,25 @@ class AIM():
                 setattr(self,k,getattr(CALC(),k))
         if data!=None:
             setting_file = data.settings
-            aimset = const.get_settings(settings_input=setting_file,select='aimset',kwargs=kwargs)
-            self.aimset = aimset
-            if self.aimset.aim_object!=None:
-                self.aimset.tele_control='AIM_object'
-                self.aimset.PAAM_control='AIM_object'
-                self.aimset.offset_tele='AIM_object'
+            alignmentset = const.get_settings(settings_input=setting_file,select='alignmentset',kwargs=kwargs)
+            self.alignmentset = alignmentset
+            if self.alignmentset.alignment_object!=None:
+                self.alignmentset.tele_control='ALIGNMENT_object'
+                self.alignmentset.PAAM_control='ALIGNMENT_object'
+                self.alignmentset.offset_tele='ALIGNMENT_object'
             self.data = data
             
-            if self.aimset.import_file==None:
-                print('Start calculating telescope and PAAM aim')
-                if self.aimset.PAAM_deg==1:
+            if self.alignmentset.import_file==None:
+                print('Start calculating telescope and PAAM alignment')
+                if self.alignmentset.PAAM_deg==1:
                     print('Single axis PAAM')
                     self.get_offset_inplane()
-                    self.tele_aim()
-                    self.PAAM_aim()
-                elif self.aimset.PAAM_deg==2:
+                    self.tele_alignment()
+                    self.PAAM_alignment()
+                elif self.alignmentset.PAAM_deg==2:
                     print('Dual axis PAAM')
-                    self.aimset.option_tele='center'
-                    self.aimset.option_PAAM='center'
+                    self.alignmentset.option_tele='center'
+                    self.alignmentset.option_PAAM='center'
                     self.twoPAAM()
 
         else:
@@ -38,12 +38,12 @@ class AIM():
     def get_offset_inplane(self,**kwargs):
         '''This function obtains the offset between the inplane telescope alignment and the transmitting beam (offset)'''
         print('Getting initial offset angles')
-        if self.aimset.offset_tele=='AIM_object':
-            self.offset = self.aimset.aim_object.offset
-        elif self.aimset.PAAM_deg==1:
-            if self.aimset.offset_tele==False:
+        if self.alignmentset.offset_tele=='ALIGNMENT_object':
+            self.offset = self.alignmentset.alignment_object.offset
+        elif self.alignmentset.PAAM_deg==1:
+            if self.alignmentset.offset_tele==False:
                 offset = lambda i,t,side: 0
-            elif self.aimset.offset_tele==True:
+            elif self.alignmentset.offset_tele==True:
                 offset = lambda i,t,side: (2*np.pi*self.data.param.L_arm)/(c*year2sec)
             self.offset = offset
 
@@ -205,7 +205,7 @@ class AIM():
     
     def get_beam_angle(self,i,t,side,beam_l0 = 0.0,beam_r0 = 0.0,conv_lim=1e-9,loop=1,option=None):
         if option==None:
-            option = self.aimset.option_PAAM
+            option = self.alignmentset.option_PAAM
 
         lim = np.radians(20.0)
         [i_send,i_rec,t_start,t_end,mode] = self.get_selections(i,t,side,'send')
@@ -258,19 +258,19 @@ class AIM():
             val = y[len(A)-1]
             return np.float64(val)
 
-        if self.aimset.PAAM_deg==1:
+        if self.alignmentset.PAAM_deg==1:
             if solve_for=='power': #...Ivalx voor SS werkt alleen bij center (als wavefrot dan Ivaly ook lage waarde (dus yoff hoog)
                 ret = ['Ivalx']
                 lim = [self.data.param.I_min]
             elif solve_for=='wavefrontangle':
                 ret=['angx_wf_rec']
-                lim = [self.aimset.FOV/2.0]
+                lim = [self.data.param.FOV/2.0]
             elif solve_for=='both':
                 ret=['Ivalx','angx_wf_rec']
-                lim = [self.data.param.I_min,self.aimset.FOV/2.0]
-        elif self.aimset.PAAM_deg==2:
+                lim = [self.data.param.I_min,self.data.param.FOV/2.0]
+        elif self.alignmentset.PAAM_deg==2:
             ret=['alpha_for_full_control_center_method']
-            lim = [self.aimset.FOV/2.0]
+            lim = [self.data.param.FOV/2.0]
 
         t0 = self.data.t_all[0]
         tstop = self.data.t_all[-1]-10.0 #...adjust: self.data.t_all[-1] -10.0
@@ -349,7 +349,7 @@ class AIM():
 
     def get_tele_angle(self,i,t,side,tele_l0 = np.radians(-30.0),tele_r0 = np.radians(30.0),conv_lim=1e-9,loop=1,option=None):
         if option==None:
-            option = self.aimset.option_tele
+            option = self.alignmentset.option_tele
 
         lim = np.radians(20.0)
         [i_send,i_rec,t_start,t_end,mode] = self.get_selections(i,t,side,'send')
@@ -402,11 +402,11 @@ class AIM():
         # Option 'wavefront' means poiting with the purpose of getting a zero/small tilt of the receiving wavefront
         # 'center' means pointing it to te center of the receiving telescope aperture
         if option==None:
-            option = self.aimset.option_tele
+            option = self.alignmentset.option_tele
 
         print('Telescope pointing strategy: '+option)
         
-        method = self.aimset.solve_method
+        method = self.alignmentset.solve_method
         if method=='fast' and option=='center':
             ang_l = lambda i,t: - LA.angle(self.data.v_l_in(i,t),self.data.r_func(i,t)) - self.offset(i,t,'l')
             ang_r = lambda i,t: LA.angle(self.data.v_r_in(i,t),self.data.r_func(i,t)) - self.offset(i,t,'r')
@@ -417,16 +417,16 @@ class AIM():
             ang_l = lambda i,t: self.get_tele_angle(i,t,'l',loop=max_count)
             ang_r = lambda i,t: self.get_tele_angle(i,t,'r',loop=max_count)
  
-        self.aimset.option_tele = option
-        self.aimset.tele_control = 'full_control'
+        self.alignmentset.option_tele = option
+        self.alignmentset.tele_control = 'full_control'
 
         return [ang_l,ang_r]
 
 
-    def tele_aim(self,lim=1e-10):
+    def tele_alignment(self,lim=1e-10):
         '''Obtains the telescope pointing angles (for the selected telescope pointing method)'''
-        method=self.aimset.tele_control
-        option = self.aimset.option_tele
+        method=self.alignmentset.tele_control
+        option = self.alignmentset.option_tele
 
         try:
             print('The telescope control method is: '+method)
@@ -435,7 +435,7 @@ class AIM():
 
         print(' ')
 
-        if self.aimset.import_file==None:
+        if self.alignmentset.import_file==None:
             if method=='no_control':
                 # For no_control (no pointing)
                 self.tele_l_ang_func = lambda i,t: np.radians(-30)
@@ -451,9 +451,9 @@ class AIM():
                 # For Step-and_Stare
                 [self.tele_l_ang_func,self.tele_r_ang_func,self.adjust_l,self.adjust_r] = self.get_tele_SS()
 
-            elif self.aimset.tele_control=='AIM_object':
-                self.tele_l_ang_func = self.aimset.aim_object.tele_l_ang
-                self.tele_r_ang_func = self.aimset.aim_object.tele_r_ang 
+            elif self.alignmentset.tele_control=='ALIGNMENT_object':
+                self.tele_l_ang_func = self.alignmentset.alignment_object.tele_l_ang
+                self.tele_r_ang_func = self.alignmentset.alignment_object.tele_r_ang 
 
             else:
                 raise ValueError('Please select valid telescope pointing method')
@@ -469,10 +469,10 @@ class AIM():
     def PAAM_control_ang_fc(self,option=None,tele_l_ang=False,tele_r_ang=False):
         '''Obtains the PAAM pointing angles for a continuous actuation (full_control)'''
         if option==None:
-            option = self.aimset.option_PAAM
+            option = self.alignmentset.option_PAAM
         print('PAAM pointing strategy: '+option)
 
-        method = self.aimset.solve_method
+        method = self.alignmentset.solve_method
         if method=='fast' and option=='center':
             ang_l = lambda i,t: -0.5*self.data.PAA.out(i,t,'l')
             ang_r = lambda i,t: -0.5*self.data.PAA.out(i,t,'r')
@@ -482,22 +482,22 @@ class AIM():
             ang_l = lambda i,t: self.get_beam_angle(i,t,'l',loop=max_count)
             ang_r = lambda i,t: self.get_beam_angle(i,t,'r',loop=max_count)
 
-        self.aimset.option_PAAM = option
-        self.aimset.PAAM_control = 'full_control'
+        self.alignmentset.option_PAAM = option
+        self.alignmentset.PAAM_control = 'full_control'
 
         return [ang_l,ang_r]
 
 
-    def PAAM_aim(self):
+    def PAAM_alignment(self):
         '''Obtains the PAAM pointing angles (for the selected telescope pointing method)'''
-        method=self.aimset.PAAM_control
-        option = self.aimset.option_PAAM
+        method=self.alignmentset.PAAM_control
+        option = self.alignmentset.option_PAAM
         print('The PAAM control method is: ' +method)
         print(' ')
 
         # Obtaining PAAM angles for 'fc' (full_control), 'nc' (no_control) and 'SS' (step and stare)
         
-        if self.aimset.import_file==None:
+        if self.alignmentset.import_file==None:
             if method=='full_control':
                 [ang_l,ang_r] = self.PAAM_control_ang_fc(option=option)
 
@@ -510,9 +510,9 @@ class AIM():
                 ang_r_SS = lambda i,t: ang_fc_r(i,t-(t%dt))
                 print('Taken '+method+' step response for PAAM SS control with tau='+str(tau)+' sec')
                 mode='overdamped'
-            elif method=='AIM_object':
-                ang_l=self.aimset.aim_object.beam_l_ang
-                ang_r=self.aimset.aim_object.beam_r_ang
+            elif method=='ALIGNMENT_object':
+                ang_l=self.alignmentset.alignment_object.beam_l_ang
+                ang_r=self.alignmentset.alignment_object.beam_r_ang
 
             self.beam_l_ang = ang_l
             self.beam_r_ang = ang_r
@@ -523,69 +523,69 @@ class AIM():
         return self
  
 
-    def twoPAAM_fc(self,aim_dummy):
-        aim_dummy.tele_aim()
-        aim_dummy.PAAM_aim()
+    def twoPAAM_fc(self,alignment_dummy):
+        alignment_dummy.tele_alignment()
+        alignment_dummy.PAAM_alignment()
 
-        add_l = lambda i,t: aim_dummy.get_value(i,t,'l',mode='rec',ret='angx_wf_rec')
-        add_r = lambda i,t: aim_dummy.get_value(i,t,'r',mode='rec',ret='angx_wf_rec')
+        add_l = lambda i,t: alignment_dummy.get_value(i,t,'l',mode='rec',ret='angx_wf_rec')
+        add_r = lambda i,t: alignment_dummy.get_value(i,t,'r',mode='rec',ret='angx_wf_rec')
 
         offset={}
-        tele_l_ang = lambda i,t: aim_dummy.tele_l_ang(i,t)-add_l(i,t)
-        offset['l'] = lambda i,t: add_l(i,t) +aim_dummy.offset(i,t,'l')
-        tele_r_ang = lambda i,t: aim_dummy.tele_r_ang(i,t)-add_r(i,t)
-        offset['r'] = lambda i,t: add_r(i,t)+aim_dummy.offset(i,t,'r')
-        beam_l_ang = aim_dummy.beam_l_ang
-        beam_r_ang = aim_dummy.beam_r_ang
+        tele_l_ang = lambda i,t: alignment_dummy.tele_l_ang(i,t)-add_l(i,t)
+        offset['l'] = lambda i,t: add_l(i,t) +alignment_dummy.offset(i,t,'l')
+        tele_r_ang = lambda i,t: alignment_dummy.tele_r_ang(i,t)-add_r(i,t)
+        offset['r'] = lambda i,t: add_r(i,t)+alignment_dummy.offset(i,t,'r')
+        beam_l_ang = alignment_dummy.beam_l_ang
+        beam_r_ang = alignment_dummy.beam_r_ang
         #offset=lambda i,t,s: offset[s](i,t)
         return [tele_l_ang,tele_r_ang,beam_l_ang,beam_r_ang,offset]
 
     def twoPAAM(self):
         ### On;y works with option_tele==center and option_PAAM==center
         kwargs = {'PAAM_deg':1,'option_tele':'center','option_PAAM':'center','tele_control':'full_control','PAAM_control':'full_control'}
-        kwargs['solve_method'] = self.aimset.solve_method
-        aimset_dummy = const.get_settings(settings_input=self.data.settings,select='aimset',kwargs=kwargs)
-        aim_dummy = AIM(input_file=None,data=self.data,setting = aimset_dummy)
-        self.aim_dummy = aim_dummy
+        kwargs['solve_method'] = self.alignmentset.solve_method
+        alignmentset_dummy = const.get_settings(settings_input=self.data.settings,select='alignmentset',kwargs=kwargs)
+        alignment_dummy = ALIGNMENT(input_file=None,data=self.data,setting = alignmentset_dummy)
+        self.alignment_dummy = alignment_dummy
 
-        [tele_l_ang_fc,tele_r_ang_fc,beam_l_ang_fc,beam_r_ang_fc,offset_fc] = self.twoPAAM_fc(aim_dummy)
+        [tele_l_ang_fc,tele_r_ang_fc,beam_l_ang_fc,beam_r_ang_fc,offset_fc] = self.twoPAAM_fc(alignment_dummy)
         offset={}
-        if self.aimset.tele_control=='no_control':
+        if self.alignmentset.tele_control=='no_control':
             self.tele_l_ang = lambda i,t: np.radians(-30.0) 
             self.tele_r_ang = lambda i,t: np.radians(30.0)
-            if self.aimset.PAAMin_control=='full_control':
-                offset['l'] = lambda i,t: aim_dummy.tele_l_ang(i,t) - self.tele_l_ang(i,t) + aim_dummy.offset(i,t,'l')
-                offset['r'] = lambda i,t: aim_dummy.tele_r_ang(i,t) - self.tele_r_ang(i,t) + aim_dummy.offset(i,t,'r')
-            elif self.aimset.PAAMin_control=='no_control':
-                offset['l'] = lambda i,t: aim_dummy.offset(i,t,'l')
-                offset['r'] = lambda i,t: aim_dummy.offset(i,t,'r')
+            if self.alignmentset.PAAMin_control=='full_control':
+                offset['l'] = lambda i,t: alignment_dummy.tele_l_ang(i,t) - self.tele_l_ang(i,t) + alignment_dummy.offset(i,t,'l')
+                offset['r'] = lambda i,t: alignment_dummy.tele_r_ang(i,t) - self.tele_r_ang(i,t) + alignment_dummy.offset(i,t,'r')
+            elif self.alignmentset.PAAMin_control=='no_control':
+                offset['l'] = lambda i,t: alignment_dummy.offset(i,t,'l')
+                offset['r'] = lambda i,t: alignment_dummy.offset(i,t,'r')
             self.offset = lambda i,t,s: offset[s](i,t)
 
-        elif self.aimset.tele_control=='full_control':
+        elif self.alignmentset.tele_control=='full_control':
             self.tele_l_ang = tele_l_ang_fc
             self.tele_r_ang = tele_r_ang_fc
-            if self.aimset.PAAMin_control=='full_control':
+            if self.alignmentset.PAAMin_control=='full_control':
                 self.offset = lambda i,t,s: offset_fc[s](i,t)
-            elif self.aimset.PAAMin_control=='no_control':
-                self.offset = aim_dummy.offset
+            elif self.alignmentset.PAAMin_control=='no_control':
+                self.offset = alignment_dummy.offset
 
-        elif self.aimset.tele_control=='SS':
+        elif self.alignmentset.tele_control=='SS':
             [tele_l_ang_SS,tele_r_ang_SS,self.adjust_l,self.adjust_r] = self.get_tele_SS()
             self.tele_l_ang = tele_l_ang_SS
             self.tele_r_ang = tele_r_ang_SS
-            if self.aimset.PAAMin_control=='full_control':
+            if self.alignmentset.PAAMin_control=='full_control':
                 offset={}
-                offset['l'] = lambda i,t: aim_dummy.tele_l_ang(i,t) - self.tele_l_ang(i,t) + aim_dummy.offset(i,t,'l')
-                offset['r'] = lambda i,t: aim_dummy.tele_r_ang(i,t) - self.tele_r_ang(i,t) + aim_dummy.offset(i,t,'r')
+                offset['l'] = lambda i,t: alignment_dummy.tele_l_ang(i,t) - self.tele_l_ang(i,t) + alignment_dummy.offset(i,t,'l')
+                offset['r'] = lambda i,t: alignment_dummy.tele_r_ang(i,t) - self.tele_r_ang(i,t) + alignment_dummy.offset(i,t,'r')
                 self.offset = lambda i,t,s: offset[s](i,t)
-            elif self.aimset.PAAMin_control=='no_control':
-                self.offset = aim_dummy.offset
+            elif self.alignmentset.PAAMin_control=='no_control':
+                self.offset = alignment_dummy.offset
 
-        if self.aimset.PAAMout_control=='no_control':
+        if self.alignmentset.PAAMout_control=='no_control':
             self.beam_l_ang = lambda i,t: 0.0
             self.beam_r_ang = lambda i,t: 0.0
 
-        elif self.aimset.PAAMout_control=='full_control':
+        elif self.alignmentset.PAAMout_control=='full_control':
             self.beam_l_ang = beam_l_ang_fc
             self.beam_r_ang = beam_r_ang_fc
 

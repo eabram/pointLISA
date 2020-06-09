@@ -132,8 +132,8 @@ class ORBIT():
         else: #Already in seconds
             self.t=np.array(t) - np.array([t[0]]*len(t)) #... in sec, fist point at t=0
         Dt=self.t[1]-self.t[0] # Assuming Dt is constant
-        if 'synthlisa' in str(type(self.LISA_opt)): #...kan weg
-            self.lisa_obj = self.LISA_opt
+        if 'synthlisa' in str(type(self.interpolation_method)): #...kan weg
+            self.lisa_obj = self.interpolation_method
         else:
             self.lisa_obj=SampledLISA(p[0],p[1],p[2],Dt,self.t[0],2) #1==lin_int, -1==lin_extr, 2==Lagrange, -2==derivative interpolator, 0==nearest
         self.p=p
@@ -267,7 +267,7 @@ class ORBIT():
             lisa.putp = self
             putp = self
         else:
-            type_select = self.LISA_opt
+            type_select = self.interpolation_method
             print('type_select',type_select)
             if type_select=='sampled':
                 lisa = self.lisa_obj
