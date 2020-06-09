@@ -8,15 +8,14 @@ settings = os.getcwd()+'/settings/settings_2.txt'
 orbit_file = os.getcwd()+'/orbits/Hallion_2pt5G_orbits_pos_uniquedays_timestep_days_scale_1000.txt'
 
 # Obtaining STAT object (static)
-data = pointLISA.static.STAT(settings=settings,orbit_file=orbit_file,length_calc=400) # STAT object with length 2 datapoints
+data = pointLISA.static.STAT(settings=settings,orbit_file=orbit_file,length_calc=6) # STAT object with length 2 datapoints
 
 # Obtaining AIM object (dynamic)
-#aim = pointLISA.AIM.AIM(data,tele_control='SS')
-aim = pointLISA.AIM.AIM(data,PAAM_deg=2)#,option_tele='wavefront')
+aim = pointLISA.AIM.AIM(data,tele_control='SS')
 
 # Obtaining figures
-#t_plot = np.linspace(aim.data.t_all[0],aim.data.t_all[-1],100*len(aim.data.t_all)+1)
-t_plot = aim.data.t_all
+t_plot = np.linspace(aim.data.t_all[0],aim.data.t_all[-1],20*len(aim.data.t_all)+1)
+#t_plot = aim.data.t_all
 SC=1 # Spacecraft number
 side='l'
 mode='send'

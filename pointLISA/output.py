@@ -140,7 +140,7 @@ def get_case(pos,case):
                 ret = pos.side
 
     try:
-        if pos.t_start>=pos.aim.data.t_all[0]+(pos.aim.data.param.L_arm/c)*1.1 and pos.t_end<=pos.aim.data.t_all[-1]-(pos.aim.data.param.L_arm/c)*1.1:
+        if pos.t_start>=pos.aim.data.t_all[2] and pos.t_end<=pos.aim.data.t_all[-2]: #...to coarse
             setattr(pos,case,ret)
         else:
             setattr(pos,case,ret*np.nan)
