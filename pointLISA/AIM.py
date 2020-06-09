@@ -451,154 +451,19 @@ class AIM():
                 # For Step-and_Stare
                 [self.tele_l_ang_func,self.tele_r_ang_func,self.adjust_l,self.adjust_r] = self.get_tele_SS()
 
-            elif type(method)==list and method[0]=='Imported pointing': #...to do
-                # Import (previously obtained) angles
-                print(method[0])
-                self.tele_l_ang = lambda i,t: calc.get_tele_SS(False,False,i,t,'l',x=method[1]['SC'+str(i)+', left']['x'],y=method[1]['SC'+str(i)+', left']['y'])
-                self.tele_r_ang = lambda i,t: calc.get_tele_SS(False,False,i,t,'r',x=method[1]['SC'+str(i)+', right']['x'],y=method[1]['SC'+str(i)+', right']['y'])
-
-                t_adjust={}
-                tele_ang_adjust = {}
-                for i in range(1,4):
-                    t_adjust[str(i)]={}
-                    tele_ang_adjust[str(i)]={}
-                    t_adjust[str(i)]['l']=method[1]['SC'+str(i)+', left']['x']
-                    t_adjust[str(i)]['r']=method[1]['SC'+str(i)+', right']['x']
-                    tele_ang_adjust[str(i)]['l']=method[1]['SC'+str(i)+', left']['y']
-                    tele_ang_adjust[str(i)]['r']=method[1]['SC'+str(i)+', right']['y']
-
-
-                self.t_adjust = t_adjust
-                self.tele_ang_adjust = tele_ang_adjust
-
-            elif type(self.aimset.tele_control)==tuple: # and self.tele_control[0].options.tele_control=='SS':
-                self.tele_l_ang = lambda i,t: calc.get_tele_SS(False,False,i,t,'l',x=getattr(self.aimset.tele_control[0].l,'i'+str(i)).adjust[0][0],y=getattr(self.aimset.tele_control[0].l,'i'+str(i)).adjust[0][1])
-                self.tele_r_ang = lambda i,t: calc.get_tele_SS(False,False,i,t,'r',x=getattr(self.aimset.tele_control[0].r,'i'+str(i)).adjust[0][0],y=getattr(self.aimset.tele_control[0].r,'i'+str(i)).adjust[0][1])
-                
-                print('Read imported telescope SS angles')
-                t_adjust=[[0,0,0],[0,0,0]]
-                tele_ang_adjust = [[0,0,0],[0,0,0]]
-                fl = [0,0,0]
-                fr = [0,0,0]
-                for i in range(1,4):
-                    t_adjust[0][i-1]=getattr(self.aimset.tele_control[0].l,'i'+str(i)).adjust[0][0]
-                    t_adjust[1][i-1]=getattr(self.aimset.tele_control[0].r,'i'+str(i)).adjust[0][0]
-                    tele_ang_adjust[0][i-1]=getattr(self.aimset.tele_control[0].l,'i'+str(i)).adjust[0][1]
-                    tele_ang_adjust[1][i-1]=getattr(self.aimset.tele_control[0].r,'i'+str(i)).adjust[0][1]
-
-                self.t_adjust = t_adjust
-                self.tele_ang_adjust = tele_ang_adjust
-                self.tele_adjust = tele_ang_adjust
-
             elif self.aimset.tele_control=='AIM_object':
                 self.tele_l_ang_func = self.aimset.aim_object.tele_l_ang
-                self.tele_r_ang_func = self.aimset.aim_object.tele_r_ang
+                self.tele_r_ang_func = self.aimset.aim_object.tele_r_ang 
 
             else:
                 raise ValueError('Please select valid telescope pointing method')
-    
         else:
-            print('Importing pointing angles from:')
-            print(self.aimset.import_file)
-            ret = pointLISA.read_write.read_output(filenames=self.aimset.import_file)
-            tele_l_ang=[]
-            tele_r_ang=[]
-            if method=='SS':
-                self.tele_l_ang = lambda i,t: calc.get_tele_SS(False,False,i,t,'l',x=ret['SC'+str(i)+', left']['x'],y=ret['SC'+str(i)+', left']['y'])
-                self.tele_r_ang = lambda i,t: calc.get_tele_SS(False,False,i,t,'r',x=ret['SC'+str(i)+', right']['x'],y=ret['SC'+str(i)+', right']['y'])
+            raise ValueError('Nog te implementeren')
 
-                t_adjust={}
-                tele_ang_adjust = {}
-                for i in range(1,4):
-                    t_adjust[str(i)]={}
-                    tele_ang_adjust[str(i)]={}
-                    
-                    [t_adjust[str(i)]['l'],tele_ang_adjust[str(i)]['l']]=getattr(ret[0].l,'i'+str(i)).adjust[0]
-                    [t_adjust[str(i)]['r'],tele_ang_adjust[str(i)]['r']]=getattr(ret[0].r,'i'+str(i)).adjust[0]
-
-                self.tele_l_ang = lambda i,t: calc.get_tele_SS(False,False,i,t,'l',x=t_adjust[str(i)]['l'],y=tele_ang_adjust[str(i)]['l'])
-                self.tele_r_ang = lambda i,t: calc.get_tele_SS(False,False,i,t,'l',x=t_adjust[str(i)]['r'],y=tele_ang_adjust[str(i)]['r'])
-                
-                self.t_adjust = t_adjust
-                self.tele_ang_adjust = tele_ang_adjust
-
-            else:
-
-                for i in range(1,4):
-                    t_l =  getattr(getattr(ret[0],'l'),'i'+str(i)).tele_ang
-                    t_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).tele_ang
-                    tele_l_ang.append(calc.interpolate(t_l[0][0],t_l[0][1]))
-                    tele_r_ang.append(calc.interpolate(t_r[0][0],t_r[0][1]))
-
-                self.tele_l_ang = lambda i,t: tele_l_ang[i-1](t)
-                self.tele_r_ang = lambda i,t: tele_r_ang[i-1](t)
-            
-            if self.aimset.PAAM_deg==2:
-                try:
-                    delattr(self,'offset')
-                except AttributeError:
-                    pass
-                offset={}
-                offset['l']={}
-                offset['r']={}
-                for i in range(1,4):
-                    offset_l =  getattr(getattr(ret[0],'l'),'i'+str(i)).offset
-                    offset_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).offset
-                    offset['l'][i] = calc.interpolate(offset_l[0][0],offset_l[0][1])
-                    offset['r'][i] = calc.interpolate(offset_r[0][0],offset_r[0][1])
-                self.offset={}
-                self.offset = offset
-
-            else:
-                self.get_offset_inplane(self.aimset.offset_tele)
-
-        try:
-            self.tele_l_ang
-        except AttributeError:
-            if self.aimset.sampled==True:
-                try:
-                    self.t_sample
-                except AttributeError:
-                    self.t_sample = calc.get_t_sample(self,speed=self.aimset.sample_speed)
-                
-                tele_l_ang=[]
-                tele_r_ang=[]
-                print("Sampling and fitting telescope angles") #...add offset voor PAAM_deg==2
-                for i in range(1,4):
-                    tele_l_ang.append(calc.interpolate(self.t_sample['l'][i-1],np.array([self.tele_l_ang_func(i,t) for t in self.t_sample['l'][i-1]])))
-                    tele_r_ang.append(calc.interpolate(self.t_sample['r'][i-1],np.array([self.tele_r_ang_func(i,t) for t in self.t_sample['r'][i-1]])))
-                self.tele_l_ang_samp = lambda i,t: tele_l_ang[i-1](t)
-                self.tele_r_ang_samp = lambda i,t: tele_r_ang[i-1](t)
-                
-                self.tele_l_ang = self.tele_l_ang_samp
-                self.tele_r_ang = self.tele_r_ang_samp
-
-            else:
-                self.tele_l_ang = self.tele_l_ang_func
-                self.tele_r_ang = self.tele_r_ang_func
-
+        self.tele_l_ang = self.tele_l_ang_func
+        self.tele_r_ang = self.tele_r_ang_func
+        
         return 0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     def PAAM_control_ang_fc(self,option=None,tele_l_ang=False,tele_r_ang=False):
@@ -653,21 +518,7 @@ class AIM():
             self.beam_r_ang = ang_r
                 
         else:
-            print('Importing pointing angles from:')
-            print(self.aimset.import_file)
-            ret = pointLISA.read_write.read_output(filenames=self.data.import_file)
-            beam_l_ang=[]
-            beam_r_ang=[]
-            for i in range(1,4):
-                b_l =  getattr(getattr(ret[0],'l'),'i'+str(i)).PAAM_ang
-                b_r =  getattr(getattr(ret[0],'r'),'i'+str(i)).PAAM_ang
-                beam_l_ang.append(calc.interpolate(b_l[0][0],b_l[0][1]))
-                beam_r_ang.append(calc.interpolate(b_r[0][0],b_r[0][1]))
-
-            self.beam_l_ang_func = lambda i,t: beam_l_ang[i-1](t)
-            self.beam_r_ang_func = lambda i,t: beam_r_ang[i-1](t)
-            self.beam_l_ang = lambda i,t: beam_l_ang[i-1](t)
-            self.beam_r_ang = lambda i,t: beam_r_ang[i-1](t)
+            raise ValueError('Nog te implementeren')
 
         return self
  

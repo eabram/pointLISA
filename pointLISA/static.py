@@ -196,7 +196,7 @@ class STAT():
 
         return self
 
-    def solve_L_PAA(self,t,pos_self,pos_left,pos_right,select='sl',calc_method='Waluschka',i=False):
+    def solve_L_PAA(self,t,pos_self,pos_left,pos_right,select='sl',i=False):
         '''Calculate the photon traveling time along one of the six laserlinks'''
         t_guess = np.linalg.norm(np.array(self.putp(1,0)) - np.array(self.putp(2,0)))/c
 
@@ -208,15 +208,9 @@ class STAT():
         s2 = lambda x: pos_self(x)
         x_0 = t
         if select=='sl' or select=='sr':
-            if calc_method=='Abram':
-                s3 = lambda dt: s1(x_0+dt) - s2(x_0)
-            elif calc_method=='Waluschka':
-                s3 = lambda dt: s1(x_0+dt) - s2(x_0+dt)
+            s3 = lambda dt: s1(x_0+dt) - s2(x_0)
         elif select=='rl' or select=='rr':
-            if calc_method=='Abram':
-                s3 = lambda dt: -s1(x_0-dt) + s2(x_0)
-            elif calc_method=='Waluschka':
-                s3 = lambda dt: -s1(x_0-dt) + s2(x_0-dt)
+            s3 = lambda dt: -s1(x_0-dt) + s2(x_0)
         s4 = lambda dt: np.linalg.norm(s3(dt))
         s5 = lambda dt: s4(dt) - c*dt
 
@@ -230,13 +224,12 @@ class STAT():
 
     def L_PAA(self,pos_self,pos_left,pos_right,i=False):
         '''Obtain time of flight of beam between spacecrafts'''
-        calc_method = self.stat.calc_method
         selections = ['sl','sr','rl','rr']
 
-        L_sl_func =  lambda time: self.solve_L_PAA(time,pos_self,pos_left,pos_right,select=selections[0],calc_method=calc_method,i=i)
-        L_sr_func =  lambda time: self.solve_L_PAA(time,pos_self,pos_left,pos_right,select=selections[1],calc_method=calc_method,i=i)
-        L_rl_func =  lambda time: self.solve_L_PAA(time,pos_self,pos_left,pos_right,select=selections[2],calc_method=calc_method,i=i)
-        L_rr_func =  lambda time: self.solve_L_PAA(time,pos_self,pos_left,pos_right,select=selections[3],calc_method=calc_method,i=i)
+        L_sl_func =  lambda time: self.solve_L_PAA(time,pos_self,pos_left,pos_right,select=selections[0],i=i)
+        L_sr_func =  lambda time: self.solve_L_PAA(time,pos_self,pos_left,pos_right,select=selections[1],i=i)
+        L_rl_func =  lambda time: self.solve_L_PAA(time,pos_self,pos_left,pos_right,select=selections[2],i=i)
+        L_rr_func =  lambda time: self.solve_L_PAA(time,pos_self,pos_left,pos_right,select=selections[3],i=i)
 
         return [L_sl_func,L_sr_func,L_rl_func,L_rr_func]
 
@@ -244,54 +237,43 @@ class STAT():
         '''Adjust vecor u by adding the angle caused by aberration'''
         relativistic=self.stat.relativistic
 
-        if self.stat.calc_method=='Abram':
-            if relativistic==True:
-                V = -self.vel.abs(i,t)
-                V_mag = np.linalg.norm(V)
-                u_mag = np.linalg.norm(u)
-                c_vec = LA.unit(u)*c
+        if relativistic==True:
+            V = -self.vel.abs(i,t)
+            V_mag = np.linalg.norm(V)
+            u_mag = np.linalg.norm(u)
+            c_vec = LA.unit(u)*c
 
-                velo = V
-                coor = calc.coor_SC(self,i,t)
-                r=coor[0]
-                x_prime = LA.unit(velo)
-                n_prime = LA.unit(np.cross(velo,r))
-                r_prime = LA.unit(np.cross(n_prime,x_prime))
-                coor_velo = np.array([r_prime,n_prime,x_prime])
-                c_velo = LA.matmul(coor_velo,c_vec)
-                v = np.linalg.norm(velo)
-                den = 1.0 - ((v/(c**2))*coor_velo[2])
-                num = ((1.0-((v**2)/(c**2)))**0.5)
+            velo = V
+            coor = calc.coor_SC(self,i,t)
+            r=coor[0]
+            x_prime = LA.unit(velo)
+            n_prime = LA.unit(np.cross(velo,r))
+            r_prime = LA.unit(np.cross(n_prime,x_prime))
+            coor_velo = np.array([r_prime,n_prime,x_prime])
+            c_velo = LA.matmul(coor_velo,c_vec)
+            v = np.linalg.norm(velo)
+            den = 1.0 - ((v/(c**2))*coor_velo[2])
+            num = ((1.0-((v**2)/(c**2)))**0.5)
 
-                ux_prime = (c_velo[2] + v)/den
-                ur_prime = (num*c_velo[0])/den
-                un_prime = (num*c_velo[1])/den
-                c_prime = ux_prime*x_prime + un_prime*n_prime +ur_prime*r_prime
-                u_new = LA.unit(c_prime)*u_mag
+            ux_prime = (c_velo[2] + v)/den
+            ur_prime = (num*c_velo[0])/den
+            un_prime = (num*c_velo[1])/den
+            c_prime = ux_prime*x_prime + un_prime*n_prime +ur_prime*r_prime
+            u_new = LA.unit(c_prime)*u_mag
 
-            elif relativistic==False:
-                V = -self.vel.abs(i,t)
-                u_mag = np.linalg.norm(u)
-                c_vec = LA.unit(u)*c
+        elif relativistic==False:
+            V = -self.vel.abs(i,t)
+            u_mag = np.linalg.norm(u)
+            c_vec = LA.unit(u)*c
 
-                u_new = LA.unit(c_vec+V)*u_mag
-            else:
-                print('Error')
+            u_new = LA.unit(c_vec+V)*u_mag
+        else:
+            print('Error')
 
             return u_new
 
-        elif self.stat.calc_method=='Waluschka':
-
-            return u
-
-
-
-
-
-
     def send_func(self,i):
         '''Uses previous defined functions to return the vecors L, u, v, r and n'''
-        calc_method=self.stat.calc_method
         [i_self,i_left,i_right] = utils.const.i_slr(i)
 
         pos_left = lambda time: self.putp(i_left,time)
@@ -300,19 +282,11 @@ class STAT():
 
         [L_sl,L_sr,L_rl,L_rr] = self.L_PAA(pos_self,pos_left,pos_right,i=i_self)
 
-        if calc_method=='Abram':
-            #Abram2018
-            v_send_l0 = lambda t: pos_left(t+L_sl(t)) - pos_self(t)
-            v_send_r0 = lambda t: pos_right(t+L_sr(t)) - pos_self(t)
-            v_rec_l0 = lambda t: pos_self(t) - pos_left(t - L_rl(t))
-            v_rec_r0 = lambda t: pos_self(t) - pos_right(t - L_rr(t))
-
-        elif calc_method=='Waluschka':
-            #Waluschka2003
-            v_send_l0 = lambda t: pos_left(t+L_sl(t)) - pos_self(t+L_sl(t))
-            v_send_r0 = lambda t: pos_right(t+L_sr(t)) - pos_self(t+L_sr(t))
-            v_rec_l0 = lambda t: pos_self(t-L_rl(t)) - pos_left(t - L_rl(t))
-            v_rec_r0 = lambda t: pos_self(t-L_rr(t)) - pos_right(t - L_rr(t))
+        #Abram2018
+        v_send_l0 = lambda t: pos_left(t+L_sl(t)) - pos_self(t)
+        v_send_r0 = lambda t: pos_right(t+L_sr(t)) - pos_self(t)
+        v_rec_l0 = lambda t: pos_self(t) - pos_left(t - L_rl(t))
+        v_rec_r0 = lambda t: pos_self(t) - pos_right(t - L_rr(t))
 
         if self.stat.aberration==False:
             v_send_l = v_send_l0
@@ -329,7 +303,6 @@ class STAT():
 
     def send_func_new(self,i,side,mode='send',give='L'):
         '''Uses previous defined functions to return the vecors L, u, v, r and n'''
-        calc_method=self.stat.calc_method
         [i_self,i_left,i_right] = utils.const.i_slr(i)
 
         pos_left = lambda time: self.putp(i_left,time)
@@ -343,20 +316,14 @@ class STAT():
                 if give=='L':
                     ret = L_sl
                 elif give=='v':
-                    if calc_method=='Abram':
-                        v_send_l0 = lambda t: pos_left(t+L_sl(t)) - pos_self(t)
-                    elif calc_method=='Waluschka':
-                        v_send_l0 = lambda t: pos_left(t+L_sl(t)) - pos_self(t+L_sl(t))
+                    v_send_l0 = lambda t: pos_left(t+L_sl(t)) - pos_self(t)
                     ret = lambda t: self.relativistic_aberrations(i,t,v_send_l0(t))
 
             elif side=='r':
                 if give=='L':
                     ret = L_sr
                 elif give=='v':
-                    if calc_method=='Abram':    
-                        v_send_r0 = lambda t: pos_right(t+L_sr(t)) - pos_self(t)
-                    elif calc_method=='Waluschka':
-                        v_send_r0 = lambda t: pos_right(t+L_sr(t)) - pos_self(t+L_sr(t))
+                    v_send_r0 = lambda t: pos_right(t+L_sr(t)) - pos_self(t)
 
                     ret = lambda t: self.relativistic_aberrations(i,t,v_send_r0(t))
 
@@ -365,19 +332,13 @@ class STAT():
                 if give=='L':
                     ret = L_rl
                 elif give=='v':
-                    if calc_method=='Abram':
-                        v_rec_l0 = lambda t: pos_self(t) - pos_left(t - L_rl(t))
-                    elif calc_method=='Waluschka':
-                        v_rec_l0 = lambda t: pos_self(t-L_rl(t)) - pos_left(t - L_rl(t))
+                    v_rec_l0 = lambda t: pos_self(t) - pos_left(t - L_rl(t))
                     ret = v_rec_l = lambda t: self.relativistic_aberrations(i,t,v_rec_l0(t))
             elif side=='r':
                 if give=='L':
                     ret = L_rr
                 elif give=='v':
-                    if calc_method=='Abram':
-                        v_rec_r0 = lambda t: pos_self(t) - pos_right(t - L_rr(t))
-                    elif calc_method=='Waluschka':
-                        v_rec_r0 = lambda t: pos_self(t-L_rr(t)) - pos_right(t - L_rr(t))
+                    v_rec_r0 = lambda t: pos_self(t) - pos_right(t - L_rr(t))
                     ret = lambda t: self.relativistic_aberrations(i,t,v_rec_r0(t))
 
         return ret

@@ -11,13 +11,10 @@ def get_output(aim,i,t,side,mode,cases,state='cases'):
         cases=[cases]
     for case in cases:
         try:
-            getattr(pos,case)
-        except AttributeError:
-            try:
-                pos = calc_value(pos,case)
-            except UnboundLocalError,e:
-                print('Could not obtain '+case)
-                setattr(pos,case,None)
+            pos = calc_value(pos,case)
+        except UnboundLocalError,e:
+            print('Could not obtain '+case)
+            setattr(pos,case,None)
     if state=='all':
         return pos
     elif state=='cases':
@@ -58,9 +55,10 @@ def loop_over_cases(pos,case,done=False):
     return pos,done,case
 
 def get_case(pos,case):
-    #print('Getting: '+case)
-    ret = 0
-    if case not in pos.__dict__.keys():
+    if case in pos.__dict__.keys():
+        ret = getattr(pos,case)
+
+    else:
         if case=='waist': #Beamwaist as a function of z (z=coordinate along beamline)
             z = pos.zoff
             zR = np.pi*(pos.aim.data.param.w0_laser**2)/pos.aim.data.param.labda
@@ -141,9 +139,12 @@ def get_case(pos,case):
             elif pos.mode=='rec':
                 ret = pos.side
 
-        try: 
+    try:
+        if pos.t_start>=pos.aim.data.t_all[0]+(pos.aim.data.param.L_arm/c)*1.1 and pos.t_end<=pos.aim.data.t_all[-1]-(pos.aim.data.param.L_arm/c)*1.1:
             setattr(pos,case,ret)
-        except UnboundLocalError, e:
-            raise UnboundLocalError(e)
+        else:
+            setattr(pos,case,ret*np.nan)
+    except UnboundLocalError, e:
+        raise UnboundLocalError(e)
 
-        return pos
+    return pos
