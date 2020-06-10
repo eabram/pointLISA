@@ -132,7 +132,7 @@ class CONSTELLATION():
         '''Obtains functions of vectors and angles (PAA, brething, n, r, u, v, L'''
         print('Importing Orbit')
         tic=time.clock()
-        Orbit=orbit.ORBIT(input_param=self.constellationset.__dict__)
+        Orbit=ORBIT.ORBIT(input_param=self.constellationset.__dict__)
         try:
             print(str(Orbit.linecount)+' datapoints')
         except AttributeError:

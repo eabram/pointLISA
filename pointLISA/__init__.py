@@ -41,7 +41,7 @@ for k in utils.__dict__.keys():
     if 'instance' in str(utils.__dict__[k]):
         if 'instance' in str(type(utils.__dict__[k])):
             globals()[k] = getattr(utils,k)
-import orbit
+import ORBIT
 import CONSTELLATION
 import output
 import ALIGNMENT
