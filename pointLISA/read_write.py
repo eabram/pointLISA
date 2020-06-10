@@ -241,7 +241,7 @@ def read_output(filenames=False,direct=False):
         for line in readfile:
             #print(line)
             if 'END\n'==line:                
-                print(R['value'])
+                print(R['value']) 
                 try:
                     getattr(ret_values,R['Side'])
                 except AttributeError:
