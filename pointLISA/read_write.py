@@ -29,7 +29,7 @@ def get_folder(direct=False,opt_date=True):
 
     return direct
 
-def write(inp,title='',direct='',extr='',opt_date=True,opt_time=True,time='',extra_title='',include='all',exclude=[],offset=False,overwrite=True):
+def write(inp,title='',direct='',extr='',opt_date=True,opt_time=True,time='',extra_title='',include='all',exclude=[],offset=False,overwrite=True): #Done
     '''Writes the output to a datafile'''
 
     aim = inp.options['aim']
@@ -92,30 +92,43 @@ def write(inp,title='',direct='',extr='',opt_date=True,opt_time=True,time='',ext
             pass
         writefile.write("END OPTIONS"+'\n')
         writefile.write('\n')
-
+        
+        t_all = inp.options['t_all']
         for side in inp.__dict__.keys():
-            for i in getattr(inp,side).__dict__.keys():
-                for m in getattr(getattr(inp,side),i).__dict__.keys():
-                    writefile.write('BEGIN\n')
-                    outp = getattr(getattr(getattr(inp,side),i),m)
-                    #writefile.write("Value:: "+str(m)+'\n')
-                    writefile.write("SC:: "+str(i[-1])+'\n')
-                    writefile.write("Side:: "+str(side)+'\n')
-                    options = outp[-1]
-                    options = options.split(', ')
-                    for opt in options:
-                        opt_split = opt.split('=')
-                        writefile.write(opt_split[0]+':: '+opt_split[-1]+'\n')
-                    for j in range(0,len(outp[0])):
-                        values = outp[0][j]
-                        values_str = '['
-                        for v in values:
-                            values_str = values_str+str(v)+','
-                        values_str = values_str[0:-1] +']'
-                        writefile.write(values_str+'\n')
-                    writefile.write('END\n')
-                    writefile.write('\n')
-                                
+            if side in ['l','r']:
+                for i in getattr(inp,side).__dict__.keys():
+                    if i[0:2]=='SC':
+                        print(i)
+                        #for m in getattr(getattr(inp,side),i).keys():
+                        for m in inp.options['cases']:
+                            writefile.write('BEGIN\n')
+                            outp = getattr(getattr(inp,side),i)[m]
+                            writefile.write("SC:: "+str(i[-1])+'\n')
+                            writefile.write("Side:: "+str(side)+'\n')
+                            writefile.write("mode:: "+str(inp.options['mode'])+'\n')
+                            writefile.write("case:: "+str(m)+'\n')
+                            values_str = '['
+                            for j in range(0,len(t_all)):
+                                value = t_all[j]
+                                if j==len(t_all)-1:
+                                    values_str = values_str + str(value)+']'
+                                else:
+                                    values_str = values_str+str(value)+','
+                            writefile.write(values_str+'\n')
+                            values_str = '['
+                            for j in range(0,len(outp)):
+                                value = outp[j]
+                                if j==len(outp)-1:
+                                    values_str = values_str + str(value)+']'
+                                else:
+                                    values_str = values_str+str(value)+','
+                            writefile.write(values_str+'\n')
+
+
+
+                            writefile.write('END\n')
+                            writefile.write('\n')
+                                        
         writefile.close()
 
         print(title+' saved in:')
@@ -153,7 +166,7 @@ def make_matrix(A):
     
     return out
 
-def read_options(filename,print_on=False,del_auto=True):
+def read_options(filename,print_on=False,del_auto=True): #Done
     '''Reads the options (used settings) from the datafile filenme'''
     aimset=utils.Object()
     read_on=False
@@ -224,77 +237,48 @@ def read_output(filenames=False,direct=False):
     for filename in filenames:
         readfile = open(filename,'r')
         read_on=False
+        ret_values=utils.Object()
         for line in readfile:
             #print(line)
-            if 'END\n'==line:
-                if R['mode']=='mean_surface':
-
-                    #B = R[R['value']][0][1]
-                    R[R['value']][0][1] = make_matrix(R[R['value']][0][1])
-                    pass
-                R[R['value']][1] = 'value='+R['value']+', mode='+R['mode']
+            if 'END\n'==line:                
+                print(R['value'])
                 try:
-                    getattr(ret,R['Side'])
-                except:
-                    setattr(ret,R['Side'],utils.Object())
-                    #getattr(Y,R['Side'])
-                
-                try:
-                    getattr(getattr(ret,R['Side']),'i'+R['SC'])
-                except:
-                    setattr(getattr(ret,R['Side']),'i'+R['SC'],utils.Object())
-                
-                try: 
-                    R_old = getattr(getattr(getattr(ret,R['Side']),'i'+R['SC']),R['value'])
-                    #print(R['value'])
-                    X = R[R['value']]
-                    R_old[0][0] = R_old[0][0].append(X[0][0])
-                    R_old[0][1] = R_old[0][1].append(X[0][1])
-                    #print(R_old[1])
-                    #print(X_[1])
-
-
+                    getattr(ret_values,R['Side'])
                 except AttributeError:
-                    setattr(getattr(getattr(ret,R['Side']),'i'+R['SC']),R['value'],R[R['value']])
-                
+                    setattr(ret_values,R['Side'],utils.Object())
+                try:
+                    getattr(getattr(ret_values,R['Side']),'SC'+R['SC'])
+                except AttributeError:
+                    setattr(getattr(ret_values,R['Side']),'SC'+R['SC'],{})
+                getattr(getattr(ret_values,R['Side']),'SC'+R['SC'])[R['case']] = R['value']
+
                 read_on=False
             elif read_on:
                 if ':: ' in line:
                     [key, value] = line.split('\n')[0].split(':: ')
                     R[key] = value
+                    print(key,value)
                 else:
-                    if R['mode']=='mean_surface':
-                        values=[]
-                        value = line.split('\n')[0]
+                    value = line.split('\n')[0]
+                    value = value[1:-1]
+                    values=[]
+                    for v in value.split(','):
                         try:
-                            R[R['value']]
-                            new=False
+                            values.append(np.float64(v))
                         except:
-                            R[R['value']] = [[0,''],0]
-                            new=True
-                        if new==True:
-                            R[R['value']][0][0] = np.array(methods.flatten(np.array(np.matrix(value))))
-                        elif new==False:
-                            R[R['value']][0][1] = R[R['value']][0][1]+value
+                            print(line)
+                            print('Error')
+                            print(R['mode'])
 
-                    else:
-                        value = line.split('\n')[0]
-                        value = value[1:-1]
-                        values=[]
-                        for v in value.split(','):
-                            try:
-                                values.append(np.float64(v))
-                            except:
-                                print(line)
-                                print('Error')
-                                print(R['mode'])
+                    values = np.array(values)
+                    try:
+                        R['value'].append(values)
+                    except:
+                        R['value'] = []
+                        R['value'].append(values)
+                    if len(R['value'])==2:
+                        print(R['value'])
 
-                        values = np.array(values)
-                        try:
-                            R[R['value']]
-                        except:
-                            R[R['value']] = [[],0]
-                        R[R['value']][0].append(values)
                         
             elif 'BEGIN\n'==line:
                 read_on=True
@@ -302,22 +286,21 @@ def read_output(filenames=False,direct=False):
         print(filename)
         readfile.close()
     options = read_options(filename)
-    setattr(ret,'options',options)
+    setattr(ret_values,'options',options)
+    #setattr(ret,'options',values)
 
-    point_options = options.tele_control+'_'+options.PAAM_control+'__'+options.option_tele+'_'+options.option_PAAM
+    #point_options = options.tele_control+'_'+options.PAAM_control+'__'+options.option_tele+'_'+options.option_PAAM
 
-    point_settings = options.tele_method_solve+'_'+options.PAAM_method_solve+'__'+options.optimize_PAAM+'_'+str(options.optimize_PAAM_value).replace('.','d')
+    #point_settings = options.tele_method_solve+'_'+options.PAAM_method_solve+'__'+options.optimize_PAAM+'_'+str(options.optimize_PAAM_value).replace('.','d')
 
-    try:
-        getattr(ret,point_options)
-    except:
-        setattr(ret,point_options,utils.Object())
+    #try:
+    #    getattr(ret,point_options)
+    #except:
+    #    setattr(ret,point_options,utils.Object())
 
-    setattr(getattr(ret,point_options),point_settings,ret)
+    #setattr(getattr(ret,point_options),point_settings,ret)
     
     readfile.close()
     
-    ret_new = ret
-    del ret
 
-    return ret_new,point_options,point_settings
+    return ret_values#,point_options,point_settings
