@@ -1,8 +1,4 @@
-from imports import * 
-import output
-import numpy as np
-import datetime
-import os
+from pointLISA import *
 
 ### This file will read and/or write output values (from and to datafiles) and also contains some helper functions
 def string_length(l,string):
@@ -33,8 +29,10 @@ def get_folder(direct=False,opt_date=True):
 
     return direct
 
-def write(inp,aim,title='',direct='',extr='',opt_date=True,opt_time=True,time='',extra_title='',include='all',exclude=[],offset=False,overwrite=True):
+def write(inp,title='',direct='',extr='',opt_date=True,opt_time=True,time='',extra_title='',include='all',exclude=[],offset=False,overwrite=True):
     '''Writes the output to a datafile'''
+
+    aim = inp.options['aim']
     
     date = get_date(option='date')
     if time=='':
@@ -78,7 +76,7 @@ def write(inp,aim,title='',direct='',extr='',opt_date=True,opt_time=True,time=''
     else:
         writefile.write("BEGIN OPTIONS"+'\n')
         try:
-            settings_all = [aim.data.stat,aim.aimset]
+            settings_all = [aim.data.constellationset,aim.alignmentset]
             for j in settings_all:
                 for setting in j.__dict__.keys():
                     val = j.__dict__[setting]

@@ -1,29 +1,77 @@
 from pointLISA import *
 
-def get_output(aim,i,t,side,mode,cases,state='cases'):
-    pos = utils.Object()
-    attr = aim.get_value(i,t,side,mode=mode,ret='all')
-    for k in attr.keys():
-        setattr(pos,k,attr[k])
-    setattr(pos,'aim',aim)
+def get_output(aim,i_all,t_all,side_all,mode,cases,state='cases',return_format='normal'): # if return_format is 'write'
+    options={}
+    for k in locals().keys():
+        options[k] = locals()[k]
 
-    if type(cases)!=list:
-        cases=[cases]
-    for case in cases:
-        try:
-            pos = calc_value(pos,case)
-        except UnboundLocalError,e:
-            print('Could not obtain '+case)
-            setattr(pos,case,None)
-    if state=='all':
-        return pos
-    elif state=='cases':
-        pos_ret = utils.Object()
+    def get_output_time(aim,i,t,side,mode,cases,state='cases'):
+        pos = utils.Object()
+        attr = aim.get_value(i,t,side,mode=mode,ret='all')
+        for k in attr.keys():
+            setattr(pos,k,attr[k])
+        setattr(pos,'aim',aim)
+
+        if type(cases)!=list:
+            cases=[cases]
         for case in cases:
-            setattr(pos_ret,case,getattr(pos,case))
-        return pos_ret
-    else:
-        raise ValueError('Please select state= "all" or "cases"')
+            try:
+                pos = calc_value(pos,case)
+            except UnboundLocalError,e:
+                print('Could not obtain '+case)
+                setattr(pos,case,None)
+        if state=='all':
+            return pos
+        elif state=='cases':
+            pos_ret = utils.Object()
+            for case in cases:
+                setattr(pos_ret,case,getattr(pos,case))
+            return pos_ret
+        else:
+            raise ValueError('Please select state= "all" or "cases"')
+    
+    try:
+        len(side_all)
+    except TypeError:
+        side_all=[side_all]
+    try:
+        len(i_all)
+    except TypeError:
+        i_all = [i_all]
+
+    ret_full = utils.Object()
+    for side in side_all:
+        setattr(ret_full,side,utils.Object)
+        for i in i_all:
+            try:
+                len(t_all)
+                if len(t_all)==1:
+                    raise TypeError()
+                results=[]
+                ret = {}
+                for t in t_all:
+                    results.append(get_output_time(aim,i,t,side,mode,cases,state='cases'))
+                for case in cases:
+                    ret[case] = []
+                    print(case)
+                    for j in range(0,len(t_all)):
+                        ret[case].append(getattr(results[j],case))
+                    ret[case] = np.array(ret[case])
+            except TypeError:
+                ret = get_output_time(aim,i,t_all,side,mode,cases,state='cases').__dict__
+            ret['t']=np.array(t_all)
+            
+            setattr(getattr(ret_full,side),'SC'+str(i),ret)
+    
+    if return_format=='normal' and len(side_all)==1 and len(i_all)==1:
+        ret_all = utils.Object
+        setattr(ret_all,'options',options)
+        setattr(ret_all,'ret',ret)
+    elif return_format=='write' or (len(side_all)!=1 and len(i_1ll)!=1):
+        ret_all = ret_full
+        setattr(ret_all,'options',options)
+
+    return ret_all
 
 def calc_value(pos,case):
     done=False
